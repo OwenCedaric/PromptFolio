@@ -13,6 +13,7 @@ import {
     RiDeleteBinLine
 } from '@remixicon/react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { PromptData, PromptStatus } from '../types';
 
 interface PromptDetailProps {
@@ -129,13 +130,18 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                 {prompt.description && (
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.02)] dark:shadow-none">
                         <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
-                            <ReactMarkdown components={{
-                                img: ({node, ...props}) => (
-                                    <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4">
-                                        <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} />
-                                    </div>
-                                )
-                            }}>{prompt.description}</ReactMarkdown>
+                            <ReactMarkdown 
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                    img: ({node, ...props}) => (
+                                        <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4">
+                                            <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} />
+                                        </div>
+                                    )
+                                }}
+                            >
+                                {prompt.description}
+                            </ReactMarkdown>
                         </div>
                     </div>
                 )}

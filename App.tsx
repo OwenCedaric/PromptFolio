@@ -87,7 +87,12 @@ const App: React.FC = () => {
   const SITE_PASSWORD = process.env.SITE_PASSWORD;
 
   // --- Auth State ---
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!SITE_PASSWORD);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    // If no password is configured in env, default to authenticated (public mode or dev)
+    if (!SITE_PASSWORD) return true;
+    // Check local storage for persistence
+    return localStorage.getItem('pf_auth_session') === '1';
+  });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState(false);
@@ -317,12 +322,18 @@ const App: React.FC = () => {
   const submitLogin = () => {
     if (passwordInput === SITE_PASSWORD) {
         setIsAuthenticated(true);
+        localStorage.setItem('pf_auth_session', '1');
         setIsLoginModalOpen(false);
         setPasswordInput('');
         setLoginError(false);
     } else {
         setLoginError(true);
     }
+  };
+
+  const handleLogout = () => {
+      setIsAuthenticated(false);
+      localStorage.removeItem('pf_auth_session');
   };
 
   const handleCreateNew = () => {
@@ -406,7 +417,7 @@ const App: React.FC = () => {
         onClose={() => setSidebarOpen(false)}
         isAuthenticated={isAuthenticated}
         onLogin={handleLoginRequest}
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={handleLogout}
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
       />
