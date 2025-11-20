@@ -4,7 +4,7 @@ import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
 import PromptDetail from './components/PromptDetail';
 import { PromptData, Category, PromptStatus } from './types';
-import { RiMenuLine, RiSearchLine, RiCloseLine, RiErrorWarningLine, RiLoader4Line, RiWifiOffLine } from '@remixicon/react';
+import { RiMenuLine, RiSearchLine, RiCloseLine, RiErrorWarningLine, RiLoader4Line, RiWifiOffLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
 
 // --- Mock Data for Fallback ---
 const MOCK_PROMPTS: PromptData[] = [
@@ -85,6 +85,7 @@ const App: React.FC = () => {
   // --- Config ---
   const SITE_NAME = process.env.SITE_NAME || 'PromptFolio';
   const SITE_PASSWORD = process.env.SITE_PASSWORD;
+  const ITEMS_PER_PAGE = 12;
 
   // --- Auth State ---
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -107,9 +108,20 @@ const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // --- Theme State ---
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Initialize based on local storage or system preference
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('pf_theme');
+        if (saved) {
+            return saved === 'dark';
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
 
   // --- Confirmation State ---
   const [confirmState, setConfirmState] = useState<{
@@ -178,14 +190,22 @@ const App: React.FC = () => {
   }, [view, SITE_NAME]);
 
   useEffect(() => {
+    const root = document.documentElement;
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+      localStorage.setItem('pf_theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      localStorage.setItem('pf_theme', 'light');
     }
   }, [isDarkMode]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
 
   // --- Computed ---
   const visiblePrompts = useMemo(() => {
@@ -203,6 +223,13 @@ const App: React.FC = () => {
       return matchesSearch && matchesCategory;
     });
   }, [prompts, searchQuery, selectedCategory]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(visiblePrompts.length / ITEMS_PER_PAGE);
+  const paginatedPrompts = visiblePrompts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE, 
+    currentPage * ITEMS_PER_PAGE
+  );
 
   // --- Actions ---
   const savePrompt = async (data: PromptData) => {
@@ -482,12 +509,15 @@ const App: React.FC = () => {
             ) : (
                 /* Library View - Grid Scroll */
                 <div className="h-full w-full overflow-y-auto scrollbar-hide">
-                    <div className="p-6 md:p-10 max-w-[1600px] mx-auto">
+                    <div className="p-6 md:p-10 max-w-[1600px] mx-auto min-h-full flex flex-col">
                         
                         {/* Library Header */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 shrink-0">
                             <div>
                                 <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">{selectedCategory === 'All' ? 'Library' : selectedCategory}</h1>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                                    {visiblePrompts.length} {visiblePrompts.length === 1 ? 'result' : 'results'}
+                                </p>
                             </div>
                             
                             {/* Search */}
@@ -504,9 +534,9 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Grid */}
-                        {visiblePrompts.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
-                                {visiblePrompts.map(prompt => (
+                        {paginatedPrompts.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 mb-auto">
+                                {paginatedPrompts.map(prompt => (
                                     <PromptCard 
                                         key={prompt.id} 
                                         prompt={prompt} 
@@ -515,8 +545,35 @@ const App: React.FC = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-32 text-zinc-400 dark:text-zinc-600">
+                            <div className="flex flex-col items-center justify-center py-32 text-zinc-400 dark:text-zinc-600 flex-1">
                                 <p className="text-sm">No prompts found.</p>
+                            </div>
+                        )}
+
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <div className="mt-12 py-6 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
+                                <button 
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <RiArrowLeftSLine size={18} />
+                                    Previous
+                                </button>
+
+                                <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                                    Page <span className="text-zinc-900 dark:text-white">{currentPage}</span> of <span className="text-zinc-900 dark:text-white">{totalPages}</span>
+                                </div>
+
+                                <button 
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Next
+                                    <RiArrowRightSLine size={18} />
+                                </button>
                             </div>
                         )}
                     </div>

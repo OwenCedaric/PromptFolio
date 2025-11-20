@@ -283,24 +283,43 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             
                             <div className="space-y-1">
                                 <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Category</label>
-                                <select 
-                                    value={category} 
-                                    onChange={(e) => setCategory(e.target.value as Category)}
-                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors"
-                                >
-                                    {Object.values(Category).map(c => <option key={c} value={c} className="dark:bg-zinc-800">{c}</option>)}
-                                </select>
+                                <div className="relative">
+                                    <select 
+                                        value={category} 
+                                        onChange={(e) => setCategory(e.target.value as Category)}
+                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none"
+                                    >
+                                        {Object.values(Category).map(c => (
+                                            <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {/* Custom Chevron */}
+                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-1">
                                 <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
-                                <select 
-                                    value={status} 
-                                    onChange={(e) => setStatus(e.target.value as PromptStatus)}
-                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors"
-                                >
-                                    {Object.values(PromptStatus).map(s => <option key={s} value={s} className="dark:bg-zinc-800">{s}</option>)}
-                                </select>
+                                <div className="relative">
+                                    <select 
+                                        value={status} 
+                                        onChange={(e) => setStatus(e.target.value as PromptStatus)}
+                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none"
+                                    >
+                                        {Object.values(PromptStatus).map(s => (
+                                            <option key={s} value={s} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                {s}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -350,7 +369,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             value={imageUrl}
                             onChange={(e) => setImageUrl(e.target.value)}
                             placeholder="Cover Image URL (Optional)"
-                            className="flex-1 text-sm bg-transparent border-none outline-none focus:ring-0 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400"
+                            className="flex-1 text-sm bg-transparent border-none outline-none focus:ring-0 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                         />
                     </div>
 
@@ -417,7 +436,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                         {sortedVersions.map((v, idx) => {
                                             const originalIndex = versions.findIndex(ver => ver.id === v.id);
                                             return (
-                                                <option key={v.id} value={v.id} className="text-zinc-900 dark:text-white dark:bg-zinc-800">
+                                                <option key={v.id} value={v.id} className="text-zinc-900 dark:text-white bg-white dark:bg-zinc-900">
                                                     Editing: v{originalIndex + 1} {v.note ? `(${v.note})` : ''}
                                                 </option>
                                             );

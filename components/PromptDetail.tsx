@@ -226,7 +226,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     {sortedVersions.map((v, idx) => {
                                         const originalIndex = prompt.versions.findIndex(ver => ver.id === v.id);
                                         return (
-                                            <option key={v.id} value={v.id} className="dark:bg-zinc-900">
+                                            <option key={v.id} value={v.id} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                                                 v{originalIndex + 1} — {new Date(v.createdAt).toLocaleDateString()}
                                             </option>
                                         );

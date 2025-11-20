@@ -47,6 +47,26 @@
         },
       }
     </script>
+    
+    <!-- Theme Initialization Script (Prevents FOUC & Fixes Native UI) -->
+    <script>
+      (function() {
+        try {
+          const localTheme = localStorage.getItem('pf_theme');
+          const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const shouldBeDark = localTheme === 'dark' || (!localTheme && supportDarkMode);
+          
+          if (shouldBeDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <script type="importmap">
 {
   "imports": {
