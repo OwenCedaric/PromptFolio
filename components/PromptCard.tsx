@@ -41,7 +41,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick }) => {
         <div className="flex justify-between items-start mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 backdrop-blur-sm">{prompt.category}</span>
             <div className="flex gap-2">
-                {prompt.isFavorite && <RiStarFill size={14} className="text-yellow-500" />}
+                {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
             </div>
         </div>
 

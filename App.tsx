@@ -11,7 +11,7 @@ const MOCK_PROMPTS: PromptData[] = [
   {
     id: '1',
     title: 'Cyberpunk City Description',
-    description: 'Generates a vivid description of a futuristic city.',
+    description: 'Generates a vivid description of a futuristic city. Useful for sci-fi novels or game environment concepts.',
     category: Category.CREATIVE_WRITING,
     tags: ['scifi', 'environment', 'detailed'],
     status: PromptStatus.PUBLISHED,
@@ -105,6 +105,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   // --- Theme State ---
@@ -148,7 +149,6 @@ const App: React.FC = () => {
           const res = await fetch('/api/prompts');
           
           // Check if we got a JSON response. 
-          // Cloudflare Functions might return HTML (404/500) or text if configured incorrectly.
           const contentType = res.headers.get("content-type");
           if (res.ok && contentType && contentType.includes("application/json")) {
               const data = await res.json();
@@ -160,7 +160,6 @@ const App: React.FC = () => {
       } catch (error) {
           console.warn("Backend unavailable. Switching to Offline/Demo Mode.", error);
           setIsDemoMode(true);
-          // Fallback to local storage or mock data
           setPrompts(loadLocalData());
       } finally {
           setIsLoading(false);
@@ -170,6 +169,13 @@ const App: React.FC = () => {
   useEffect(() => {
       fetchPrompts();
   }, []);
+
+  // SEO: Reset title when on library view
+  useEffect(() => {
+      if (view === 'library') {
+          document.title = `Library | ${SITE_NAME}`;
+      }
+  }, [view, SITE_NAME]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -200,7 +206,6 @@ const App: React.FC = () => {
 
   // --- Actions ---
   const savePrompt = async (data: PromptData) => {
-    // Optimistic update state
     const originalPrompts = [...prompts];
     const updatedPrompts = originalPrompts.some(p => p.id === data.id) 
         ? originalPrompts.map(p => p.id === data.id ? data : p) 
@@ -216,7 +221,6 @@ const App: React.FC = () => {
         setActivePrompt(null);
     }
 
-    // Persistence
     if (isDemoMode) {
         saveLocalData(updatedPrompts);
         return;
@@ -231,7 +235,6 @@ const App: React.FC = () => {
         if (!res.ok) throw new Error("Failed to save");
     } catch (e) {
         console.error("Save failed, falling back to local storage", e);
-        // If backend fails mid-session, switch to demo mode to preserve work
         setIsDemoMode(true);
         saveLocalData(updatedPrompts);
     }
@@ -348,7 +351,7 @@ const App: React.FC = () => {
 
   // --- Main Layout Render ---
   return (
-    <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans text-zinc-900 dark:text-zinc-100 relative transition-colors duration-300">
+    <div className="flex h-screen w-full bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans text-zinc-900 dark:text-zinc-100 relative transition-colors duration-300">
       
       {/* Confirm Modal */}
       <ConfirmModal 
@@ -420,10 +423,12 @@ const App: React.FC = () => {
         onLogout={handleLogout}
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
+        isCollapsed={isSidebarCollapsed}
+        toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full transition-all duration-300 w-full bg-zinc-50/50 dark:bg-zinc-950/50 relative">
+      <main className="flex-1 flex flex-col h-full min-w-0 bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
         
         {/* Mobile Header */}
         <header className="md:hidden h-14 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between px-4 sticky top-0 z-30 flex-shrink-0">
@@ -436,13 +441,13 @@ const App: React.FC = () => {
         </header>
 
         {/* Content Switcher */}
-        <div className="flex-1 overflow-hidden relative flex flex-col">
+        <div className="flex-1 overflow-hidden relative flex flex-col h-full">
             
             {/* Demo Mode Banner */}
             {isDemoMode && !isLoading && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30 px-4 py-1.5 flex items-center justify-center gap-2 text-[11px] font-medium text-amber-700 dark:text-amber-500">
+                <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30 px-4 py-1.5 flex items-center justify-center gap-2 text-[11px] font-medium text-amber-700 dark:text-amber-500 shrink-0">
                     <RiWifiOffLine size={12} />
-                    <span>Offline / Demo Mode — Changes are saved locally only.</span>
+                    <span>Offline / Demo Mode</span>
                 </div>
             )}
 
@@ -475,7 +480,8 @@ const App: React.FC = () => {
                     isAuthenticated={isAuthenticated}
                 />
             ) : (
-                <div className="h-full overflow-y-auto scrollbar-hide">
+                /* Library View - Grid Scroll */
+                <div className="h-full w-full overflow-y-auto scrollbar-hide">
                     <div className="p-6 md:p-10 max-w-[1600px] mx-auto">
                         
                         {/* Library Header */}
@@ -499,7 +505,7 @@ const App: React.FC = () => {
 
                         {/* Grid */}
                         {visiblePrompts.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
                                 {visiblePrompts.map(prompt => (
                                     <PromptCard 
                                         key={prompt.id} 
@@ -510,7 +516,7 @@ const App: React.FC = () => {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-32 text-zinc-400 dark:text-zinc-600">
-                                <p className="text-sm">No prompts found in this category.</p>
+                                <p className="text-sm">No prompts found.</p>
                             </div>
                         )}
                     </div>

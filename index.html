@@ -2,9 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PromptFolio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- SEO Meta Tags -->
+    <title>PromptFolio - AI Prompt Manager</title>
+    <meta name="description" content="Organize, version, and optimize your AI prompts with Google Gemini integration. A professional tool for prompt engineering." />
+    <meta name="keywords" content="prompt engineering, AI prompts, Gemini API, prompt manager, prompt versioning, LLM tools" />
+    <meta name="author" content="PromptFolio" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PromptFolio - AI Prompt Manager" />
+    <meta property="og:description" content="Professional AI Prompt Management System for developers and prompt engineers." />
+    <meta property="og:site_name" content="PromptFolio" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
       tailwind.config = {
@@ -50,8 +63,8 @@
 }
 </script>
   </head>
-  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300">
-    <div id="root"></div>
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-screen w-full fixed">
+    <div id="root" class="h-full w-full overflow-hidden flex flex-col"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
