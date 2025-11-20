@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine } from '@remixicon/react';
+import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine } from '@remixicon/react';
 import { PromptData, PromptStatus, Category, PromptVersion } from '../types';
 import { geminiService } from '../services/geminiService';
 
@@ -32,6 +32,9 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeAiTask, setActiveAiTask] = useState<string | null>(null);
   
+  // Mobile Tab State
+  const [mobileTab, setMobileTab] = useState<'settings' | 'prompt'>('settings');
+
   // Versioning State
   const [saveAsNewVersion, setSaveAsNewVersion] = useState(false);
 
@@ -205,7 +208,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       )}
 
       {/* Global Header */}
-      <div className="h-16 px-4 md:px-10 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between gap-2">
+      <div className="h-16 px-4 md:px-10 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-4 shrink-0">
             <button onClick={onCancel} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                 <RiArrowLeftLine size={20} />
@@ -259,11 +262,12 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="flex-1 overflow-y-auto scrollbar-hide md:overflow-hidden">
+        <div className="h-full max-w-[1800px] mx-auto px-4 md:px-10 py-6 md:py-8 lg:grid lg:grid-cols-12 lg:gap-10">
         
-            {/* LEFT COLUMN: Main Inputs (Title, Desc, Prompt) */}
-            <div className="lg:col-span-8 space-y-8">
+            {/* LEFT COLUMN (60%): Settings (Title, Desc, Meta) */}
+            {/* Visible on Desktop or if Mobile Tab is 'settings' */}
+            <div className={`lg:col-span-7 space-y-8 overflow-y-auto scrollbar-hide pb-24 lg:pb-0 ${mobileTab === 'prompt' ? 'hidden lg:block' : 'block'}`}>
                 
                 {/* Title Input */}
                 <div>
@@ -276,7 +280,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                     />
                 </div>
 
-                 {/* Description */}
+                 {/* Description Input */}
                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                     <div className="flex justify-between items-center mb-4">
                         <label className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Description / Context</label>
@@ -304,9 +308,96 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                     </p>
                  </div>
 
-                {/* The Prompt Editor */}
-                <div>
-                     <div className="flex justify-between items-center mb-3">
+                {/* Properties Row (Merged from old right column) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
+                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
+                        
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Category</label>
+                            <select 
+                                value={category} 
+                                onChange={(e) => setCategory(e.target.value as Category)}
+                                className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors"
+                            >
+                                {Object.values(Category).map(c => <option key={c} value={c} className="dark:bg-zinc-800">{c}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
+                            <select 
+                                value={status} 
+                                onChange={(e) => setStatus(e.target.value as PromptStatus)}
+                                className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors"
+                            >
+                                {Object.values(PromptStatus).map(s => <option key={s} value={s} className="dark:bg-zinc-800">{s}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-3">
+                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                            <RiImage2Line size={14} /> Cover Image
+                        </h3>
+                        <input 
+                            type="text"
+                            value={imageUrl}
+                            onChange={(e) => setImageUrl(e.target.value)}
+                            placeholder="https://... (for thumbnail)"
+                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                        />
+                        {imageUrl && (
+                            <div className="aspect-video w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                <img src={imageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Tags Card */}
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Tags</h3>
+                        <button 
+                            onClick={() => handleAI('tags')} 
+                            disabled={isProcessing}
+                            className="text-[10px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1"
+                        >
+                             {activeAiTask === 'tags' ? <RiLoader4Line className="animate-spin" size={10} /> : <RiMagicLine size={10} />} Auto
+                        </button>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                        {tags.map(t => (
+                            <span key={t} className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-1 rounded-md flex items-center gap-1 group">
+                                {t} 
+                                <button onClick={() => setTags(tags.filter(x => x !== t))} className="text-zinc-400 hover:text-red-500 transition-colors"><RiCloseLine size={12}/></button>
+                            </span>
+                        ))}
+                    </div>
+                    
+                    <input 
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && tagInput) {
+                                e.preventDefault();
+                                setTags([...tags, tagInput]);
+                                setTagInput('');
+                            }
+                        }}
+                        placeholder="Type tag & hit Enter..."
+                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                    />
+                </div>
+            </div>
+
+            {/* RIGHT COLUMN (40%): Prompt Editor */}
+            {/* Visible on Desktop or if Mobile Tab is 'prompt' */}
+            <div className={`lg:col-span-5 h-full flex flex-col ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'}`}>
+                <div className="flex flex-col h-full lg:h-auto lg:min-h-full">
+                     <div className="flex justify-between items-center mb-3 shrink-0">
                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                             <div className="w-2 h-2 bg-zinc-900 dark:bg-white rounded-full"></div>
                             Prompt Content
@@ -322,9 +413,9 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                      </div>
                      
                      {/* Editor Container */}
-                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm transition-all">
-                         {/* Editor Header - Minimalist */}
-                        <div className="h-10 bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between">
+                     <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm transition-all flex flex-col min-h-[400px]">
+                         {/* Editor Header */}
+                        <div className="h-10 bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between shrink-0">
                              
                              {/* Version Control */}
                              <div className="flex items-center gap-2">
@@ -367,102 +458,43 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Write your prompt here..."
-                            className="w-full h-[400px] bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 border-none focus:ring-0 resize-y leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
+                            className="w-full flex-1 bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 border-none focus:ring-0 resize-none leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
                         />
                      </div>
                 </div>
             </div>
 
-            {/* RIGHT COLUMN: Metadata Sidebar */}
-            <div className="lg:col-span-4 space-y-6">
-                
-                {/* Properties Card */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
-                    <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
-                    
-                    <div className="space-y-1">
-                        <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Category</label>
-                        <select 
-                            value={category} 
-                            onChange={(e) => setCategory(e.target.value as Category)}
-                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors"
-                        >
-                            {Object.values(Category).map(c => <option key={c} value={c} className="dark:bg-zinc-800">{c}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="space-y-1">
-                        <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
-                        <select 
-                            value={status} 
-                            onChange={(e) => setStatus(e.target.value as PromptStatus)}
-                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors"
-                        >
-                            {Object.values(PromptStatus).map(s => <option key={s} value={s} className="dark:bg-zinc-800">{s}</option>)}
-                        </select>
-                    </div>
-                </div>
-
-                {/* Cover Image (Card Thumbnail) */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-3">
-                    <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                         <RiImage2Line size={14} /> Cover Image
-                    </h3>
-                    <input 
-                        type="text"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://... (for thumbnail)"
-                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-                    />
-                    {imageUrl && (
-                        <div className="aspect-video w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
-                            <img src={imageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
-                        </div>
-                    )}
-                </div>
-
-                {/* Tags Card */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Tags</h3>
-                        <button 
-                            onClick={() => handleAI('tags')} 
-                            disabled={isProcessing}
-                            className="text-[10px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1"
-                        >
-                             {activeAiTask === 'tags' ? <RiLoader4Line className="animate-spin" size={10} /> : <RiMagicLine size={10} />} Auto
-                        </button>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                        {tags.map(t => (
-                            <span key={t} className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-1 rounded-md flex items-center gap-1 group">
-                                {t} 
-                                <button onClick={() => setTags(tags.filter(x => x !== t))} className="text-zinc-400 hover:text-red-500 transition-colors"><RiCloseLine size={12}/></button>
-                            </span>
-                        ))}
-                    </div>
-                    
-                    <input 
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && tagInput) {
-                                e.preventDefault();
-                                setTags([...tags, tagInput]);
-                                setTagInput('');
-                            }
-                        }}
-                        placeholder="Type tag & hit Enter..."
-                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-                    />
-                </div>
-
-            </div>
-
         </div>
       </div>
+
+      {/* Mobile Floating Navigation */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="bg-zinc-900/90 dark:bg-zinc-800/90 backdrop-blur-md text-white p-1 rounded-full flex shadow-xl border border-white/10 dark:border-black/10">
+             <button 
+                onClick={() => setMobileTab('settings')}
+                className={`px-5 py-2 rounded-full text-xs font-medium flex items-center gap-2 transition-all ${
+                    mobileTab === 'settings' 
+                    ? 'bg-white text-black shadow-sm' 
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+             >
+                <RiSettings3Line size={14} />
+                Settings
+             </button>
+             <button 
+                onClick={() => setMobileTab('prompt')}
+                className={`px-5 py-2 rounded-full text-xs font-medium flex items-center gap-2 transition-all ${
+                    mobileTab === 'prompt' 
+                    ? 'bg-white text-black shadow-sm' 
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+             >
+                <RiFileTextLine size={14} />
+                Prompt
+             </button>
+        </div>
+      </div>
+
     </div>
   );
 };

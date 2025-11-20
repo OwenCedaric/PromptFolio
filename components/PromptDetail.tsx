@@ -10,7 +10,9 @@ import {
     RiGlobalLine,
     RiPriceTag3Line,
     RiHistoryLine,
-    RiDeleteBinLine
+    RiDeleteBinLine,
+    RiFileTextLine,
+    RiInformationLine
 } from '@remixicon/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -32,6 +34,9 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
   // State to track which version is currently being viewed
   const [selectedVersionId, setSelectedVersionId] = useState<string>(prompt.currentVersionId);
   const [copied, setCopied] = useState(false);
+  
+  // Mobile Tab State
+  const [mobileTab, setMobileTab] = useState<'info' | 'prompt'>('info');
 
   // Update local state if prompt prop changes externally
   useEffect(() => {
@@ -46,7 +51,6 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
       setTimeout(() => setCopied(false), 2000);
   };
 
-  // Delegate to parent - parent now handles confirmation modal
   const handleDeletePrompt = () => {
     onDelete(prompt.id);
   };
@@ -55,7 +59,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
     <div className="h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-950/50 relative">
       
       {/* Global Header (Sticky) */}
-      <div className="h-16 px-4 md:px-10 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between gap-2">
+      <div className="h-16 px-4 md:px-10 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-4 shrink-0">
             <button onClick={onBack} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                 <RiArrowLeftLine size={20} />
@@ -100,16 +104,17 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
           </div>
       </div>
 
-      {/* Main Scrollable Content */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+      {/* Main Content Layout */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide md:overflow-hidden">
+        <div className="h-full max-w-[1800px] mx-auto px-4 md:px-10 py-6 md:py-8 lg:grid lg:grid-cols-12 lg:gap-10">
             
-            {/* LEFT COLUMN: Main Content (Title, Description, Prompt) */}
-            <div className="lg:col-span-8 space-y-8">
+            {/* LEFT COLUMN (60%): Info, Description, Metadata */}
+            {/* Visible on Desktop, or if Mobile Tab is 'info' */}
+            <div className={`lg:col-span-7 space-y-8 overflow-y-auto scrollbar-hide pb-24 lg:pb-0 ${mobileTab === 'prompt' ? 'hidden lg:block' : 'block'}`}>
                 
                 {/* Header Section */}
                 <div>
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
                         <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                             {prompt.category}
                         </span>
@@ -126,9 +131,45 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white leading-tight">{prompt.title}</h1>
                 </div>
 
+                {/* Tags & Stats Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     {/* Tags Card */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
+                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <RiPriceTag3Line size={14} /> Tags
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                            {prompt.tags.map(tag => (
+                                <span key={tag} className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs px-3 py-1 rounded-full font-medium">
+                                    #{tag}
+                                </span>
+                            ))}
+                            {prompt.tags.length === 0 && <span className="text-xs text-zinc-400 dark:text-zinc-600 italic">No tags added</span>}
+                        </div>
+                    </div>
+
+                     {/* Info Card */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
+                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <RiGlobalLine size={14} /> Info
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Status</span>
+                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">{prompt.status.toLowerCase()}</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Ver Count</span>
+                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{prompt.versions.length}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Description (Rich Text) */}
                 {prompt.description && (
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.02)] dark:shadow-none">
+                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4">Description</h3>
                         <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
                             <ReactMarkdown 
                                 remarkPlugins={[remarkGfm]}
@@ -145,10 +186,14 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         </div>
                     </div>
                 )}
+            </div>
 
-                {/* The Prompt Artifact */}
-                <div className="relative">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-3">
+            {/* RIGHT COLUMN (40%): Prompt Content */}
+            {/* Visible on Desktop, or if Mobile Tab is 'prompt' */}
+            <div className={`lg:col-span-5 h-full flex flex-col ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'}`}>
+                <div className="flex flex-col h-full lg:h-auto lg:sticky lg:top-0">
+                    {/* Header for Prompt Column */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-3 shrink-0">
                         <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                             <div className="w-2 h-2 bg-zinc-900 dark:bg-white rounded-full"></div>
                             Prompt Content
@@ -192,72 +237,54 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     </div>
                     
                     {/* Monospace Content Viewer - Minimalist Design */}
-                    <div className="group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
                         {/* Clean Metadata Header */}
-                        <div className="h-8 bg-zinc-50/50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between select-none">
+                        <div className="h-8 bg-zinc-50/50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between select-none shrink-0">
                             <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">PLAIN TEXT</span>
                             <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
                                 {viewedVersion?.content.length || 0} CHARS
                             </span>
                         </div>
-                        <div className="p-6 overflow-x-auto bg-white dark:bg-zinc-900">
+                        <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
                             <pre className="font-mono text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words selection:bg-zinc-100 dark:selection:bg-zinc-800">
                                 {viewedVersion?.content || ''}
                             </pre>
                         </div>
                     </div>
                 </div>
-
-            </div>
-
-            {/* RIGHT COLUMN: Metadata Sidebar */}
-            <div className="lg:col-span-4 space-y-6">
-                
-                {/* Tags Card */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
-                    <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <RiPriceTag3Line size={14} /> Tags
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                        {prompt.tags.map(tag => (
-                            <span key={tag} className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs px-3 py-1 rounded-full font-medium">
-                                #{tag}
-                            </span>
-                        ))}
-                        {prompt.tags.length === 0 && <span className="text-xs text-zinc-400 dark:text-zinc-600 italic">No tags added</span>}
-                    </div>
-                </div>
-
-                {/* Info / Stats Card */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
-                    <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <RiGlobalLine size={14} /> Information
-                    </h3>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Category</span>
-                            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{prompt.category}</span>
-                        </div>
-                        <div>
-                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Status</span>
-                            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">{prompt.status.toLowerCase()}</span>
-                        </div>
-                        <div>
-                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Created</span>
-                            <span className="text-xs text-zinc-600 dark:text-zinc-400">{new Date(prompt.versions[0].createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <div>
-                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Current Ver</span>
-                            <span className="text-xs text-zinc-600 dark:text-zinc-400">v{prompt.versions.findIndex(v => v.id === prompt.currentVersionId) + 1}</span>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
         </div>
       </div>
+
+      {/* Mobile Floating Navigation */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="bg-zinc-900/90 dark:bg-zinc-800/90 backdrop-blur-md text-white p-1 rounded-full flex shadow-xl border border-white/10 dark:border-black/10">
+             <button 
+                onClick={() => setMobileTab('info')}
+                className={`px-5 py-2 rounded-full text-xs font-medium flex items-center gap-2 transition-all ${
+                    mobileTab === 'info' 
+                    ? 'bg-white text-black shadow-sm' 
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+             >
+                <RiInformationLine size={14} />
+                Info
+             </button>
+             <button 
+                onClick={() => setMobileTab('prompt')}
+                className={`px-5 py-2 rounded-full text-xs font-medium flex items-center gap-2 transition-all ${
+                    mobileTab === 'prompt' 
+                    ? 'bg-white text-black shadow-sm' 
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+             >
+                <RiFileTextLine size={14} />
+                Prompt
+             </button>
+        </div>
+      </div>
+
     </div>
   );
 };
