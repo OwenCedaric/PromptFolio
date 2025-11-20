@@ -25,12 +25,12 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick }) => {
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
          {isDraft ? (
             /* Draft Watermark - Bottom Right */
-            <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-white/5 transform -rotate-12 transition-colors group-hover:text-zinc-200 dark:group-hover:text-white/10">
+            <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 transform -rotate-12 transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
                 <RiDraftLine size={140} />
             </div>
          ) : (
             /* Version Watermark - Bottom Right */
-            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-white/5 leading-none tracking-tighter transition-colors group-hover:text-zinc-200 dark:group-hover:text-white/10">
+            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800 leading-none tracking-tighter transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
                 v{versionNumber}
             </div>
          )}
