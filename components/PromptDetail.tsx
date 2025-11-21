@@ -360,6 +360,18 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                 {/* Scrollable Body */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-4 md:pt-8 pb-32 lg:pb-10 space-y-8 no-scrollbar">
                     
+                    {/* Cover Image (If Present) */}
+                    {prompt.imageUrl && (
+                        <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm bg-zinc-100 dark:bg-zinc-900">
+                            <img 
+                                src={prompt.imageUrl} 
+                                alt={`${prompt.title} Cover`} 
+                                className="w-full h-auto max-h-[400px] object-cover" 
+                                loading="lazy"
+                            />
+                        </div>
+                    )}
+
                     {/* Info Card (Expanded to Full Width) */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
                         <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">

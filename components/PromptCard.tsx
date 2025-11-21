@@ -63,7 +63,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
 
       {/* Content Layer (Foreground) */}
       <div className="relative z-10 flex flex-col h-full">
-        <div className="flex justify-between items-start mb-3">
+        <div className="flex justify-between items-start mb-3 shrink-0">
             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
             <div className="flex gap-2">
                 {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
@@ -71,12 +71,25 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
         </div>
 
         {/* Title - Monochrome Hover */}
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-2 line-clamp-1 group-hover:opacity-70 transition-opacity">
+        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-2 line-clamp-1 group-hover:opacity-70 transition-opacity shrink-0">
             {prompt.title}
         </h3>
         
+        {/* Cover Image (Optional) */}
+        {prompt.imageUrl && (
+            <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative">
+                <img 
+                    src={prompt.imageUrl} 
+                    alt={prompt.title} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    loading="lazy"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
+                />
+            </div>
+        )}
+
         {/* Content Bubble - Natural Flow with Optimized Gradient Mask */}
-        <div className="flex-1 overflow-hidden relative mb-3 rounded-lg">
+        <div className="flex-1 overflow-hidden relative mb-3 rounded-lg min-h-0">
             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words whitespace-pre-wrap">
                 {currentVersion?.content || 'No content'}
             </p>
@@ -102,7 +115,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
 
         {/* Tags - Flex Wrap with Height Limit (Show as many as fit on one line) */}
         {/* Updated: h-7 (28px) with no top padding to prevent border clipping */}
-        <div className="flex flex-wrap gap-2 mt-auto h-7 overflow-hidden w-full content-start">
+        <div className="flex flex-wrap gap-2 mt-auto h-7 overflow-hidden w-full content-start shrink-0">
             {prompt.tags.map(tag => (
                 <span 
                     key={tag} 
