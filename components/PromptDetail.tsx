@@ -487,26 +487,6 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             </div>
                         )}
                     </div>
-
-                    {/* Tags Area (New Location) - Scrollable if too many */}
-                    <div className="mb-3 shrink-0 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800 pr-1">
-                         <div className="flex flex-wrap gap-2">
-                                {prompt.tags.length > 0 ? (
-                                    prompt.tags.map(tag => (
-                                        <button 
-                                            key={tag} 
-                                            onClick={() => onTagClick && onTagClick(tag)}
-                                            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 text-[11px] px-2.5 py-1 rounded-md font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors flex items-center gap-1.5 group"
-                                        >
-                                            <RiPriceTag3Line size={10} className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"/>
-                                            {tag}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <span className="text-xs text-zinc-400 dark:text-zinc-600 italic px-1">No tags added</span>
-                                )}
-                        </div>
-                    </div>
                     
                     {/* Content Viewer - LOCKED IF PRIVATE */}
                     {isLocked ? (
@@ -531,6 +511,26 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             </div>
                         </div>
                     )}
+
+                    {/* Tags Area (Moved to Bottom) - Scrollable if too many */}
+                    <div className="mt-3 shrink-0 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800 pr-1">
+                         <div className="flex flex-wrap gap-2">
+                                {prompt.tags.length > 0 ? (
+                                    prompt.tags.map(tag => (
+                                        <button 
+                                            key={tag} 
+                                            onClick={() => onTagClick && onTagClick(tag)}
+                                            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 text-[11px] px-2.5 py-1 rounded-md font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors flex items-center gap-1.5 group"
+                                        >
+                                            <RiPriceTag3Line size={10} className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"/>
+                                            {tag}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <span className="text-xs text-zinc-400 dark:text-zinc-600 italic px-1">No tags added</span>
+                                )}
+                        </div>
+                    </div>
                 </div>
             </section>
 
