@@ -589,35 +589,32 @@ const App: React.FC = () => {
                                     ))}
                                 </div>
 
-                                {/* Minimalist Pagination (Modernized) */}
+                                {/* Minimalist Pagination (Distributed) */}
                                 {totalPages > 1 && (
-                                    <div className="flex justify-center items-center gap-3 mb-8 mt-auto">
+                                    <div className="flex justify-between items-center py-6 mt-auto border-t border-zinc-100 dark:border-zinc-800/50">
+                                        {/* Previous - Left Aligned */}
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1 shadow-sm"
+                                            className="flex items-center gap-2 px-2 py-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium group"
                                         >
-                                            <RiArrowLeftLine size={18} />
-                                            <span className="hidden sm:inline">Previous</span>
+                                            <RiArrowLeftLine size={16} className="group-hover:-translate-x-1 transition-transform" />
+                                            <span>Previous</span>
                                         </button>
                                         
-                                        <div className="flex items-center px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-mono shadow-sm">
-                                            <span className="text-zinc-900 dark:text-white font-medium">
-                                                {String(currentPage).padStart(2, '0')}
-                                            </span>
-                                            <span className="mx-2 text-zinc-300 dark:text-zinc-700">/</span>
-                                            <span className="text-zinc-500 dark:text-zinc-500">
-                                                {String(totalPages).padStart(2, '0')}
-                                            </span>
+                                        {/* Page Indicator - Center Aligned */}
+                                        <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                                            Page <span className="text-zinc-900 dark:text-zinc-100">{currentPage}</span> of {totalPages}
                                         </div>
 
+                                        {/* Next - Right Aligned */}
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1 shadow-sm"
+                                            className="flex items-center gap-2 px-2 py-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium group"
                                         >
-                                            <span className="hidden sm:inline">Next</span>
-                                            <RiArrowRightLine size={18} />
+                                            <span>Next</span>
+                                            <RiArrowRightLine size={16} className="group-hover:translate-x-1 transition-transform" />
                                         </button>
                                     </div>
                                 )}

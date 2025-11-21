@@ -138,8 +138,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     );
   }
 
-  // --- List View Layout (Redesigned for robustness) ---
-  // Only render image container if image exists and not locked.
+  // --- List View Layout ---
   const showImage = prompt.imageUrl && !isLocked;
 
   return (
@@ -149,7 +148,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row md:min-h-[11rem] relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
     >
       {/* Side Cover Image (Desktop) or Top (Mobile) */}
-      {/* Uses self-stretch to match height of text content on desktop */}
       {showImage && (
            <div className="w-full h-32 md:w-48 md:h-auto md:self-stretch shrink-0 bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 overflow-hidden relative z-10">
                 <img 
@@ -162,12 +160,13 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       )}
 
       {/* Content Container */}
-      {/* flex-1 ensures it takes remaining space. min-w-0 prevents text overflow issues in flex children. */}
       <div className="flex-1 p-5 flex flex-col min-w-0 relative z-10">
          
-         <div className="flex items-center gap-3 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
-            {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
+         <div className="flex items-center justify-between mb-2">
+             <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
+                {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
+             </div>
          </div>
 
          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors pr-12">
@@ -175,8 +174,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          </h3>
 
          <div className="flex-1 relative mb-3 min-h-0">
-             <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3 md:line-clamp-4 leading-relaxed">
-                {isLocked ? "Content is private." : (prompt.description || currentVersion?.content)}
+             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono line-clamp-3 md:line-clamp-4 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
+                {isLocked ? "Content is private." : (currentVersion?.content || 'No content')}
              </p>
          </div>
 
@@ -204,9 +203,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
              )}
          </div>
 
-         {/* Watermark (Minimal Version for List) - Positioned Bottom Right or Center Right */}
-         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.05]">
-            {isDraft ? <RiDraftLine size={80} /> : isPrivate ? <RiLockLine size={80} /> : <span className="text-6xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
+         {/* Watermark - Adjusted for List View: Lower opacity, Right Center alignment, Hover effects */}
+         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.04] group-hover:opacity-[0.08] transition-all duration-500 group-hover:scale-110 group-hover:-rotate-12 origin-center">
+            {isDraft ? <RiDraftLine size={90} /> : isPrivate ? <RiLockLine size={90} /> : <span className="text-7xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
          </div>
       </div>
     </a>
