@@ -6,9 +6,10 @@ interface PromptCardProps {
   prompt: PromptData;
   onClick: (prompt: PromptData) => void;
   onTagClick?: (tag: string) => void;
+  isAuthenticated?: boolean;
 }
 
-const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) => {
+const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, isAuthenticated = false }) => {
   const [copied, setCopied] = useState(false);
   const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
   
@@ -18,6 +19,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
 
   const isDraft = prompt.status === PromptStatus.DRAFT;
   const isPrivate = prompt.status === PromptStatus.PRIVATE;
+  // Content is locked if it's private AND user is NOT authenticated
+  const isLocked = isPrivate && !isAuthenticated;
 
   const handleTagClick = (e: React.MouseEvent, tag: string) => {
       e.preventDefault();
@@ -76,7 +79,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
         </h3>
         
         {/* Cover Image (Optional) - Minimalist Grayscale to Color Transition */}
-        {prompt.imageUrl && (
+        {prompt.imageUrl && !isLocked && (
             <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative">
                 <img 
                     src={prompt.imageUrl} 
@@ -90,27 +93,38 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
 
         {/* Content Bubble - Natural Flow with Optimized Gradient Mask */}
         <div className="flex-1 overflow-hidden relative mb-3 rounded-lg min-h-0">
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words whitespace-pre-wrap">
-                {currentVersion?.content || 'No content'}
-            </p>
+            {isLocked ? (
+                <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 gap-2 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-lg border border-zinc-100 dark:border-zinc-800/50">
+                     <RiLockLine size={24} className="opacity-50" />
+                     <span className="text-[10px] uppercase tracking-widest font-bold opacity-50">Private</span>
+                </div>
+            ) : (
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words whitespace-pre-wrap">
+                    {currentVersion?.content || 'No content'}
+                </p>
+            )}
             
-            {/* Gradient Fade */}
-            <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
+            {/* Gradient Fade (Only if not locked) */}
+            {!isLocked && (
+                <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
+            )}
 
-            {/* Quick Copy Button (Appears on Hover) - Minimalist */}
-            <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 translate-y-2 group-hover:translate-y-0">
-                <button 
-                    onClick={handleQuickCopy}
-                    className={`p-2 rounded-lg shadow-sm border backdrop-blur-md transition-all transform active:scale-95 ${
-                        copied 
-                        ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400' 
-                        : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
-                    }`}
-                    title="Copy Content"
-                >
-                     {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
-                </button>
-            </div>
+            {/* Quick Copy Button (Appears on Hover) - Only if not locked */}
+            {!isLocked && (
+                <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 translate-y-2 group-hover:translate-y-0">
+                    <button 
+                        onClick={handleQuickCopy}
+                        className={`p-2 rounded-lg shadow-sm border backdrop-blur-md transition-all transform active:scale-95 ${
+                            copied 
+                            ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400' 
+                            : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                        }`}
+                        title="Copy Content"
+                    >
+                        {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
+                    </button>
+                </div>
+            )}
         </div>
 
         {/* Tags - Flex Wrap with Height Limit (Show as many as fit on one line) */}

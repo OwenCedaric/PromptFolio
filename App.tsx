@@ -215,7 +215,12 @@ const App: React.FC = () => {
       const metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) {
           if (view === 'detail' && activePrompt) {
-              metaDesc.setAttribute('content', activePrompt.description || `View the ${activePrompt.title} prompt on ${SITE_NAME}.`);
+              // Mask description for private prompts if not authenticated
+              if (activePrompt.status === PromptStatus.PRIVATE && !isAuthenticated) {
+                  metaDesc.setAttribute('content', `Protected content. Login to view details on ${SITE_NAME}.`);
+              } else {
+                  metaDesc.setAttribute('content', activePrompt.description || `View the ${activePrompt.title} prompt on ${SITE_NAME}.`);
+              }
           } else if (selectedTag) {
                metaDesc.setAttribute('content', `Explore our collection of ${selectedTag} AI prompts.`);
           } else if (selectedCategory !== 'All') {
@@ -224,7 +229,7 @@ const App: React.FC = () => {
                metaDesc.setAttribute('content', "Organize, version, and optimize your AI prompts with Google Gemini integration.");
           }
       }
-  }, [view, activePrompt, selectedCategory, selectedTag, SITE_NAME]);
+  }, [view, activePrompt, selectedCategory, selectedTag, SITE_NAME, isAuthenticated]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -843,6 +848,7 @@ const App: React.FC = () => {
                                         <PromptCard 
                                             key={prompt.id} 
                                             prompt={prompt} 
+                                            isAuthenticated={isAuthenticated}
                                             onClick={(p) => navigateTo('detail', { prompt: p })}
                                             onTagClick={(t) => navigateTo('library', { tag: t })}
                                         />
