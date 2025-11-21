@@ -242,6 +242,7 @@ const App: React.FC = () => {
       url.searchParams.delete('id');
       url.searchParams.delete('category');
       url.searchParams.delete('tag');
+      url.searchParams.delete('mode');
 
       if (newView === 'detail' && params?.prompt) {
           url.searchParams.set('id', params.prompt.id);
@@ -266,6 +267,7 @@ const App: React.FC = () => {
           setActivePrompt(null);
           setView('library');
       } else if (newView === 'editor') {
+          url.searchParams.set('mode', 'edit');
           if (!params?.prompt) {
              // New Prompt
              setActivePrompt(null);
@@ -287,8 +289,26 @@ const App: React.FC = () => {
     const handleUrlChange = () => {
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
+        const mode = params.get('mode');
         const categoryParam = params.get('category');
         const tagParam = params.get('tag');
+
+        // Check for Editor Mode first
+        if (mode === 'edit') {
+            if (id) {
+                const found = prompts.find(p => p.id === id);
+                if (found) {
+                    setActivePrompt(found);
+                    setView('editor');
+                    return;
+                }
+            } else {
+                // New Prompt mode
+                setActivePrompt(null);
+                setView('editor');
+                return;
+            }
+        }
 
         if (id) {
             const found = prompts.find(p => p.id === id);
@@ -309,7 +329,7 @@ const App: React.FC = () => {
             setView('library');
         } else {
             // Root or pure library
-            if (view === 'detail') {
+            if (view === 'detail' || view === 'editor') {
                 setActivePrompt(null);
                 setView('library');
             }
@@ -400,7 +420,7 @@ const App: React.FC = () => {
     
     setPrompts(updatedPrompts);
 
-    // Upon save, show detail view
+    // Upon save, show detail view (this will clear mode=edit from URL)
     navigateTo('detail', { prompt: data });
 
     if (isDemoMode) {
