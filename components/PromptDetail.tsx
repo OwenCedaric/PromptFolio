@@ -181,6 +181,32 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
       }
   };
 
+  // Helper to highlight variables in prompt text
+  // Matches {{variable}} or [variable]
+  const HighlightedContent = ({ content }: { content: string }) => {
+    if (!content) return null;
+    
+    // Split by regex: {{...}} OR [...]
+    // Capturing groups are included in the result array
+    const parts = content.split(/(\{\{[^}]+\}\}|\[[^\]]+\])/g);
+    
+    return (
+        <span>
+            {parts.map((part, index) => {
+                const isVariable = (part.startsWith('{{') && part.endsWith('}}')) || (part.startsWith('[') && part.endsWith(']'));
+                if (isVariable) {
+                    return (
+                        <span key={index} className="inline-block mx-0.5 px-1.5 py-0.5 rounded-md bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold border border-zinc-300 dark:border-zinc-600 text-[0.9em]">
+                            {part}
+                        </span>
+                    );
+                }
+                return <span key={index}>{part}</span>;
+            })}
+        </span>
+    );
+  };
+
   // Component for Locked View
   const LockedPlaceholder = ({ title, message }: { title: string, message: string }) => (
       <div className="flex flex-col items-center justify-center h-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-center shadow-sm">
@@ -391,9 +417,12 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     remarkPlugins={[remarkGfm]}
                                     components={{
                                         img: ({node, ...props}) => (
-                                            <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4">
+                                            <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4 shadow-sm">
                                                 <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} />
                                             </div>
+                                        ),
+                                        a: ({node, ...props}) => (
+                                            <a {...props} className="text-zinc-900 dark:text-zinc-100 font-medium underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-2 hover:decoration-zinc-500 dark:hover:decoration-zinc-400 transition-colors" target="_blank" rel="noopener noreferrer" />
                                         )
                                     }}
                                 >
@@ -496,8 +525,8 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 </span>
                             </div>
                             <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
-                                <pre className="font-mono text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words selection:bg-zinc-100 dark:selection:bg-zinc-800">
-                                    {viewedVersion?.content || ''}
+                                <pre className="font-mono text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words selection:bg-zinc-200 dark:selection:bg-zinc-700">
+                                    <HighlightedContent content={viewedVersion?.content || ''} />
                                 </pre>
                             </div>
                         </div>
@@ -509,7 +538,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
       </div>
 
       {/* Mobile Floating Navigation (Tabs) */}
-      <nav className="lg:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <nav className="lg:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 pb-[env(safe-area-inset-bottom)]">
         <div className="bg-zinc-900/90 dark:bg-zinc-800/90 backdrop-blur-md text-white p-1.5 rounded-full flex shadow-2xl border border-white/10 dark:border-black/10">
              <button 
                 onClick={() => setMobileTab('info')}

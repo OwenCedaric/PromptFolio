@@ -1,5 +1,5 @@
-import React from 'react';
-import { RiStarFill, RiDraftLine, RiLockLine } from '@remixicon/react';
+import React, { useState } from 'react';
+import { RiStarFill, RiDraftLine, RiLockLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
 import { PromptData, PromptStatus } from '../types';
 
 interface PromptCardProps {
@@ -9,6 +9,7 @@ interface PromptCardProps {
 }
 
 const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) => {
+  const [copied, setCopied] = useState(false);
   const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
   
   // Calculate version number based on creation time
@@ -24,27 +25,37 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
       if (onTagClick) onTagClick(tag);
   };
 
+  const handleQuickCopy = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (currentVersion?.content) {
+          navigator.clipboard.writeText(currentVersion.content);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+      }
+  };
+
   return (
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 cursor-pointer flex flex-col h-[260px] p-5 relative hover:shadow-sm rounded-2xl overflow-hidden"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
     >
       {/* Watermarks (Background Layer) */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none opacity-50 group-hover:opacity-100 transition-opacity">
          {isDraft ? (
             /* Draft Watermark */
-            <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 transform -rotate-12 transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
+            <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800/50 transform -rotate-12">
                 <RiDraftLine size={140} />
             </div>
          ) : isPrivate ? (
             /* Private/Lock Watermark */
-            <div className="absolute -bottom-6 -right-4 text-zinc-100 dark:text-zinc-800 transform -rotate-12 transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
+            <div className="absolute -bottom-6 -right-4 text-zinc-100 dark:text-zinc-800/50 transform -rotate-12">
                 <RiLockLine size={120} />
             </div>
          ) : (
             /* Version Watermark */
-            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800 leading-none tracking-tighter transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
+            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800/50 leading-none tracking-tighter">
                 v{versionNumber}
             </div>
          )}
@@ -53,36 +64,57 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
       {/* Content Layer (Foreground) */}
       <div className="relative z-10 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 backdrop-blur-sm">{prompt.category}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
             <div className="flex gap-2">
                 {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
             </div>
         </div>
 
-        <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-3 line-clamp-1 group-hover:underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-4">
+        {/* Title - Monochrome Hover */}
+        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-2 line-clamp-1 group-hover:opacity-70 transition-opacity">
             {prompt.title}
         </h3>
         
-        {/* Content Bubble - Rounded Rectangle Mask (No BG/Border) */}
-        <div className="flex-1 overflow-hidden relative mb-3 rounded-xl">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words">
+        {/* Content Bubble - Natural Flow with Stronger Gradient Mask */}
+        <div className="flex-1 overflow-hidden relative mb-3 rounded-lg">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words whitespace-pre-wrap">
                 {currentVersion?.content || 'No content'}
             </p>
             
-            {/* Gradient Fade - Fades to Card Background Color */}
-            <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
+            {/* Gradient Fade - Matches background exactly */}
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
+
+            {/* Quick Copy Button (Appears on Hover) - Minimalist */}
+            <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 translate-y-2 group-hover:translate-y-0">
+                <button 
+                    onClick={handleQuickCopy}
+                    className={`p-2 rounded-lg shadow-sm border backdrop-blur-md transition-all transform active:scale-95 ${
+                        copied 
+                        ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400' 
+                        : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                    }`}
+                    title="Copy Content"
+                >
+                     {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
+                </button>
+            </div>
         </div>
 
-        <div className="flex gap-2 overflow-hidden mt-auto">
+        <div className="flex gap-2 overflow-hidden mt-auto pt-1">
             {prompt.tags.slice(0, 3).map(tag => (
                 <span 
                     key={tag} 
                     onClick={(e) => handleTagClick(e, tag)}
-                    className="text-[10px] text-zinc-400 dark:text-zinc-500 bg-white/50 dark:bg-zinc-900/50 px-1.5 py-0.5 rounded backdrop-blur-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                    className="text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm"
                 >
                     #{tag}
                 </span>
             ))}
+            {prompt.tags.length > 3 && (
+                 <span className="text-[10px] text-zinc-400 dark:text-zinc-600 px-1 py-1">
+                    +{prompt.tags.length - 3}
+                 </span>
+            )}
         </div>
       </div>
     </a>

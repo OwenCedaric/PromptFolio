@@ -1,5 +1,5 @@
 import React from 'react';
-import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine } from '@remixicon/react';
+import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiDownloadLine } from '@remixicon/react';
 import { Category } from '../types';
 
 interface SidebarProps {
@@ -16,6 +16,7 @@ interface SidebarProps {
   onToggleTheme: () => void;
   isCollapsed: boolean;
   toggleCollapse: () => void;
+  onExport?: () => void;
 }
 
 // Inline Logo Component to ensure it displays correctly
@@ -28,7 +29,7 @@ const Logo = ({ className }: { className?: string }) => (
 );
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse
+    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport
 }) => {
   
   return (
@@ -37,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             fixed md:relative z-50 flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800
             transform transition-all duration-300 ease-in-out
             ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-            ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64
+            ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64 pb-[env(safe-area-inset-bottom)]
         `}>
         
         {/* Brand */}
@@ -153,6 +154,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {isDarkMode ? <RiSunLine size={18} /> : <RiMoonLine size={18} />}
                 {!isCollapsed && <span className="text-sm font-medium">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>}
             </button>
+
+             {/* Export Data Button */}
+             {onExport && (
+                <button 
+                    onClick={onExport}
+                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
+                    title="Export Data JSON"
+                >
+                    <RiDownloadLine size={18} />
+                    {!isCollapsed && <span className="text-sm font-medium">Backup Data</span>}
+                </button>
+             )}
 
             {isAuthenticated ? (
                 <button 

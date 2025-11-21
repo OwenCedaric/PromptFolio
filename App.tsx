@@ -518,6 +518,16 @@ const App: React.FC = () => {
       localStorage.removeItem('pf_auth_session');
   };
 
+  const handleExportData = () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prompts, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", `promptfolio_backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+  };
+
   // --- Actions ---
   const savePrompt = async (data: PromptData) => {
     const originalPrompts = [...prompts];
@@ -725,6 +735,7 @@ const App: React.FC = () => {
         onToggleTheme={toggleTheme}
         isCollapsed={isSidebarCollapsed}
         toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        onExport={handleExportData}
       />
       
       {/* Main Content Area */}
