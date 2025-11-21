@@ -13,6 +13,7 @@ export enum Category {
   EDUCATION = 'Education',
   PRODUCTIVITY = 'Productivity',
   IMAGE_GEN = 'Image Generation',
+  VIDEO_GEN = 'Video Generation',
   OTHER = 'Other'
 }
 
