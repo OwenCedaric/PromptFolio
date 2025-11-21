@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine } from '@remixicon/react';
-import { PromptData, PromptStatus, Category, PromptVersion } from '../types';
+import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine } from '@remixicon/react';
+import { PromptData, PromptStatus, Category, PromptVersion, Copyright } from '../types';
 import { geminiService } from '../services/geminiService';
 
 interface PromptEditorProps {
@@ -24,6 +24,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
   const [description, setDescription] = useState(initialData?.description || '');
   const [category, setCategory] = useState<Category>(initialData?.category || Category.OTHER);
   const [status, setStatus] = useState<PromptStatus>(initialData?.status || PromptStatus.DRAFT);
+  const [copyright, setCopyright] = useState<Copyright>(initialData?.copyright || Copyright.NONE);
+  const [author, setAuthor] = useState(initialData?.author || '');
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || '');
   const [versions, setVersions] = useState<PromptVersion[]>(initialData?.versions || []);
@@ -54,6 +56,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       setDescription(initialData.description);
       setCategory(initialData.category);
       setStatus(initialData.status);
+      setCopyright(initialData.copyright || Copyright.NONE);
+      setAuthor(initialData.author || '');
       setTags(initialData.tags);
       setImageUrl(initialData.imageUrl || '');
     } else {
@@ -66,6 +70,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       setDescription('');
       setCategory(Category.OTHER);
       setStatus(PromptStatus.DRAFT);
+      setCopyright(Copyright.NONE);
+      setAuthor('');
       setTags([]);
       setImageUrl('');
     }
@@ -140,6 +146,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       description,
       category,
       status,
+      copyright,
+      author,
       tags,
       imageUrl, 
       versions: finalVersions,
@@ -285,6 +293,17 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
                             
                             <div className="space-y-1">
+                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Author</label>
+                                <input 
+                                    type="text" 
+                                    value={author}
+                                    onChange={(e) => setAuthor(e.target.value)}
+                                    placeholder="Creator Name (Optional)"
+                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
                                 <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Category</label>
                                 <div className="relative">
                                     <select 
@@ -305,22 +324,44 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                 </div>
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
-                                <div className="relative">
-                                    <select 
-                                        value={status} 
-                                        onChange={(e) => setStatus(e.target.value as PromptStatus)}
-                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none"
-                                    >
-                                        {Object.values(PromptStatus).map(s => (
-                                            <option key={s} value={s} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                                {s}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
+                                    <div className="relative">
+                                        <select 
+                                            value={status} 
+                                            onChange={(e) => setStatus(e.target.value as PromptStatus)}
+                                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none"
+                                        >
+                                            {Object.values(PromptStatus).map(s => (
+                                                <option key={s} value={s} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                    {s}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">License</label>
+                                    <div className="relative">
+                                        <select 
+                                            value={copyright} 
+                                            onChange={(e) => setCopyright(e.target.value as Copyright)}
+                                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none"
+                                        >
+                                            {Object.values(Copyright).map(c => (
+                                                <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                    {c}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

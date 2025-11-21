@@ -7,6 +7,8 @@ PromptFolio is a professional, single-user prompt management system designed for
 *   **Prompt Management**: Create, read, update, and delete prompts with ease.
 *   **Versioning System**: Maintain history of your prompts (v1, v2, etc.) and switch between versions.
 *   **AI-Powered Tools**: Integrated with Google Gemini API to refine prompts, generate descriptions, and suggest tags.
+*   **Attribution & Licensing**: Define copyright (CC0, MIT, etc.) and author info for your prompts.
+*   **SEO & Sitemap**: Auto-generated Sitemaps and Schema.org structured data for better discoverability.
 *   **Cloud Database**: Uses **Cloudflare D1** (SQLite at the edge) for persistent storage.
 *   **Visual cues**: Watermarks for Drafts and Versions.
 *   **Dark Mode**: Fully supported dark/light theme toggling.
@@ -92,6 +94,7 @@ This project is designed to be deployed on Cloudflare Pages.
     Go to your Cloudflare Pages dashboard > Settings > Environment Variables and add:
     *   `API_KEY`: Your Google Gemini API Key.
     *   `SITE_PASSWORD`: (Optional) Password for admin access.
+    *   `SITE_URL`: (Optional) The public URL of your site (e.g., `https://your-domain.com`) for correct Sitemap and JSON-LD generation.
 
 ## 🗄️ Database Schema (`schema.sql`)
 
@@ -112,14 +115,25 @@ CREATE TABLE prompts (
   versions TEXT,        -- Stored as JSON string
   currentVersionId TEXT,
   updatedAt INTEGER,
-  isFavorite INTEGER DEFAULT 0
+  isFavorite INTEGER DEFAULT 0,
+  copyright TEXT,
+  author TEXT
 );
+```
+
+### 🔄 Migration / Updates
+If you are updating from an older version, you may need to add columns to your existing database:
+
+```bash
+npx wrangler d1 execute promptfolio-db --command "ALTER TABLE prompts ADD COLUMN copyright TEXT"
+npx wrangler d1 execute promptfolio-db --command "ALTER TABLE prompts ADD COLUMN author TEXT"
 ```
 
 ## 📂 Project Structure
 
 *   `App.tsx`: Main application controller.
 *   `functions/api/`: Backend API endpoints (Serverless functions).
+*   `functions/sitemap-*.xml.ts`: Dynamic sitemap generators.
 *   `schema.sql`: Database definition.
 *   `services/`: Gemini AI integration.
 

@@ -14,6 +14,7 @@ export const onRequestGet = async (context: any) => {
       tags: JSON.parse(row.tags as string),
       versions: JSON.parse(row.versions as string),
       isFavorite: row.isFavorite === 1,
+      // Ensure copyright/author are passed if they exist
     }));
 
     return new Response(JSON.stringify(prompts), {
@@ -33,10 +34,12 @@ export const onRequestPost = async (context: any) => {
     const versionsStr = JSON.stringify(data.versions);
     const isFavInt = data.isFavorite ? 1 : 0;
 
+    // Check if 'copyright' and 'author' columns exist implicitly by using them. 
+    // NOTE: User must run migration: ALTER TABLE prompts ADD COLUMN author TEXT;
     await context.env.DB.prepare(
       `INSERT OR REPLACE INTO prompts 
-      (id, title, description, imageUrl, category, tags, status, versions, currentVersionId, updatedAt, isFavorite) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      (id, title, description, imageUrl, category, tags, status, versions, currentVersionId, updatedAt, isFavorite, copyright, author) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         data.id,
@@ -49,7 +52,9 @@ export const onRequestPost = async (context: any) => {
         versionsStr,
         data.currentVersionId,
         data.updatedAt,
-        isFavInt
+        isFavInt,
+        data.copyright || 'None',
+        data.author || null
       )
       .run();
 

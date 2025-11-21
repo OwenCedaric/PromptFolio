@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
 import PromptDetail from './components/PromptDetail';
-import { PromptData, Category, PromptStatus } from './types';
+import { PromptData, Category, PromptStatus, Copyright } from './types';
 import { RiMenuLine, RiSearchLine, RiCloseLine, RiErrorWarningLine, RiLoader4Line, RiWifiOffLine, RiArrowLeftSLine, RiArrowRightSLine, RiPriceTag3Line, RiCloseCircleLine } from '@remixicon/react';
 
 // --- Mock Data for Fallback ---
@@ -15,6 +15,8 @@ const MOCK_PROMPTS: PromptData[] = [
     category: Category.CREATIVE_WRITING,
     tags: ['scifi', 'environment', 'detailed'],
     status: PromptStatus.PUBLISHED,
+    copyright: Copyright.CC_BY,
+    author: 'PromptFolio Team',
     versions: [
       { id: 'v1', content: 'Describe a cyberpunk city.', createdAt: Date.now() - 100000, note: 'Draft' },
       { id: 'v2', content: 'Describe a neon-lit cyberpunk city with flying cars and rain-slicked streets.', createdAt: Date.now(), note: 'Refined' }
@@ -30,6 +32,8 @@ const MOCK_PROMPTS: PromptData[] = [
       category: Category.CODING,
       tags: ['python', 'fastapi', 'backend'],
       status: PromptStatus.DRAFT,
+      copyright: Copyright.MIT,
+      author: 'DevUser_01',
       versions: [
           { id: 'v1', content: 'Write a python api.', createdAt: Date.now(), note: 'Initial' }
       ],
@@ -232,6 +236,25 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  // --- Structured Data (WebSite) ---
+  const websiteSchema = useMemo(() => {
+    if (view !== 'library') return null;
+    // Prioritize SITE_URL env var, fallback to window location
+    const origin = process.env.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://promptfolio.pages.dev');
+    
+    return JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": SITE_NAME,
+        "url": origin,
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": `${origin}/?q={search_term_string}`,
+          "query-input": "required name=search_term_string"
+        }
+    });
+  }, [view, SITE_NAME]);
+
   // --- Routing & URL Handling ---
   
   // Navigation Helper
@@ -243,6 +266,7 @@ const App: React.FC = () => {
       url.searchParams.delete('category');
       url.searchParams.delete('tag');
       url.searchParams.delete('mode');
+      url.searchParams.delete('q'); // Clear search when navigating explicitly
 
       if (newView === 'detail' && params?.prompt) {
           url.searchParams.set('id', params.prompt.id);
@@ -292,6 +316,7 @@ const App: React.FC = () => {
         const mode = params.get('mode');
         const categoryParam = params.get('category');
         const tagParam = params.get('tag');
+        const searchParam = params.get('q'); // Support search via URL
 
         // Check for Editor Mode first
         if (mode === 'edit') {
@@ -337,6 +362,18 @@ const App: React.FC = () => {
             if (!id && !tagParam && !categoryParam && view === 'library') {
                 setSelectedCategory('All');
                 setSelectedTag(null);
+            }
+        }
+
+        // Handle Search Query
+        if (searchParam) {
+            setSearchQuery(searchParam);
+        } else if (!id && !mode) {
+            // Only clear search if we are in library mode and explicit nav happened,
+            // but allow searchQuery persistence if user just refreshed unless explicitly empty
+            // This logic keeps text in box if 'q' param exists
+            if (searchParam === null && window.location.search === '') {
+                 // optional: setSearchQuery('');
             }
         }
     };
@@ -532,6 +569,14 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen w-full bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans text-zinc-900 dark:text-zinc-100 relative transition-colors duration-300">
       
+      {/* WebSite Schema Injection */}
+      {websiteSchema && (
+        <script 
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: websiteSchema }}
+        />
+      )}
+
       {/* Confirm Modal */}
       <ConfirmModal 
         isOpen={confirmState.isOpen}

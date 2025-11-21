@@ -12,11 +12,12 @@ import {
     RiHistoryLine,
     RiDeleteBinLine,
     RiFileTextLine,
-    RiInformationLine
+    RiInformationLine,
+    RiCopyrightLine
 } from '@remixicon/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { PromptData, PromptStatus, Category } from '../types';
+import { PromptData, PromptStatus, Category, Copyright } from '../types';
 
 interface PromptDetailProps {
   prompt: PromptData;
@@ -54,8 +55,9 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
   // --- Structured Data (Schema.org) Generation ---
   const jsonLd = useMemo(() => {
     const isCoding = prompt.category === Category.CODING;
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://promptfolio.pages.dev';
-    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    // Use SITE_URL if available, otherwise fallback to window
+    const baseUrl = process.env.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://promptfolio.pages.dev');
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : `${baseUrl}/?id=${prompt.id}`;
 
     // Safely get dates, defaulting to now if versions/updatedAt are invalid
     const datePublished = (sortedVersions.length > 0 && sortedVersions[sortedVersions.length - 1]?.createdAt) 
@@ -99,7 +101,11 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
       "image": prompt.imageUrl ? [prompt.imageUrl] : undefined,
       "datePublished": datePublished,
       "dateModified": dateModified,
-      "author": {
+      "license": prompt.copyright && prompt.copyright !== Copyright.NONE ? prompt.copyright : undefined,
+      "author": prompt.author ? {
+        "@type": "Person",
+        "name": prompt.author
+      } : {
         "@type": "Organization",
         "name": "PromptFolio",
         "url": baseUrl
@@ -166,6 +172,12 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
              <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
                  <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 uppercase text-[10px] font-bold tracking-wider">{prompt.category}</span>
                  <span>•</span>
+                 {prompt.author && (
+                     <>
+                        <span className="font-medium text-zinc-700 dark:text-zinc-300">by {prompt.author}</span>
+                        <span>•</span>
+                     </>
+                 )}
                  <span>v{sortedVersions.findIndex(v => v.id === viewedVersion?.id) + 1}</span>
              </div>
         </div>
@@ -230,6 +242,11 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 <RiTimeLine size={12} />
                                 Updated {new Date(prompt.updatedAt).toLocaleDateString()}
                             </span>
+                             {prompt.author && (
+                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300 border-l border-zinc-300 dark:border-zinc-700 pl-3">
+                                    by {prompt.author}
+                                </span>
+                            )}
                         </div>
                         <h1 className="text-4xl font-bold text-zinc-900 dark:text-white leading-tight line-clamp-3">{prompt.title}</h1>
                     </div>
@@ -272,6 +289,12 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Versions</span>
                                     <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{prompt.versions.length}</span>
                                 </div>
+                                <div>
+                                     <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">License</span>
+                                     <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate block" title={prompt.copyright}>
+                                        {prompt.copyright || 'None'}
+                                     </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -279,9 +302,17 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     {/* Description Content */}
                     {prompt.description ? (
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.02)] dark:shadow-none">
-                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <RiInformationLine size={14} /> Description
-                            </h3>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                    <RiInformationLine size={14} /> Description
+                                </h3>
+                                {prompt.copyright && prompt.copyright !== Copyright.NONE && (
+                                    <div className="flex items-center gap-1 text-[10px] text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
+                                        <RiCopyrightLine size={10} />
+                                        <span>{prompt.copyright}</span>
+                                    </div>
+                                )}
+                            </div>
                             <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
                                 <ReactMarkdown 
                                     remarkPlugins={[remarkGfm]}

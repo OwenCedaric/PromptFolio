@@ -1,10 +1,12 @@
 interface Env {
   DB: any;
+  SITE_URL?: string;
 }
 
 export const onRequestGet = async (context: any) => {
   const url = new URL(context.request.url);
-  const baseUrl = `${url.protocol}//${url.host}`;
+  // Use explicit SITE_URL if available, otherwise fallback to request origin
+  const baseUrl = context.env.SITE_URL || `${url.protocol}//${url.host}`;
 
   let lastMod = new Date().toISOString();
   
