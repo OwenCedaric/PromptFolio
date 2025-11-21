@@ -287,134 +287,106 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
 
                 {/* Scrollable Content: Properties, Tags, Desc */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 scrollbar-hide">
-                    {/* Properties Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
-                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
-                            
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Author</label>
-                                <input 
-                                    type="text" 
-                                    value={author}
-                                    onChange={(e) => setAuthor(e.target.value)}
-                                    placeholder="Creator Name (Optional)"
-                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
-                                />
-                            </div>
+                    {/* Properties Card */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
+                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
+                        
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Author</label>
+                            <input 
+                                type="text" 
+                                value={author}
+                                onChange={(e) => setAuthor(e.target.value)}
+                                placeholder="Creator Name (Optional)"
+                                className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                            />
+                        </div>
 
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Category</label>
+                            <div className="relative">
+                                <select 
+                                    value={category} 
+                                    onChange={(e) => setCategory(e.target.value as Category)}
+                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
+                                >
+                                    {Object.values(Category).map(c => (
+                                        <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                            {c}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Category</label>
+                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
                                 <div className="relative">
                                     <select 
-                                        value={category} 
-                                        onChange={(e) => setCategory(e.target.value as Category)}
+                                        value={status} 
+                                        onChange={(e) => setStatus(e.target.value as PromptStatus)}
                                         className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
                                     >
-                                        {Object.values(Category).map(c => (
-                                            <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                                {c}
+                                        {Object.values(PromptStatus).map(s => (
+                                            <option key={s} value={s} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                {s}
                                             </option>
                                         ))}
                                     </select>
-                                    {/* Custom Chevron */}
                                     <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
-                                    <div className="relative">
-                                        <select 
-                                            value={status} 
-                                            onChange={(e) => setStatus(e.target.value as PromptStatus)}
-                                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
-                                        >
-                                            {Object.values(PromptStatus).map(s => (
-                                                <option key={s} value={s} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                                    {s}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">License</label>
-                                    <div className="relative">
-                                        <select 
-                                            value={copyright} 
-                                            onChange={(e) => setCopyright(e.target.value as Copyright)}
-                                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
-                                        >
-                                            {Object.values(Copyright).map(c => (
-                                                <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                                    {c}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                        </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">License</label>
+                                <div className="relative">
+                                    <select 
+                                        value={copyright} 
+                                        onChange={(e) => setCopyright(e.target.value as Copyright)}
+                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
+                                    >
+                                        {Object.values(Copyright).map(c => (
+                                            <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Tags Card */}
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Tags</h3>
-                                <button 
-                                    onClick={() => handleAI('tags')} 
-                                    disabled={isProcessing}
-                                    className="text-[10px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1"
-                                >
-                                    {activeAiTask === 'tags' ? <RiLoader4Line className="animate-spin" size={10} /> : <RiMagicLine size={10} />} Auto
-                                </button>
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-2">
-                                {tags.map(t => (
-                                    <span key={t} className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-1 rounded-md flex items-center gap-1 group">
-                                        {t} 
-                                        <button onClick={() => setTags(tags.filter(x => x !== t))} className="text-zinc-400 hover:text-red-500 transition-colors"><RiCloseLine size={12}/></button>
-                                    </span>
-                                ))}
-                            </div>
-                            
-                            <input 
-                                value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && tagInput) {
-                                        e.preventDefault();
-                                        setTags([...tags, tagInput]);
-                                        setTagInput('');
-                                    }
-                                }}
-                                placeholder="Type tag & hit Enter..."
-                                className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
-                            />
                         </div>
                     </div>
                     
-                    {/* Cover Image Input */}
-                     <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl p-2 px-4 shadow-sm">
-                        <RiImage2Line size={16} className="text-zinc-400" />
-                        <input 
-                            type="text"
-                            value={imageUrl}
-                            onChange={(e) => setImageUrl(e.target.value)}
-                            placeholder="Cover Image URL (Optional)"
-                            className="flex-1 text-sm bg-transparent border-none outline-none focus:ring-0 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-                        />
+                    {/* Cover Image Input & Preview */}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl p-2 px-4 shadow-sm">
+                            <RiImage2Line size={16} className="text-zinc-400" />
+                            <input 
+                                type="text"
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                placeholder="Cover Image URL (Optional)"
+                                className="flex-1 text-sm bg-transparent border-none outline-none focus:ring-0 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                            />
+                        </div>
+                        {imageUrl && (
+                            <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm h-48 w-full bg-zinc-100 dark:bg-zinc-900">
+                                <img 
+                                    src={imageUrl} 
+                                    alt="Cover Preview" 
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => e.currentTarget.style.display='none'} 
+                                />
+                            </div>
+                        )}
                     </div>
 
                      {/* Description Area */}
@@ -441,6 +413,44 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             Tip: Use Markdown to embed images or videos directly.
                         </p>
                     </div>
+
+                    {/* Tags Card - Moved Below Description */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Tags</h3>
+                            <button 
+                                onClick={() => handleAI('tags')} 
+                                disabled={isProcessing}
+                                className="text-[10px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1"
+                            >
+                                {activeAiTask === 'tags' ? <RiLoader4Line className="animate-spin" size={10} /> : <RiMagicLine size={10} />} Auto
+                            </button>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                            {tags.map(t => (
+                                <span key={t} className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-1 rounded-md flex items-center gap-1 group">
+                                    {t} 
+                                    <button onClick={() => setTags(tags.filter(x => x !== t))} className="text-zinc-400 hover:text-red-500 transition-colors"><RiCloseLine size={12}/></button>
+                                </span>
+                            ))}
+                        </div>
+                        
+                        <input 
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && tagInput) {
+                                    e.preventDefault();
+                                    setTags([...tags, tagInput]);
+                                    setTagInput('');
+                                }
+                            }}
+                            placeholder="Type tag & hit Enter..."
+                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                        />
+                    </div>
+
                 </div>
             </div>
 

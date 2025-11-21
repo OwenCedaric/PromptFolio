@@ -42,20 +42,20 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
       className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
     >
       {/* Watermarks (Background Layer) */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none opacity-50 group-hover:opacity-100 transition-opacity">
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
          {isDraft ? (
             /* Draft Watermark */
-            <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800/50 transform -rotate-12">
+            <div className="absolute -bottom-8 -right-6 text-black/5 dark:text-white/5 group-hover:text-black/15 dark:group-hover:text-white/15 transition-colors duration-500 transform -rotate-12">
                 <RiDraftLine size={140} />
             </div>
          ) : isPrivate ? (
             /* Private/Lock Watermark */
-            <div className="absolute -bottom-6 -right-4 text-zinc-100 dark:text-zinc-800/50 transform -rotate-12">
+            <div className="absolute -bottom-6 -right-4 text-black/5 dark:text-white/5 group-hover:text-black/15 dark:group-hover:text-white/15 transition-colors duration-500 transform -rotate-12">
                 <RiLockLine size={120} />
             </div>
          ) : (
             /* Version Watermark */
-            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800/50 leading-none tracking-tighter">
+            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-black/5 dark:text-white/5 group-hover:text-black/15 dark:group-hover:text-white/15 transition-colors duration-500 leading-none tracking-tighter">
                 v{versionNumber}
             </div>
          )}
@@ -70,18 +70,18 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
             </div>
         </div>
 
-        {/* Title - Monochrome Hover */}
+        {/* Title */}
         <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-2 line-clamp-1 group-hover:opacity-70 transition-opacity shrink-0">
             {prompt.title}
         </h3>
         
-        {/* Cover Image (Optional) */}
+        {/* Cover Image (Optional) - Minimalist Grayscale to Color Transition */}
         {prompt.imageUrl && (
             <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    className="w-full h-full object-cover transition-all duration-700 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105" 
                     loading="lazy"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                 />
@@ -94,7 +94,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
                 {currentVersion?.content || 'No content'}
             </p>
             
-            {/* Gradient Fade - Shortened height (h-10) to affect only the very bottom (approx last line) */}
+            {/* Gradient Fade */}
             <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
 
             {/* Quick Copy Button (Appears on Hover) - Minimalist */}
@@ -114,7 +114,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
         </div>
 
         {/* Tags - Flex Wrap with Height Limit (Show as many as fit on one line) */}
-        {/* Updated: h-7 (28px) with no top padding to prevent border clipping */}
         <div className="flex flex-wrap gap-2 mt-auto h-7 overflow-hidden w-full content-start shrink-0">
             {prompt.tags.map(tag => (
                 <span 
