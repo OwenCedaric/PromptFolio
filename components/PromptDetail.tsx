@@ -14,6 +14,8 @@ import {
     RiFileTextLine,
     RiInformationLine
 } from '@remixicon/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { PromptData, PromptStatus } from '../types';
 
 interface PromptDetailProps {
@@ -63,82 +65,83 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
   return (
     <article className="h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
       
-      {/* GLOBAL HEADER - Always Visible */}
-      <div className="shrink-0 px-6 md:px-10 pt-6 md:pt-10 pb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50 z-10">
-            {/* Header Actions */}
-            <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                    <button onClick={onBack} aria-label="Go Back" className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
-                        <RiArrowLeftLine size={20} />
-                    </button>
-                    <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hidden md:block">Prompt Details</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 md:gap-3">
-                        {isAuthenticated && (
-                            <>
-                            <button 
-                                onClick={() => onToggleFavorite(prompt.id)} 
-                                className={`p-2 rounded-full transition-colors ${prompt.isFavorite ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
-                                title={prompt.isFavorite ? "Remove from favorites" : "Add to favorites"}
-                            >
-                                {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
-                            </button>
-                            
-                            <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1 hidden md:block"></div>
-
-                            <button 
-                                type="button"
-                                onClick={handleDeletePrompt}
-                                className="p-2 md:px-3 md:py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
-                                title="Delete Entire Prompt"
-                            >
-                                <RiDeleteBinLine size={18} />
-                                <span className="hidden md:inline text-sm font-medium">Delete</span>
-                            </button>
-
-                            <button 
-                                onClick={() => onEdit(prompt)}
-                                className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all"
-                            >
-                                <RiPencilLine size={16} />
-                                <span className="hidden md:inline">Edit Prompt</span>
-                                <span className="md:hidden">Edit</span>
-                            </button>
-                            </>
-                        )}
-                    </div>
-            </div>
-
-            {/* Title & Meta Block */}
-            <div>
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
-                        {prompt.category}
-                    </span>
-                    {prompt.status === PromptStatus.DRAFT && (
-                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30">
-                            Draft
-                        </span>
-                    )}
-                    <span className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
-                        <RiTimeLine size={12} />
-                        Updated {new Date(prompt.updatedAt).toLocaleDateString()}
-                    </span>
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white leading-tight line-clamp-3">{prompt.title}</h1>
-            </div>
-        </div>
-
       {/* Main Content Layout - Two independent columns on large screens */}
       <div className="flex-1 overflow-hidden relative min-h-0">
         <div className="h-full max-w-[1920px] mx-auto lg:grid lg:grid-cols-12 lg:divide-x lg:divide-zinc-200 dark:lg:divide-zinc-800">
             
             {/* LEFT COLUMN (58%): Info, Description, Metadata */}
+            {/* UPDATED: Flex Column with Fixed Header and Scrolling Body */}
             <section className={`lg:col-span-7 h-full flex flex-col overflow-hidden ${mobileTab === 'prompt' ? 'hidden lg:flex' : 'flex'}`}>
                 
+                {/* Fixed Header Area: Actions + Title */}
+                <div className="shrink-0 px-6 md:px-10 pt-6 md:pt-10 pb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50 z-10">
+                    {/* Header Actions */}
+                    <div className="flex items-center justify-between mb-6">
+                         <div className="flex items-center gap-4">
+                            <button onClick={onBack} aria-label="Go Back" className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                                <RiArrowLeftLine size={20} />
+                            </button>
+                            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hidden md:block">Prompt Details</span>
+                         </div>
+
+                         <div className="flex items-center gap-2 md:gap-3">
+                             {isAuthenticated && (
+                                 <>
+                                    <button 
+                                        onClick={() => onToggleFavorite(prompt.id)} 
+                                        className={`p-2 rounded-full transition-colors ${prompt.isFavorite ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                                        title={prompt.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                                    >
+                                        {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
+                                    </button>
+                                    
+                                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1 hidden md:block"></div>
+
+                                    <button 
+                                        type="button"
+                                        onClick={handleDeletePrompt}
+                                        className="p-2 md:px-3 md:py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
+                                        title="Delete Entire Prompt"
+                                    >
+                                        <RiDeleteBinLine size={18} />
+                                        <span className="hidden md:inline text-sm font-medium">Delete</span>
+                                    </button>
+
+                                    <button 
+                                        onClick={() => onEdit(prompt)}
+                                        className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all"
+                                    >
+                                        <RiPencilLine size={16} />
+                                        <span className="hidden md:inline">Edit Prompt</span>
+                                        <span className="md:hidden">Edit</span>
+                                    </button>
+                                 </>
+                             )}
+                         </div>
+                    </div>
+
+                    {/* Title & Meta Block */}
+                    <div>
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                            <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                                {prompt.category}
+                            </span>
+                            {prompt.status === PromptStatus.DRAFT && (
+                                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30">
+                                    Draft
+                                </span>
+                            )}
+                            <span className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
+                                <RiTimeLine size={12} />
+                                Updated {new Date(prompt.updatedAt).toLocaleDateString()}
+                            </span>
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white leading-tight line-clamp-3">{prompt.title}</h1>
+                    </div>
+                </div>
+
                 {/* Scrollable Body: Tags, Stats, Description */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 no-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 scrollbar-hide">
                     {/* Tags & Stats Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Tags Card */}
@@ -181,9 +184,18 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 <RiInformationLine size={14} /> Description
                             </h3>
                             <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
-                                <div className="whitespace-pre-wrap font-sans text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                <ReactMarkdown 
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        img: ({node, ...props}) => (
+                                            <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4">
+                                                <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} />
+                                            </div>
+                                        )
+                                    }}
+                                >
                                     {prompt.description}
-                                </div>
+                                </ReactMarkdown>
                             </div>
                         </div>
                     ) : (
@@ -195,6 +207,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
             </section>
 
             {/* RIGHT COLUMN (42%): Prompt Content */}
+            {/* Container fixed height, inner content scrolls */}
             <section className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex flex-col h-full">
                     {/* Header for Prompt Column */}

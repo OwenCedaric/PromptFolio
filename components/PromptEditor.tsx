@@ -207,74 +207,78 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
           </div>
       )}
 
-      {/* GLOBAL HEADER - VISIBLE ON BOTH TABS */}
-      <div className="shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50 z-10">
-            <div className="px-6 md:px-10 pt-6 md:pt-8 pb-2 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-4 shrink-0">
-                    <button onClick={onCancel} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
-                        <RiArrowLeftLine size={20} />
-                    </button>
-                    <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hidden md:block">{initialData ? 'Edit Prompt' : 'Create New Prompt'}</span>
-                </div>
-
-                <div className="flex items-center gap-3 md:gap-4 overflow-x-auto no-scrollbar">
-                    {initialData && (
-                        <>
-                            <button 
-                                type="button"
-                                onClick={handleDeletePrompt}
-                                className="flex items-center shrink-0 gap-1 text-xs font-medium text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors px-2 py-1"
-                            >
-                                <RiDeleteBinLine size={14} />
-                                <span className="hidden sm:inline">Delete Prompt</span>
-                            </button>
-                            <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 hidden md:block"></div>
-                        </>
-                    )}
-
-                    <label className="hidden md:flex items-center gap-2 text-xs font-medium text-zinc-600 dark:text-zinc-300 cursor-pointer select-none hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors shrink-0">
-                        <input 
-                            type="checkbox" 
-                            checked={saveAsNewVersion} 
-                            onChange={(e) => setSaveAsNewVersion(e.target.checked)}
-                            className="hidden"
-                        />
-                        {saveAsNewVersion ? (
-                            <RiCheckboxCircleFill className="text-black dark:text-white" size={18} />
-                        ) : (
-                            <RiCheckboxBlankCircleLine className="text-zinc-400 dark:text-zinc-600" size={18} />
-                        )}
-                        Save as new version
-                    </label>
-
-                    <button 
-                        onClick={handleSave}
-                        className="flex items-center shrink-0 gap-2 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black px-4 md:px-5 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
-                    >
-                        <RiSave3Line size={16} />
-                        <span>Save</span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Title Input Fixed */}
-            <div className="px-6 md:px-10 pb-6 md:pb-8 pt-4">
-                <input 
-                    type="text" 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter Prompt Title..."
-                    className="w-full text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-700 border-none outline-none bg-transparent p-0 focus:ring-0"
-                />
-            </div>
-        </div>
-
       {/* Main Content Area - Independent Columns */}
       <div className="flex-1 overflow-hidden relative min-h-0">
         <div className="h-full max-w-[1920px] mx-auto lg:grid lg:grid-cols-12 lg:divide-x lg:divide-zinc-200 dark:lg:divide-zinc-800">
         
-            {/* LEFT COLUMN (60%): Settings Body (Properties, Tags, Desc) */}
-            <div className={`lg:col-span-7 h-full overflow-y-auto p-6 md:p-10 space-y-8 no-scrollbar ${mobileTab === 'prompt' ? 'hidden lg:block' : 'block'}`}>
+            {/* LEFT COLUMN (60%): Settings (Title, Desc, Meta) */}
+            {/* UPDATED: Fixed Header + Scrollable Content Body */}
+            <div className={`lg:col-span-7 h-full flex flex-col overflow-hidden ${mobileTab === 'prompt' ? 'hidden lg:flex' : 'flex'}`}>
+                
+                 {/* Fixed Header: Toolbar & Title */}
+                 <div className="shrink-0 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50 z-10">
+                    <div className="px-6 md:px-10 pt-6 md:pt-8 pb-2 flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 shrink-0">
+                            <button onClick={onCancel} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                                <RiArrowLeftLine size={20} />
+                            </button>
+                            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hidden md:block">{initialData ? 'Edit Prompt' : 'Create New Prompt'}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3 md:gap-4 overflow-x-auto no-scrollbar">
+                            {initialData && (
+                                <>
+                                    <button 
+                                        type="button"
+                                        onClick={handleDeletePrompt}
+                                        className="flex items-center shrink-0 gap-1 text-xs font-medium text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors px-2 py-1"
+                                    >
+                                        <RiDeleteBinLine size={14} />
+                                        <span className="hidden sm:inline">Delete Prompt</span>
+                                    </button>
+                                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 hidden md:block"></div>
+                                </>
+                            )}
+
+                            <label className="hidden md:flex items-center gap-2 text-xs font-medium text-zinc-600 dark:text-zinc-300 cursor-pointer select-none hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors shrink-0">
+                                <input 
+                                    type="checkbox" 
+                                    checked={saveAsNewVersion} 
+                                    onChange={(e) => setSaveAsNewVersion(e.target.checked)}
+                                    className="hidden"
+                                />
+                                {saveAsNewVersion ? (
+                                    <RiCheckboxCircleFill className="text-black dark:text-white" size={18} />
+                                ) : (
+                                    <RiCheckboxBlankCircleLine className="text-zinc-400 dark:text-zinc-600" size={18} />
+                                )}
+                                Save as new version
+                            </label>
+
+                            <button 
+                                onClick={handleSave}
+                                className="flex items-center shrink-0 gap-2 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black px-4 md:px-5 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
+                            >
+                                <RiSave3Line size={16} />
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Title Input Fixed */}
+                    <div className="px-6 md:px-10 pb-6 md:pb-8 pt-4">
+                        <input 
+                            type="text" 
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Enter Prompt Title..."
+                            className="w-full text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-700 border-none outline-none bg-transparent p-0 focus:ring-0"
+                        />
+                    </div>
+                 </div>
+
+                {/* Scrollable Content: Properties, Tags, Desc */}
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 scrollbar-hide">
                     {/* Properties Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
@@ -396,9 +400,11 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             Tip: Use Markdown to embed images or videos directly.
                         </p>
                     </div>
+                </div>
             </div>
 
             {/* RIGHT COLUMN (40%): Prompt Editor */}
+            {/* Scrolls independently */}
             <div className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex flex-col h-full">
                      <div className="flex justify-between items-center mb-3 shrink-0">

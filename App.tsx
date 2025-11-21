@@ -83,19 +83,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title, message, onC
 
 const App: React.FC = () => {
   // --- Config ---
-  // Safely access process.env using window check to prevent reference errors in strict modules
-  const getEnv = (key: string) => {
-      try {
-          // Explicitly use window.process to avoid module scoping issues
-          const env = typeof window !== 'undefined' ? (window as any).process?.env : {};
-          return env ? env[key] : undefined;
-      } catch (e) {
-          return undefined;
-      }
-  };
-
-  const SITE_NAME = getEnv('SITE_NAME') || 'PromptFolio';
-  const SITE_PASSWORD = getEnv('SITE_PASSWORD');
+  const SITE_NAME = process.env.SITE_NAME || 'PromptFolio';
+  const SITE_PASSWORD = process.env.SITE_PASSWORD;
   const ITEMS_PER_PAGE = 12;
 
   // --- Auth State ---
