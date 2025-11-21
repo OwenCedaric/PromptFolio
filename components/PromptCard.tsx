@@ -101,7 +101,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
         </div>
 
         {/* Tags - Flex Wrap with Height Limit (Show as many as fit on one line) */}
-        <div className="flex flex-wrap gap-2 mt-auto pt-1 h-[26px] overflow-hidden w-full content-start">
+        {/* Updated: h-7 (28px) with no top padding to prevent border clipping */}
+        <div className="flex flex-wrap gap-2 mt-auto h-7 overflow-hidden w-full content-start">
             {prompt.tags.map(tag => (
                 <span 
                     key={tag} 
