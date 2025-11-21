@@ -288,7 +288,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
         <div className="h-full max-w-[1920px] mx-auto lg:grid lg:grid-cols-12 lg:divide-x lg:divide-zinc-200 dark:lg:divide-zinc-800">
             
-            {/* LEFT COLUMN (58% - Approx 60%): Info, Description */}
+            {/* LEFT COLUMN (58% - Approx 60%): Info, Description, Tags */}
             <section className={`lg:col-span-7 h-full flex flex-col overflow-hidden ${mobileTab === 'prompt' ? 'hidden lg:flex' : 'flex'}`}>
                 
                 {/* Desktop Header Area */}
@@ -435,10 +435,33 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             No description provided.
                         </div>
                     )}
+
+                    {/* Tags Card (Moved from Right Column) */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
+                         <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <RiPriceTag3Line size={14} /> Tags
+                        </h3>
+                         <div className="flex flex-wrap gap-2">
+                                {prompt.tags.length > 0 ? (
+                                    prompt.tags.map(tag => (
+                                        <button 
+                                            key={tag} 
+                                            onClick={() => onTagClick && onTagClick(tag)}
+                                            className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors group"
+                                        >
+                                            #{tag}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <span className="text-xs text-zinc-400 dark:text-zinc-600 italic px-1">No tags added</span>
+                                )}
+                        </div>
+                    </div>
+
                 </div>
             </section>
 
-            {/* RIGHT COLUMN (42% - Approx 40%): Prompt Content & Tags */}
+            {/* RIGHT COLUMN (42% - Approx 40%): Prompt Content */}
             <section className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex flex-col h-full">
                     
@@ -511,26 +534,6 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             </div>
                         </div>
                     )}
-
-                    {/* Tags Area (Moved to Bottom) - Scrollable if too many */}
-                    <div className="mt-3 shrink-0 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800 pr-1">
-                         <div className="flex flex-wrap gap-2">
-                                {prompt.tags.length > 0 ? (
-                                    prompt.tags.map(tag => (
-                                        <button 
-                                            key={tag} 
-                                            onClick={() => onTagClick && onTagClick(tag)}
-                                            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 text-[11px] px-2.5 py-1 rounded-md font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors flex items-center gap-1.5 group"
-                                        >
-                                            <RiPriceTag3Line size={10} className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"/>
-                                            {tag}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <span className="text-xs text-zinc-400 dark:text-zinc-600 italic px-1">No tags added</span>
-                                )}
-                        </div>
-                    </div>
                 </div>
             </section>
 
