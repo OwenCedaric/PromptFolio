@@ -149,7 +149,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     >
       {/* Side Cover Image */}
       {showImage && (
-           <div className="w-full h-40 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800">
+           <div className="w-full h-40 md:w-48 md:h-auto shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
@@ -161,7 +161,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       )}
 
       {/* Content Container */}
-      <div className="flex-1 p-5 flex flex-col min-w-0 relative z-10">
+      <div className="p-5 flex flex-col min-w-0 relative z-10 md:flex-1">
          
          <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
