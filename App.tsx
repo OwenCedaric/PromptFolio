@@ -5,7 +5,20 @@ import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
 import PromptDetail from './components/PromptDetail';
 import { PromptData, Category, PromptStatus, Copyright } from './types';
-import { RiMenuLine, RiSearchLine, RiCloseLine, RiErrorWarningLine, RiLoader4Line, RiWifiOffLine, RiArrowLeftSLine, RiArrowRightSLine, RiPriceTag3Line, RiCloseCircleLine } from '@remixicon/react';
+import { 
+    RiMenuLine, 
+    RiSearchLine, 
+    RiCloseLine, 
+    RiErrorWarningLine, 
+    RiLoader4Line, 
+    RiWifiOffLine, 
+    RiArrowLeftLine, 
+    RiArrowRightLine, 
+    RiCloseCircleLine,
+    RiLayoutGridLine,
+    RiListCheck2,
+    RiArrowUpDownLine
+} from '@remixicon/react';
 
 // --- Mock Data for Fallback ---
 const MOCK_PROMPTS: PromptData[] = [
@@ -94,9 +107,7 @@ const App: React.FC = () => {
 
   // --- Auth State ---
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    // If no password is configured in env, default to authenticated (public mode or dev)
     if (!SITE_PASSWORD) return true;
-    // Check local storage for persistence
     return localStorage.getItem('pf_auth_session') === '1';
   });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -108,16 +119,23 @@ const App: React.FC = () => {
   const [prompts, setPrompts] = useState<PromptData[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [activePrompt, setActivePrompt] = useState<PromptData | null>(null);
+  
+  // Filter & Search State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  
+  // Layout & Sort State
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // UI State
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
   // --- Theme State ---
-  // Initialize based on local storage or system preference
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('pf_theme');
@@ -148,9 +166,7 @@ const App: React.FC = () => {
           const local = localStorage.getItem('promptfolio_data');
           if (local) {
               const parsed = JSON.parse(local);
-              // Ensure parsed data is an array and has content
               if (Array.isArray(parsed) && parsed.length > 0) {
-                  // Sanitize data to ensure required arrays exist
                   return parsed.map(p => ({
                       ...p,
                       tags: Array.isArray(p.tags) ? p.tags : [],
@@ -172,10 +188,7 @@ const App: React.FC = () => {
   const fetchPrompts = async () => {
       setIsLoading(true);
       try {
-          // Attempt to fetch from API
           const res = await fetch('/api/prompts');
-          
-          // Check if we got a JSON response. 
           const contentType = res.headers.get("content-type");
           if (res.ok && contentType && contentType.includes("application/json")) {
               const data = await res.json();
@@ -201,7 +214,6 @@ const App: React.FC = () => {
   useEffect(() => {
       let title = SITE_NAME;
       if (view === 'detail' && activePrompt) {
-          // Mask title for private prompts if unauthenticated
           if (activePrompt.status === PromptStatus.PRIVATE && !isAuthenticated) {
              title = `Protected Content | ${SITE_NAME}`;
           } else {
@@ -216,11 +228,9 @@ const App: React.FC = () => {
       }
       document.title = title;
 
-      // Update meta description
       const metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) {
           if (view === 'detail' && activePrompt) {
-              // CRITICAL: Mask description for private prompts if not authenticated to prevent SEO leakage
               if (activePrompt.status === PromptStatus.PRIVATE && !isAuthenticated) {
                   metaDesc.setAttribute('content', 'This content is private and requires authentication to view.');
               } else {
@@ -246,7 +256,7 @@ const App: React.FC = () => {
       }
   };
 
-  // --- URL Routing (Simple) ---
+  // --- Routing ---
   useEffect(() => {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
@@ -266,7 +276,7 @@ const App: React.FC = () => {
           setSelectedTag(tag);
           setView('library');
       }
-  }, [prompts]); // Run when prompts are loaded
+  }, [prompts]); 
 
   // --- Auth Handlers ---
   const handleLogin = () => {
@@ -284,15 +294,13 @@ const App: React.FC = () => {
   const handleLogout = () => {
       setIsAuthenticated(false);
       localStorage.removeItem('pf_auth_session');
-      // Redirect to library if on a private detail page? 
-      // Just keeping basic logic for now.
   };
 
   // --- Handlers ---
   const handleCreateNew = () => {
       setActivePrompt(null);
       setView('editor');
-      setSidebarOpen(false); // Close mobile sidebar
+      setSidebarOpen(false); 
   };
 
   const handleSavePrompt = async (data: PromptData) => {
@@ -365,13 +373,10 @@ const App: React.FC = () => {
       URL.revokeObjectURL(url);
   };
 
-  // --- Filtering ---
-  const filteredPrompts = useMemo(() => {
-      return prompts.filter(p => {
-          // Filter out private prompts if user is NOT authenticated
-          // Although we hide content in cards, showing the card itself is fine unless you want total invisibility.
-          // The prompt requested "partially exposed content", so showing the card with locked content is the solution.
-          
+  // --- Filtering & Sorting ---
+  const processedPrompts = useMemo(() => {
+      // 1. Filter
+      let result = prompts.filter(p => {
           const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory || (selectedCategory === 'Favorites' && p.isFavorite);
           
           const matchesSearch = searchQuery === '' || 
@@ -383,18 +388,31 @@ const App: React.FC = () => {
 
           return matchesCategory && matchesSearch && matchesTag;
       });
-  }, [prompts, selectedCategory, searchQuery, selectedTag]); // Removed isAuthenticated dependency to keep list stable, but PromptCard handles internal hiding
+
+      // 2. Sort
+      result.sort((a, b) => {
+          switch(sortOrder) {
+              case 'newest':
+                  return b.updatedAt - a.updatedAt;
+              case 'oldest':
+                  return a.updatedAt - b.updatedAt;
+              default:
+                  return 0;
+          }
+      });
+
+      return result;
+  }, [prompts, selectedCategory, searchQuery, selectedTag, sortOrder]);
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
-  const paginatedPrompts = filteredPrompts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(processedPrompts.length / ITEMS_PER_PAGE);
+  const paginatedPrompts = processedPrompts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   // Reset pagination on filter change
   useEffect(() => {
       setCurrentPage(1);
-  }, [selectedCategory, searchQuery, selectedTag]);
+  }, [selectedCategory, searchQuery, selectedTag, sortOrder]);
 
-  // --- Render ---
   return (
     <div className="flex h-full w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950">
         
@@ -460,52 +478,105 @@ const App: React.FC = () => {
             
             {view === 'library' && (
                 <div className="h-full flex flex-col">
-                    {/* Top Bar */}
-                    <div className="px-6 md:px-10 py-6 shrink-0 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center z-10 bg-zinc-50/95 dark:bg-zinc-950/95 backdrop-blur-sm">
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                            <button 
-                                className="md:hidden p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                                onClick={() => setSidebarOpen(true)}
-                            >
-                                <RiMenuLine size={24} />
-                            </button>
-                            <div className="relative flex-1 md:w-96 group">
-                                <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 transition-colors" size={18} />
-                                <input 
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search prompts..."
-                                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:ring-4 focus:ring-zinc-100 dark:focus:ring-zinc-800 transition-all shadow-sm"
-                                />
-                                {searchQuery && (
-                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900">
-                                        <RiCloseCircleLine size={16} />
+                    {/* Top Bar - Enhanced */}
+                    <div className="sticky top-0 z-20 bg-zinc-50/95 dark:bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-200/50 dark:border-zinc-800/50 px-6 md:px-10 py-4">
+                        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                             
+                             {/* Left: Mobile Trigger & Search */}
+                             <div className="flex items-center gap-3 w-full md:w-96">
+                                <button 
+                                    className="md:hidden p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                    onClick={() => setSidebarOpen(true)}
+                                >
+                                    <RiMenuLine size={24} />
+                                </button>
+                                <div className="relative flex-1 group">
+                                    <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 transition-colors" size={16} />
+                                    <input 
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder="Search prompts..."
+                                        className="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:ring-2 focus:ring-zinc-100 dark:focus:ring-zinc-800 transition-all shadow-sm"
+                                    />
+                                    {searchQuery && (
+                                        <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900">
+                                            <RiCloseCircleLine size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                                {/* Result Stats (Desktop) */}
+                                <span className="hidden lg:block text-xs font-medium text-zinc-400 dark:text-zinc-500 whitespace-nowrap border-l border-zinc-300 dark:border-zinc-700 pl-3">
+                                    {processedPrompts.length} Items
+                                </span>
+                             </div>
+
+                             {/* Right: Sorting & View Toggle */}
+                             <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-3 md:gap-6">
+                                
+                                {/* Sort Dropdown */}
+                                <div className="flex items-center gap-2">
+                                    <div className="relative group">
+                                        <RiArrowUpDownLine size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                                        <select 
+                                            value={sortOrder}
+                                            onChange={(e) => setSortOrder(e.target.value as any)}
+                                            className="appearance-none pl-8 pr-8 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 focus:outline-none transition-colors cursor-pointer min-w-[130px]"
+                                        >
+                                            <option value="newest">Newest First</option>
+                                            <option value="oldest">Oldest First</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* View Mode Toggle */}
+                                <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg shrink-0">
+                                    <button 
+                                        onClick={() => setViewMode('grid')}
+                                        className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
+                                        title="Grid View"
+                                    >
+                                        <RiLayoutGridLine size={16} />
                                     </button>
-                                )}
-                            </div>
+                                    <button 
+                                        onClick={() => setViewMode('list')}
+                                        className={`p-1.5 rounded transition-all ${viewMode === 'list' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
+                                        title="List View"
+                                    >
+                                        <RiListCheck2 size={16} />
+                                    </button>
+                                </div>
+                             </div>
                         </div>
 
+                        {/* Active Tags Row */}
                         {selectedTag && (
-                             <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full">
-                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Tag: #{selectedTag}</span>
-                                <button onClick={() => setSelectedTag(null)} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
-                                    <RiCloseLine size={14} />
-                                </button>
+                             <div className="mt-3 flex items-center">
+                                 <div className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200">
+                                    <span className="text-xs font-bold">#{selectedTag}</span>
+                                    <button onClick={() => setSelectedTag(null)} className="hover:opacity-70 transition-opacity">
+                                        <RiCloseLine size={14} />
+                                    </button>
+                                 </div>
                              </div>
                         )}
                     </div>
                     
-                    {/* Grid Content */}
-                    <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-20 scrollbar-hide">
+                    {/* Content Area */}
+                    <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-20 scrollbar-hide pt-6">
                         {isLoading ? (
                             <div className="h-64 flex flex-col items-center justify-center text-zinc-400 animate-pulse gap-4">
                                 <RiLoader4Line className="animate-spin" size={32} />
                                 <span className="text-sm font-medium">Loading Library...</span>
                             </div>
-                        ) : filteredPrompts.length > 0 ? (
+                        ) : processedPrompts.length > 0 ? (
                             <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-8">
+                                {/* Responsive Grid Logic based on ViewMode */}
+                                <div className={`grid gap-6 mb-8 ${
+                                    viewMode === 'grid' 
+                                    ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' 
+                                    : 'grid-cols-1 max-w-5xl mx-auto'
+                                }`}>
                                     {paginatedPrompts.map(prompt => (
                                         <PromptCard 
                                             key={prompt.id} 
@@ -513,29 +584,40 @@ const App: React.FC = () => {
                                             onClick={(p) => { setActivePrompt(p); setView('detail'); }}
                                             onTagClick={(t) => setSelectedTag(t)}
                                             isAuthenticated={isAuthenticated}
+                                            viewMode={viewMode}
                                         />
                                     ))}
                                 </div>
 
-                                {/* Pagination Controls */}
+                                {/* Minimalist Pagination */}
                                 {totalPages > 1 && (
-                                    <div className="flex justify-center items-center gap-4 mb-10">
+                                    <div className="flex justify-center items-center gap-6 mb-12">
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-500 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                            className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-10 transition-colors"
+                                            aria-label="Previous Page"
                                         >
-                                            <RiArrowLeftSLine size={20} />
+                                            <RiArrowLeftLine size={32} />
                                         </button>
-                                        <span className="text-sm text-zinc-500 dark:text-zinc-400 font-mono">
-                                            Page {currentPage} of {totalPages}
-                                        </span>
+                                        
+                                        <div className="flex items-center gap-1 text-lg font-mono text-zinc-400 dark:text-zinc-600">
+                                            <span className="text-zinc-900 dark:text-white font-medium">
+                                                {String(currentPage).padStart(2, '0')}
+                                            </span>
+                                            <span className="mx-1 text-zinc-300 dark:text-zinc-700">/</span>
+                                            <span>
+                                                {String(totalPages).padStart(2, '0')}
+                                            </span>
+                                        </div>
+
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-500 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                            className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-10 transition-colors"
+                                            aria-label="Next Page"
                                         >
-                                            <RiArrowRightSLine size={20} />
+                                            <RiArrowRightLine size={32} />
                                         </button>
                                     </div>
                                 )}
