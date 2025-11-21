@@ -1,5 +1,6 @@
 interface Env {
   DB: any;
+  SITE_PASSWORD?: string;
 }
 
 export const onRequestDelete = async (context: any) => {
@@ -7,6 +8,14 @@ export const onRequestDelete = async (context: any) => {
 
   if (!id) {
     return new Response("Missing ID", { status: 400 });
+  }
+
+  // Security Check: Only allow modifications if authenticated
+  const authHeader = context.request.headers.get('Authorization');
+  const clientToken = authHeader ? authHeader.replace('Bearer ', '') : '';
+  
+  if (context.env.SITE_PASSWORD && clientToken !== context.env.SITE_PASSWORD) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
   try {

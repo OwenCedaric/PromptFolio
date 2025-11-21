@@ -1,12 +1,25 @@
 interface Env {
   DB: any;
+  SITE_PASSWORD?: string;
 }
 
 export const onRequestGet = async (context: any) => {
   try {
-    const { results } = await context.env.DB.prepare(
-      "SELECT * FROM prompts ORDER BY updatedAt DESC"
-    ).all();
+    // Check Authentication
+    const authHeader = context.request.headers.get('Authorization');
+    const clientToken = authHeader ? authHeader.replace('Bearer ', '') : '';
+    const isAuthenticated = context.env.SITE_PASSWORD && clientToken === context.env.SITE_PASSWORD;
+
+    // Construct Query
+    // If authenticated: Fetch ALL.
+    // If NOT authenticated: Fetch ONLY non-private.
+    let query = "SELECT * FROM prompts";
+    if (!isAuthenticated) {
+        query += " WHERE status != 'PRIVATE'";
+    }
+    query += " ORDER BY updatedAt DESC";
+
+    const { results } = await context.env.DB.prepare(query).all();
 
     // Parse JSON strings back to objects and Integers back to Booleans
     const prompts = results.map((row: any) => ({
@@ -14,7 +27,6 @@ export const onRequestGet = async (context: any) => {
       tags: JSON.parse(row.tags as string),
       versions: JSON.parse(row.versions as string),
       isFavorite: row.isFavorite === 1,
-      // Ensure copyright/author are passed if they exist
     }));
 
     return new Response(JSON.stringify(prompts), {
@@ -27,6 +39,15 @@ export const onRequestGet = async (context: any) => {
 
 export const onRequestPost = async (context: any) => {
   try {
+    // Security Check: Only allow modifications if authenticated
+    const authHeader = context.request.headers.get('Authorization');
+    const clientToken = authHeader ? authHeader.replace('Bearer ', '') : '';
+    
+    // If SITE_PASSWORD is set in env, require it.
+    if (context.env.SITE_PASSWORD && clientToken !== context.env.SITE_PASSWORD) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
+
     const data: any = await context.request.json();
 
     // Serialize complex objects to strings for SQLite
@@ -34,8 +55,6 @@ export const onRequestPost = async (context: any) => {
     const versionsStr = JSON.stringify(data.versions);
     const isFavInt = data.isFavorite ? 1 : 0;
 
-    // Check if 'copyright' and 'author' columns exist implicitly by using them. 
-    // NOTE: User must run migration: ALTER TABLE prompts ADD COLUMN author TEXT;
     await context.env.DB.prepare(
       `INSERT OR REPLACE INTO prompts 
       (id, title, description, imageUrl, category, tags, status, versions, currentVersionId, updatedAt, isFavorite, copyright, author) 

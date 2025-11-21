@@ -102,13 +102,13 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title, message, onC
 const App: React.FC = () => {
   // --- Config ---
   const SITE_NAME = process.env.SITE_NAME || 'PromptFolio';
-  const SITE_PASSWORD = process.env.SITE_PASSWORD;
+  const ENV_SITE_PASSWORD = process.env.SITE_PASSWORD; // Used for client-side fallback check
   const ITEMS_PER_PAGE = 12;
 
   // --- Auth State ---
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    if (!SITE_PASSWORD) return true;
-    return localStorage.getItem('pf_auth_session') === '1';
+    // Check for token presence
+    return !!localStorage.getItem('pf_auth_token');
   });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
@@ -195,11 +195,19 @@ const App: React.FC = () => {
       localStorage.setItem('promptfolio_data', JSON.stringify(data));
   };
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('pf_auth_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   // --- Data Fetching ---
   const fetchPrompts = async () => {
       setIsLoading(true);
       try {
-          const res = await fetch('/api/prompts');
+          // Send auth header if we have a token, to potentially see private prompts
+          const headers: Record<string, string> = { ...getAuthHeaders() };
+          
+          const res = await fetch('/api/prompts', { headers });
           const contentType = res.headers.get("content-type");
           if (res.ok && contentType && contentType.includes("application/json")) {
               const data = await res.json();
@@ -220,6 +228,13 @@ const App: React.FC = () => {
   useEffect(() => {
       fetchPrompts();
   }, []);
+
+  // Refetch when auth state changes to see private items
+  useEffect(() => {
+      if (!isLoading) {
+          fetchPrompts();
+      }
+  }, [isAuthenticated]);
 
   // --- SEO, Title & URL Management ---
   useEffect(() => {
@@ -314,17 +329,11 @@ const App: React.FC = () => {
       };
 
       window.addEventListener('popstate', handlePopState);
-      // Trigger once on initial load to sync state with URL if prompts are loaded
-      if (!isLoading && prompts.length > 0) {
-          // We don't call handlePopState directly to avoid state loop issues, 
-          // but the initial mounting logic handles the first load.
-      }
       
       return () => window.removeEventListener('popstate', handlePopState);
-  }, [prompts, isLoading]);
+  }, [prompts]);
 
   // --- Initial Load from URL ---
-  // This only needs to run when prompts first load
   useEffect(() => {
       if (prompts.length === 0) return;
       
@@ -346,7 +355,6 @@ const App: React.FC = () => {
           setSelectedTag(tag);
           setView('library');
       }
-      // ESLint note: we want this to run when prompts are populated
   }, [prompts.length]);
 
   // --- Theme Toggle ---
@@ -365,20 +373,26 @@ const App: React.FC = () => {
 
   // --- Auth Handlers ---
   const handleLogin = () => {
-      if (passwordInput === SITE_PASSWORD) {
-          setIsAuthenticated(true);
-          localStorage.setItem('pf_auth_session', '1');
-          setIsLoginModalOpen(false);
-          setPasswordInput('');
-          setLoginError(false);
-      } else {
+      // Basic client-side check for immediate feedback, but real test is API access
+      // We store the token regardless to send to API.
+      if (ENV_SITE_PASSWORD && passwordInput !== ENV_SITE_PASSWORD) {
           setLoginError(true);
+          return;
       }
+      
+      localStorage.setItem('pf_auth_token', passwordInput);
+      setIsAuthenticated(true);
+      setIsLoginModalOpen(false);
+      setPasswordInput('');
+      setLoginError(false);
+      // Fetch will trigger via useEffect dependency on isAuthenticated
   };
 
   const handleLogout = () => {
       setIsAuthenticated(false);
-      localStorage.removeItem('pf_auth_session');
+      localStorage.removeItem('pf_auth_token');
+      setView('library'); // Reset view in case we were editing
+      // Fetch will trigger via useEffect, likely removing private items from list
   };
 
   // --- Handlers ---
@@ -398,16 +412,28 @@ const App: React.FC = () => {
           updatedPrompts.unshift(data);
       }
       
+      // Optimistic UI update
       setPrompts(updatedPrompts);
       saveLocalData(updatedPrompts);
       
       if (!isDemoMode) {
           try {
-              await fetch('/api/prompts', {
+              const headers: Record<string, string> = { 
+                  'Content-Type': 'application/json',
+                  ...getAuthHeaders()
+              };
+              
+              const res = await fetch('/api/prompts', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: headers,
                   body: JSON.stringify(data)
               });
+
+              if (res.status === 401) {
+                  alert("Session expired or unauthorized. Please login again.");
+                  handleLogout();
+                  return;
+              }
           } catch (e) {
               console.error("Sync failed", e);
           }
@@ -429,7 +455,17 @@ const App: React.FC = () => {
               
               if (!isDemoMode) {
                   try {
-                      await fetch(`/api/prompts/${id}`, { method: 'DELETE' });
+                      const headers: Record<string, string> = { ...getAuthHeaders() };
+                      const res = await fetch(`/api/prompts/${id}`, { 
+                          method: 'DELETE',
+                          headers: headers
+                      });
+
+                      if (res.status === 401) {
+                          alert("Session expired or unauthorized. Please login again.");
+                          handleLogout();
+                          // We don't revert optimistic delete here for simplicity, but in real app maybe we should
+                      }
                   } catch (e) { console.error(e); }
               }
 
@@ -449,6 +485,8 @@ const App: React.FC = () => {
   };
 
   const handleExport = () => {
+      // For export, we dump what the frontend currently has. 
+      // Since fetchPrompts only returns what we are allowed to see, this is safe.
       const blob = new Blob([JSON.stringify(prompts, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

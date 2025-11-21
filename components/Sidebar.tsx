@@ -171,8 +171,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {!isCollapsed && <span className="text-sm font-medium">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>}
             </button>
 
-             {/* Export Data Button */}
-             {onExport && (
+             {/* Export Data Button - Only Visible when Authenticated */}
+             {isAuthenticated && onExport && (
                 <button 
                     onClick={onExport}
                     className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
