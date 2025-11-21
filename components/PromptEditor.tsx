@@ -406,7 +406,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                     </div>
                     
                     {/* Cover Image Input */}
-                     <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-2 px-4 shadow-sm">
+                     <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl p-2 px-4 shadow-sm">
                         <RiImage2Line size={16} className="text-zinc-400" />
                         <input 
                             type="text"
@@ -418,7 +418,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                     </div>
 
                      {/* Description Area */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col min-h-[300px]">
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-2xl p-6 shadow-sm flex flex-col min-h-[300px]">
                         <div className="flex justify-between items-center mb-4 shrink-0">
                             <label className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Description / Context</label>
                             <button 
@@ -435,7 +435,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Describe the purpose, goals, or context of this prompt. Support Markdown for images..."
-                            className="flex-1 w-full text-sm text-zinc-700 dark:text-zinc-300 bg-transparent border-none p-0 focus:ring-0 placeholder:text-zinc-300 dark:placeholder:text-zinc-700 resize-none leading-relaxed font-mono"
+                            className="flex-1 w-full text-sm text-zinc-700 dark:text-zinc-300 bg-transparent border-none p-0 focus:ring-0 focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700 resize-none leading-relaxed font-mono"
                         />
                         <p className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-600 shrink-0">
                             Tip: Use Markdown to embed images or videos directly.
@@ -464,7 +464,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                      </div>
                      
                      {/* Editor Container */}
-                     <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm transition-all flex flex-col">
+                     <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl overflow-hidden shadow-sm flex flex-col">
                          {/* Editor Header - Stays fixed inside the column */}
                         <div className="h-10 bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between shrink-0">
                              
@@ -509,7 +509,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Write your prompt here..."
-                            className="w-full flex-1 bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 border-none focus:ring-0 resize-none leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
+                            className="w-full flex-1 bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 border-none focus:ring-0 focus:outline-none resize-none leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
                         />
                      </div>
                 </div>

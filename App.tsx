@@ -858,7 +858,7 @@ const App: React.FC = () => {
                                     {(selectedCategory !== 'All' || selectedTag) && (
                                         <button 
                                             onClick={() => navigateTo('library', { category: 'All' })}
-                                            className="mt-4 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                            className="mt-4 text-xs text-zinc-600 dark:text-zinc-400 hover:underline"
                                         >
                                             Clear all filters
                                         </button>

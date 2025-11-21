@@ -75,14 +75,14 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
             {prompt.title}
         </h3>
         
-        {/* Content Bubble - Natural Flow with Stronger Gradient Mask */}
+        {/* Content Bubble - Natural Flow with Optimized Gradient Mask */}
         <div className="flex-1 overflow-hidden relative mb-3 rounded-lg">
             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words whitespace-pre-wrap">
                 {currentVersion?.content || 'No content'}
             </p>
             
-            {/* Gradient Fade - Matches background exactly */}
-            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
+            {/* Gradient Fade - Shortened height (h-10) to affect only the very bottom (approx last line) */}
+            <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
 
             {/* Quick Copy Button (Appears on Hover) - Minimalist */}
             <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 translate-y-2 group-hover:translate-y-0">
@@ -100,20 +100,19 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
             </div>
         </div>
 
-        <div className="flex gap-2 overflow-hidden mt-auto pt-1">
-            {prompt.tags.slice(0, 3).map(tag => (
+        {/* Tags - Flex Wrap with Height Limit (Show as many as fit on one line) */}
+        <div className="flex flex-wrap gap-2 mt-auto pt-1 h-[26px] overflow-hidden w-full content-start">
+            {prompt.tags.map(tag => (
                 <span 
                     key={tag} 
                     onClick={(e) => handleTagClick(e, tag)}
-                    className="text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm"
+                    className="text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
                 >
                     #{tag}
                 </span>
             ))}
-            {prompt.tags.length > 3 && (
-                 <span className="text-[10px] text-zinc-400 dark:text-zinc-600 px-1 py-1">
-                    +{prompt.tags.length - 3}
-                 </span>
+            {prompt.tags.length === 0 && (
+                 <span className="text-[10px] text-zinc-300 dark:text-zinc-700 italic px-1">No tags</span>
             )}
         </div>
       </div>
