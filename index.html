@@ -24,10 +24,20 @@
     
     <!-- CSS Utilities -->
     <style>
+      /* Chrome, Safari and Opera */
       .no-scrollbar::-webkit-scrollbar {
           display: none;
       }
       .no-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+      }
+      
+      /* Alias for compatibility with components using this class */
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
       }
@@ -109,7 +119,7 @@
 }
 </script>
   </head>
-  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-screen w-full fixed">
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-screen h-dvh w-full fixed">
     <div id="root" class="h-full w-full overflow-hidden flex flex-col"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
