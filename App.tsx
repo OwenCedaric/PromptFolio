@@ -589,24 +589,24 @@ const App: React.FC = () => {
                                     ))}
                                 </div>
 
-                                {/* Minimalist Pagination */}
+                                {/* Minimalist Pagination (Modernized) */}
                                 {totalPages > 1 && (
-                                    <div className="flex justify-center items-center gap-6 mb-12">
+                                    <div className="flex justify-center items-center gap-3 mb-8 mt-auto">
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-10 transition-colors"
-                                            aria-label="Previous Page"
+                                            className="px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1 shadow-sm"
                                         >
-                                            <RiArrowLeftLine size={32} />
+                                            <RiArrowLeftLine size={18} />
+                                            <span className="hidden sm:inline">Previous</span>
                                         </button>
                                         
-                                        <div className="flex items-center gap-1 text-lg font-mono text-zinc-400 dark:text-zinc-600">
+                                        <div className="flex items-center px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-mono shadow-sm">
                                             <span className="text-zinc-900 dark:text-white font-medium">
                                                 {String(currentPage).padStart(2, '0')}
                                             </span>
-                                            <span className="mx-1 text-zinc-300 dark:text-zinc-700">/</span>
-                                            <span>
+                                            <span className="mx-2 text-zinc-300 dark:text-zinc-700">/</span>
+                                            <span className="text-zinc-500 dark:text-zinc-500">
                                                 {String(totalPages).padStart(2, '0')}
                                             </span>
                                         </div>
@@ -614,10 +614,10 @@ const App: React.FC = () => {
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-10 transition-colors"
-                                            aria-label="Next Page"
+                                            className="px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1 shadow-sm"
                                         >
-                                            <RiArrowRightLine size={32} />
+                                            <span className="hidden sm:inline">Next</span>
+                                            <RiArrowRightLine size={18} />
                                         </button>
                                     </div>
                                 )}

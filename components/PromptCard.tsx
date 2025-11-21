@@ -138,7 +138,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     );
   }
 
-  // --- List View Layout ---
+  // --- List View Layout (Redesigned for robustness) ---
   // Only render image container if image exists and not locked.
   const showImage = prompt.imageUrl && !isLocked;
 
@@ -146,26 +146,23 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row md:h-48 relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row md:min-h-[11rem] relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
     >
-      {/* Watermark (Clean List Version) - Centered Right - Adjusted to prevent overlap */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.05] scale-100 origin-center">
-        {isDraft ? <RiDraftLine size={120} /> : isPrivate ? <RiLockLine size={120} /> : <span className="text-8xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
-      </div>
-
       {/* Side Cover Image (Desktop) or Top (Mobile) */}
+      {/* Uses self-stretch to match height of text content on desktop */}
       {showImage && (
-           <div className="w-full md:w-48 h-32 md:h-full shrink-0 bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 overflow-hidden relative z-10">
+           <div className="w-full h-32 md:w-48 md:h-auto md:self-stretch shrink-0 bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 overflow-hidden relative z-10">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
-                    className="w-full h-full object-cover transition-all duration-500 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105" 
+                    className="absolute inset-0 w-full h-full object-cover transition-all duration-500 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105" 
                     loading="lazy"
                 />
            </div>
       )}
 
       {/* Content Container */}
+      {/* flex-1 ensures it takes remaining space. min-w-0 prevents text overflow issues in flex children. */}
       <div className="flex-1 p-5 flex flex-col min-w-0 relative z-10">
          
          <div className="flex items-center gap-3 mb-2">
@@ -173,12 +170,12 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
          </div>
 
-         <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
+         <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors pr-12">
             {prompt.title}
          </h3>
 
-         <div className="flex-1 overflow-hidden relative mb-3 min-h-0">
-             <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3 md:line-clamp-2 leading-relaxed">
+         <div className="flex-1 relative mb-3 min-h-0">
+             <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3 md:line-clamp-4 leading-relaxed">
                 {isLocked ? "Content is private." : (prompt.description || currentVersion?.content)}
              </p>
          </div>
@@ -200,10 +197,16 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         ? 'bg-green-50 border-green-200 text-green-600' 
                         : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 hover:border-zinc-200'
                     }`}
+                    title="Copy"
                 >
                     {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                 </button>
              )}
+         </div>
+
+         {/* Watermark (Minimal Version for List) - Positioned Bottom Right or Center Right */}
+         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.05]">
+            {isDraft ? <RiDraftLine size={80} /> : isPrivate ? <RiLockLine size={80} /> : <span className="text-6xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
          </div>
       </div>
     </a>
