@@ -145,15 +145,15 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row md:min-h-[11rem] relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden min-h-[160px]"
     >
-      {/* Side Cover Image (Desktop) or Top (Mobile) */}
+      {/* Side Cover Image */}
       {showImage && (
-           <div className="w-full h-32 md:w-48 md:h-auto md:self-stretch shrink-0 bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 overflow-hidden relative z-10">
+           <div className="w-full h-40 md:w-48 md:h-auto shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
-                    className="absolute inset-0 w-full h-full object-cover transition-all duration-500 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105" 
+                    className="w-full h-full object-cover transition-all duration-500 grayscale opacity-90 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading="lazy"
                 />
            </div>
@@ -167,6 +167,11 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
                 {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
              </div>
+             
+             {/* Minimalist Date for List View */}
+             <span className="text-[10px] text-zinc-400 hidden md:block">
+                Updated {new Date(prompt.updatedAt).toLocaleDateString()}
+             </span>
          </div>
 
          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors pr-12">
@@ -174,7 +179,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          </h3>
 
          <div className="flex-1 relative mb-3 min-h-0">
-             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono line-clamp-3 md:line-clamp-4 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
+             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono line-clamp-3 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
                 {isLocked ? "Content is private." : (currentVersion?.content || 'No content')}
              </p>
          </div>
@@ -202,11 +207,13 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 </button>
              )}
          </div>
-
-         {/* Watermark - Adjusted for List View: Lower opacity, Right Center alignment, Hover effects */}
-         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.04] group-hover:opacity-[0.08] transition-all duration-500 group-hover:scale-110 group-hover:-rotate-12 origin-center">
-            {isDraft ? <RiDraftLine size={90} /> : isPrivate ? <RiLockLine size={90} /> : <span className="text-7xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
-         </div>
+         
+         {/* List Mode Watermark - Subtler */}
+         {!showImage && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-500 scale-75 group-hover:scale-90 origin-right">
+                {isDraft ? <RiDraftLine size={120} /> : isPrivate ? <RiLockLine size={120} /> : <span className="text-8xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
+            </div>
+         )}
       </div>
     </a>
   );

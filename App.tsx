@@ -12,8 +12,8 @@ import {
     RiErrorWarningLine, 
     RiLoader4Line, 
     RiWifiOffLine, 
-    RiArrowLeftLine, 
-    RiArrowRightLine, 
+    RiArrowLeftSLine, 
+    RiArrowRightSLine, 
     RiCloseCircleLine,
     RiLayoutGridLine,
     RiListCheck2,
@@ -127,7 +127,18 @@ const App: React.FC = () => {
   
   // Layout & Sort State
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+      if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('pf_view_mode');
+          return (saved === 'list' || saved === 'grid') ? saved : 'grid';
+      }
+      return 'grid';
+  });
+
+  // Persist viewMode changes
+  useEffect(() => {
+      localStorage.setItem('pf_view_mode', viewMode);
+  }, [viewMode]);
   
   // UI State
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -210,8 +221,9 @@ const App: React.FC = () => {
       fetchPrompts();
   }, []);
 
-  // --- SEO & Title Management ---
+  // --- SEO, Title & URL Management ---
   useEffect(() => {
+      // 1. Update Title
       let title = SITE_NAME;
       if (view === 'detail' && activePrompt) {
           if (activePrompt.status === PromptStatus.PRIVATE && !isAuthenticated) {
@@ -228,6 +240,7 @@ const App: React.FC = () => {
       }
       document.title = title;
 
+      // 2. Update Meta Description
       const metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) {
           if (view === 'detail' && activePrompt) {
@@ -240,24 +253,81 @@ const App: React.FC = () => {
               metaDesc.setAttribute('content', 'Organize, version, and optimize your AI prompts with Google Gemini integration.');
           }
       }
+
+      // 3. Update URL (pushState)
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+      
+      // Clear existing relevant params
+      params.delete('id');
+      params.delete('category');
+      params.delete('tag');
+
+      if (view === 'detail' && activePrompt) {
+          params.set('id', activePrompt.id);
+      } else if (view === 'library') {
+          if (selectedCategory && selectedCategory !== 'All') {
+              params.set('category', selectedCategory);
+          }
+          if (selectedTag) {
+              params.set('tag', selectedTag);
+          }
+      }
+      
+      const currentSearch = window.location.search;
+      const newSearch = params.toString() ? `?${params.toString()}` : '';
+      
+      // Only push if changed to avoid loops
+      if (currentSearch !== newSearch) {
+           window.history.pushState({}, '', newSearch || window.location.pathname);
+      }
+
   }, [view, activePrompt, selectedCategory, selectedTag, isAuthenticated, SITE_NAME]);
 
-  // --- Theme Toggle ---
-  const toggleTheme = () => {
-      const newMode = !isDarkMode;
-      setIsDarkMode(newMode);
-      localStorage.setItem('pf_theme', newMode ? 'dark' : 'light');
-      if (newMode) {
-          document.documentElement.classList.add('dark');
-          document.documentElement.style.colorScheme = 'dark';
-      } else {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.style.colorScheme = 'light';
-      }
-  };
-
-  // --- Routing ---
+  // --- Handle Browser Back/Forward Buttons ---
   useEffect(() => {
+      const handlePopState = () => {
+          const params = new URLSearchParams(window.location.search);
+          const id = params.get('id');
+          const category = params.get('category');
+          const tag = params.get('tag');
+
+          if (id) {
+              const p = prompts.find(x => x.id === id);
+              if (p) {
+                  setActivePrompt(p);
+                  setView('detail');
+              } else if (prompts.length > 0) {
+                  // Prompt ID in URL but not found in data? Go to library.
+                  setActivePrompt(null);
+                  setView('library');
+              }
+          } else {
+              setActivePrompt(null);
+              setView('library');
+              if (category) setSelectedCategory(category);
+              else setSelectedCategory('All');
+              
+              if (tag) setSelectedTag(tag);
+              else setSelectedTag(null);
+          }
+      };
+
+      window.addEventListener('popstate', handlePopState);
+      // Trigger once on initial load to sync state with URL if prompts are loaded
+      if (!isLoading && prompts.length > 0) {
+          // We don't call handlePopState directly to avoid state loop issues, 
+          // but the initial mounting logic handles the first load.
+      }
+      
+      return () => window.removeEventListener('popstate', handlePopState);
+  }, [prompts, isLoading]);
+
+  // --- Initial Load from URL ---
+  // This only needs to run when prompts first load
+  useEffect(() => {
+      if (prompts.length === 0) return;
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       const cat = params.get('category');
@@ -276,7 +346,22 @@ const App: React.FC = () => {
           setSelectedTag(tag);
           setView('library');
       }
-  }, [prompts]); 
+      // ESLint note: we want this to run when prompts are populated
+  }, [prompts.length]);
+
+  // --- Theme Toggle ---
+  const toggleTheme = () => {
+      const newMode = !isDarkMode;
+      setIsDarkMode(newMode);
+      localStorage.setItem('pf_theme', newMode ? 'dark' : 'light');
+      if (newMode) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = 'dark';
+      } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.style.colorScheme = 'light';
+      }
+  };
 
   // --- Auth Handlers ---
   const handleLogin = () => {
@@ -589,16 +674,16 @@ const App: React.FC = () => {
                                     ))}
                                 </div>
 
-                                {/* Minimalist Pagination (Distributed) */}
+                                {/* Minimalist Pagination (No border, justified) */}
                                 {totalPages > 1 && (
-                                    <div className="flex justify-between items-center py-6 mt-auto border-t border-zinc-100 dark:border-zinc-800/50">
+                                    <div className="flex justify-between items-center py-4 mt-auto">
                                         {/* Previous - Left Aligned */}
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="flex items-center gap-2 px-2 py-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium group"
+                                            className="flex items-center gap-2 px-3 py-1.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-medium group"
                                         >
-                                            <RiArrowLeftLine size={16} className="group-hover:-translate-x-1 transition-transform" />
+                                            <RiArrowLeftSLine size={18} className="group-hover:-translate-x-0.5 transition-transform" />
                                             <span>Previous</span>
                                         </button>
                                         
@@ -611,10 +696,10 @@ const App: React.FC = () => {
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="flex items-center gap-2 px-2 py-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium group"
+                                            className="flex items-center gap-2 px-3 py-1.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-medium group"
                                         >
                                             <span>Next</span>
-                                            <RiArrowRightLine size={16} className="group-hover:translate-x-1 transition-transform" />
+                                            <RiArrowRightSLine size={18} className="group-hover:translate-x-0.5 transition-transform" />
                                         </button>
                                     </div>
                                 )}
