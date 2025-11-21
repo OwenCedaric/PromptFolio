@@ -16,7 +16,10 @@ import {
     RiCopyrightLine,
     RiShieldCheckLine,
     RiGitCommitLine,
-    RiToggleLine
+    RiToggleLine,
+    RiLockLine,
+    RiEyeLine,
+    RiLoginCircleLine
 } from '@remixicon/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -29,10 +32,11 @@ interface PromptDetailProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   isAuthenticated: boolean;
+  onLogin?: () => void;
   onTagClick?: (tag: string) => void;
 }
 
-const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated, onTagClick }) => {
+const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated, onLogin, onTagClick }) => {
   // Sort versions newest first for the dropdown
   const sortedVersions = [...prompt.versions].sort((a, b) => b.createdAt - a.createdAt);
   
@@ -42,6 +46,10 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
   
   // Mobile Tab State
   const [mobileTab, setMobileTab] = useState<'info' | 'prompt'>('info');
+
+  // Access Control State
+  const isPrivate = prompt.status === PromptStatus.PRIVATE;
+  const isLocked = isPrivate && !isAuthenticated;
 
   // Update local state if prompt prop changes externally
   useEffect(() => {
@@ -57,6 +65,8 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
   // --- Structured Data (Schema.org) Generation ---
   const jsonLd = useMemo(() => {
+    if (isLocked) return null; // Don't generate structured data for locked private prompts
+
     const isCoding = prompt.category === Category.CODING;
     // Use SITE_URL if available, otherwise fallback to window
     const baseUrl = process.env.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://promptfolio.pages.dev');
@@ -123,7 +133,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
     };
 
     return JSON.stringify([breadcrumbSchema, articleSchema]);
-  }, [prompt, sortedVersions]);
+  }, [prompt, sortedVersions, isLocked]);
 
 
   const viewedVersion = prompt.versions.find(v => v.id === selectedVersionId) || prompt.versions[prompt.versions.length - 1];
@@ -138,14 +148,63 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
     onDelete(prompt.id);
   };
 
+  // Helper to render status badge
+  const renderStatusBadge = (status: PromptStatus) => {
+      switch (status) {
+          case PromptStatus.PRIVATE:
+              return (
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-500 border border-red-200/50 dark:border-red-800/30 flex items-center gap-1">
+                      <RiLockLine size={12} /> Private
+                  </span>
+              );
+          case PromptStatus.DRAFT:
+               return (
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30 flex items-center gap-1">
+                      <RiPencilLine size={12} /> Draft
+                  </span>
+              );
+          case PromptStatus.PUBLISHED:
+          default:
+               return (
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-500 border border-green-200/50 dark:border-green-800/30 flex items-center gap-1">
+                       <RiEyeLine size={12} /> Published
+                  </span>
+              );
+      }
+  };
+
+  // Component for Locked View
+  const LockedPlaceholder = ({ title, message }: { title: string, message: string }) => (
+      <div className="flex flex-col items-center justify-center h-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-center shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4 text-zinc-400 dark:text-zinc-500">
+              <RiLockLine size={24} />
+          </div>
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">{title}</h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-[240px] mb-5 leading-relaxed">
+              {message}
+          </p>
+          {onLogin && (
+              <button 
+                onClick={onLogin}
+                className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium rounded-lg hover:opacity-90 transition-opacity"
+              >
+                  <RiLoginCircleLine size={14} />
+                  Admin Login
+              </button>
+          )}
+      </div>
+  );
+
   return (
     <article className="h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
       
       {/* Inject Schema.org JSON-LD */}
-      <script 
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd }}
-      />
+      {jsonLd && (
+        <script 
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: jsonLd }}
+        />
+      )}
 
       {/* Main Content Layout - Two independent columns on large screens */}
       <div className="flex-1 overflow-hidden relative min-h-0">
@@ -163,12 +222,14 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     >
                         {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
                     </button>
-                    <button 
-                        onClick={() => onEdit(prompt)}
-                        className="text-zinc-700 dark:text-zinc-200 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-200/50 dark:bg-zinc-800"
-                    >
-                        Edit
-                    </button>
+                    {isAuthenticated && (
+                        <button 
+                            onClick={() => onEdit(prompt)}
+                            className="text-zinc-700 dark:text-zinc-200 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-200/50 dark:bg-zinc-800"
+                        >
+                            Edit
+                        </button>
+                    )}
                  </div>
              </div>
              <h1 className="text-xl font-bold text-zinc-900 dark:text-white mt-2 line-clamp-2">{prompt.title}</h1>
@@ -209,25 +270,28 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
                             </button>
                             
-                            <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+                            {isAuthenticated && (
+                                <>
+                                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+                                    <button 
+                                        type="button"
+                                        onClick={handleDeletePrompt}
+                                        className="px-3 py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
+                                        title="Delete Entire Prompt"
+                                    >
+                                        <RiDeleteBinLine size={18} />
+                                        <span className="text-sm font-medium">Delete</span>
+                                    </button>
 
-                            <button 
-                                type="button"
-                                onClick={handleDeletePrompt}
-                                className="px-3 py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
-                                title="Delete Entire Prompt"
-                            >
-                                <RiDeleteBinLine size={18} />
-                                <span className="text-sm font-medium">Delete</span>
-                            </button>
-
-                            <button 
-                                onClick={() => onEdit(prompt)}
-                                className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all"
-                            >
-                                <RiPencilLine size={16} />
-                                <span>Edit Prompt</span>
-                            </button>
+                                    <button 
+                                        onClick={() => onEdit(prompt)}
+                                        className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all"
+                                    >
+                                        <RiPencilLine size={16} />
+                                        <span>Edit Prompt</span>
+                                    </button>
+                                </>
+                            )}
                          </div>
                     </div>
 
@@ -236,11 +300,9 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                                 {prompt.category}
                             </span>
-                            {prompt.status === PromptStatus.DRAFT && (
-                                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30">
-                                    Draft
-                                </span>
-                            )}
+                            
+                            {renderStatusBadge(prompt.status)}
+
                             <span className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
                                 <RiTimeLine size={12} />
                                 Updated {new Date(prompt.updatedAt).toLocaleDateString()}
@@ -263,19 +325,19 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <RiGlobalLine size={14} /> Metadata & Rights
                         </h3>
-                        <div className="flex flex-wrap items-center gap-y-4 gap-x-8 md:justify-between">
+                        <div className="grid grid-cols-2 lg:grid-cols-[auto_auto_1fr] gap-y-6 gap-x-8 items-start">
                             {/* Status */}
-                            <div className="flex flex-col gap-1.5 min-w-[100px]">
+                            <div className="flex flex-col gap-1.5">
                                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
                                     <RiToggleLine size={12}/> Status
                                 </span>
-                                <span className="inline-flex self-start items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 capitalize border border-zinc-200 dark:border-zinc-700">
+                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">
                                     {prompt.status.toLowerCase()}
                                 </span>
                             </div>
 
                              {/* Version Count */}
-                            <div className="flex flex-col gap-1.5 min-w-[100px]">
+                            <div className="flex flex-col gap-1.5">
                                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
                                     <RiGitCommitLine size={12}/> History
                                 </span>
@@ -284,21 +346,26 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 </span>
                             </div>
 
-                            {/* License & Copyright - Takes remaining space or line */}
-                            <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
+                            {/* License & Copyright - Full Width on last row */}
+                            <div className="col-span-2 flex flex-col gap-1.5">
                                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
                                     {prompt.copyright && prompt.copyright !== Copyright.NONE ? <RiShieldCheckLine size={12} /> : <RiCopyrightLine size={12} />}
                                     License
                                  </span>
-                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-snug truncate" title={prompt.copyright}>
+                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-snug whitespace-pre-wrap">
                                     {prompt.copyright || 'None / Unspecified'}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Description Content */}
-                    {prompt.description ? (
+                    {/* Description Content - LOCKED IF PRIVATE */}
+                    {isLocked ? (
+                        <LockedPlaceholder 
+                            title="Private Description" 
+                            message="The description and context of this prompt are restricted to administrators."
+                        />
+                    ) : prompt.description ? (
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.02)] dark:shadow-none">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
@@ -339,41 +406,43 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             Prompt Content
                         </h3>
                         
-                        <div className="flex items-center gap-0.5 bg-white dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                            {/* Version Selector */}
-                            <div className="relative flex items-center">
-                                <select 
-                                    value={selectedVersionId}
-                                    onChange={(e) => setSelectedVersionId(e.target.value)}
-                                    className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none"
+                        {!isLocked && (
+                            <div className="flex items-center gap-0.5 bg-white dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                                {/* Version Selector */}
+                                <div className="relative flex items-center">
+                                    <select 
+                                        value={selectedVersionId}
+                                        onChange={(e) => setSelectedVersionId(e.target.value)}
+                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none"
+                                    >
+                                        {sortedVersions.map((v, idx) => {
+                                            const originalIndex = prompt.versions.findIndex(ver => ver.id === v.id);
+                                            return (
+                                                <option key={v.id} value={v.id} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+                                                    v{originalIndex + 1} — {new Date(v.createdAt).toLocaleDateString()}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                    <RiHistoryLine size={12} className="text-zinc-400 dark:text-zinc-500 absolute right-2 pointer-events-none" />
+                                </div>
+
+                                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+
+                                <button 
+                                    onClick={handleCopy}
+                                    className={`text-xs flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                                        copied 
+                                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
+                                        : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                    }`}
+                                    title="Copy content"
                                 >
-                                    {sortedVersions.map((v, idx) => {
-                                        const originalIndex = prompt.versions.findIndex(ver => ver.id === v.id);
-                                        return (
-                                            <option key={v.id} value={v.id} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                                v{originalIndex + 1} — {new Date(v.createdAt).toLocaleDateString()}
-                                            </option>
-                                        );
-                                    })}
-                                </select>
-                                <RiHistoryLine size={12} className="text-zinc-400 dark:text-zinc-500 absolute right-2 pointer-events-none" />
+                                    {copied ? <RiCheckLine size={14} /> : <RiFileCopyLine size={14} />}
+                                    {copied ? 'Copied' : 'Copy'}
+                                </button>
                             </div>
-
-                            <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
-
-                            <button 
-                                onClick={handleCopy}
-                                className={`text-xs flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
-                                    copied 
-                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
-                                    : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                }`}
-                                title="Copy content"
-                            >
-                                {copied ? <RiCheckLine size={14} /> : <RiFileCopyLine size={14} />}
-                                {copied ? 'Copied' : 'Copy'}
-                            </button>
-                        </div>
+                        )}
                     </div>
 
                     {/* Tags Area (New Location) - Scrollable if too many */}
@@ -396,20 +465,29 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         </div>
                     </div>
                     
-                    {/* Content Viewer */}
-                    <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-                        <div className="h-8 bg-zinc-50/50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between select-none shrink-0">
-                            <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">SOURCE</span>
-                            <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-                                {viewedVersion?.content.length || 0} CHARS
-                            </span>
+                    {/* Content Viewer - LOCKED IF PRIVATE */}
+                    {isLocked ? (
+                        <div className="flex-1 flex flex-col">
+                            <LockedPlaceholder 
+                                title="Private Prompt" 
+                                message="The prompt content is hidden. Please login to view the source code."
+                            />
                         </div>
-                        <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
-                            <pre className="font-mono text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words selection:bg-zinc-100 dark:selection:bg-zinc-800">
-                                {viewedVersion?.content || ''}
-                            </pre>
+                    ) : (
+                        <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                            <div className="h-8 bg-zinc-50/50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between select-none shrink-0">
+                                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">SOURCE</span>
+                                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                                    {viewedVersion?.content.length || 0} CHARS
+                                </span>
+                            </div>
+                            <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
+                                <pre className="font-mono text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words selection:bg-zinc-100 dark:selection:bg-zinc-800">
+                                    {viewedVersion?.content || ''}
+                                </pre>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </section>
 

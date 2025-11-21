@@ -8,9 +8,9 @@ export const onRequestGet = async (context: any) => {
   const baseUrl = context.env.SITE_URL || `${url.protocol}//${url.host}`;
 
   try {
-    // Get distinct categories that actually have published prompts
+    // Get distinct categories from prompts that are NOT private
     const { results } = await context.env.DB.prepare(
-      "SELECT DISTINCT category, MAX(updatedAt) as latest FROM prompts WHERE status = 'PUBLISHED' GROUP BY category"
+      "SELECT DISTINCT category, MAX(updatedAt) as latest FROM prompts WHERE status != 'PRIVATE' GROUP BY category"
     ).all();
 
     const urls = results.map((row: any) => {

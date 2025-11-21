@@ -35,14 +35,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-5'} shrink-0 border-b border-transparent`}>
             {!isCollapsed ? (
                 <div className="flex items-center gap-2.5 overflow-hidden whitespace-nowrap">
-                    <div className="w-7 h-7 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded flex items-center justify-center shrink-0">
-                        <RiCommandFill size={16} />
-                    </div>
+                    <img src="/favicon.svg" alt="Logo" className="w-7 h-7 rounded shrink-0" />
                     <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-white uppercase">{siteName || 'PROMPTFOLIO'}</span>
                 </div>
             ) : (
-                 <div className="w-8 h-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded flex items-center justify-center shrink-0 cursor-pointer hover:scale-105 transition-transform" onClick={toggleCollapse} title="Expand">
-                    <RiCommandFill size={18} />
+                 <div className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer hover:scale-105 transition-transform" onClick={toggleCollapse} title="Expand">
+                    <img src="/favicon.svg" alt="Logo" className="w-full h-full rounded" />
                 </div>
             )}
 

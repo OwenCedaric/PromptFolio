@@ -11,9 +11,9 @@ export const onRequestGet = async (context: any) => {
   let lastMod = new Date().toISOString();
   
   try {
-    // Get the latest update time from published prompts for the index lastmod
+    // Get the latest update time from non-private prompts (includes Drafts)
     const { results } = await context.env.DB.prepare(
-      "SELECT MAX(updatedAt) as latest FROM prompts WHERE status = 'PUBLISHED'"
+      "SELECT MAX(updatedAt) as latest FROM prompts WHERE status != 'PRIVATE'"
     ).all();
     
     if (results?.[0]?.latest) {

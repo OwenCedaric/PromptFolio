@@ -3,7 +3,7 @@ import React from 'react';
 export enum PromptStatus {
   DRAFT = 'DRAFT',
   PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED'
+  PRIVATE = 'PRIVATE'
 }
 
 export enum Category {

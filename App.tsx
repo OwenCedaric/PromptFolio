@@ -386,6 +386,8 @@ const App: React.FC = () => {
         if (id) {
             const found = prompts.find(p => p.id === id);
             if (found) {
+                // Note: We no longer block Private prompts here via URL.
+                // The PromptDetail component will handle locking the content.
                 setActivePrompt(found);
                 setView('detail');
                 return;
@@ -432,7 +434,7 @@ const App: React.FC = () => {
     }
 
     return () => window.removeEventListener('popstate', handleUrlChange);
-  }, [prompts, isLoading, view]);
+  }, [prompts, isLoading, view, isAuthenticated]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
@@ -444,6 +446,9 @@ const App: React.FC = () => {
   // --- Computed ---
   const visiblePrompts = useMemo(() => {
     return prompts.filter(p => {
+      // We now show ALL prompts (Private, Drafts) in the list to everyone.
+      // Access control is handled at the Detail level for Private content.
+      
       const matchesSearch = (p.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
                             (p.tags || []).some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       
@@ -755,6 +760,7 @@ const App: React.FC = () => {
                     onDelete={requestDeletePrompt}
                     onToggleFavorite={toggleFavorite}
                     isAuthenticated={isAuthenticated}
+                    onLogin={handleLoginRequest}
                     onTagClick={(tag) => navigateTo('library', { tag })}
                 />
             ) : (

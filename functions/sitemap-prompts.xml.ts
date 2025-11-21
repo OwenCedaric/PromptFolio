@@ -8,8 +8,9 @@ export const onRequestGet = async (context: any) => {
   const baseUrl = context.env.SITE_URL || `${url.protocol}//${url.host}`;
 
   try {
+    // Index everything except PRIVATE prompts
     const { results } = await context.env.DB.prepare(
-      "SELECT id, updatedAt FROM prompts WHERE status = 'PUBLISHED' ORDER BY updatedAt DESC"
+      "SELECT id, updatedAt FROM prompts WHERE status != 'PRIVATE' ORDER BY updatedAt DESC"
     ).all();
 
     const urls = results.map((row: any) => {

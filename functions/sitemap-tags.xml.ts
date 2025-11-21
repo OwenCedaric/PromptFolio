@@ -8,10 +8,9 @@ export const onRequestGet = async (context: any) => {
   const baseUrl = context.env.SITE_URL || `${url.protocol}//${url.host}`;
 
   try {
-    // Fetch all tags from published prompts. 
-    // Note: Since tags are stored as JSON strings in SQLite, we fetch them and parse in JS.
+    // Fetch all tags from prompts that are NOT private
     const { results } = await context.env.DB.prepare(
-      "SELECT tags, updatedAt FROM prompts WHERE status = 'PUBLISHED'"
+      "SELECT tags, updatedAt FROM prompts WHERE status != 'PRIVATE'"
     ).all();
 
     // Map to store latest update time per tag

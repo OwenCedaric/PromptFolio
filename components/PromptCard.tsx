@@ -1,5 +1,5 @@
 import React from 'react';
-import { RiStarFill, RiDraftLine } from '@remixicon/react';
+import { RiStarFill, RiDraftLine, RiLockLine } from '@remixicon/react';
 import { PromptData, PromptStatus } from '../types';
 
 interface PromptCardProps {
@@ -16,6 +16,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
   const versionNumber = sortedVersions.findIndex(v => v.id === currentVersion?.id) + 1;
 
   const isDraft = prompt.status === PromptStatus.DRAFT;
+  const isPrivate = prompt.status === PromptStatus.PRIVATE;
 
   const handleTagClick = (e: React.MouseEvent, tag: string) => {
       e.preventDefault();
@@ -32,12 +33,17 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
       {/* Watermarks (Background Layer) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
          {isDraft ? (
-            /* Draft Watermark - Bottom Right */
+            /* Draft Watermark */
             <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 transform -rotate-12 transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
                 <RiDraftLine size={140} />
             </div>
+         ) : isPrivate ? (
+            /* Private/Lock Watermark */
+            <div className="absolute -bottom-6 -right-4 text-zinc-100 dark:text-zinc-800 transform -rotate-12 transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
+                <RiLockLine size={120} />
+            </div>
          ) : (
-            /* Version Watermark - Bottom Right */
+            /* Version Watermark */
             <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800 leading-none tracking-tighter transition-colors group-hover:text-zinc-200 dark:group-hover:text-zinc-700">
                 v{versionNumber}
             </div>
@@ -61,8 +67,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
             <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono leading-relaxed line-clamp-5 opacity-90">
                 {currentVersion?.content || 'No content'}
             </p>
-            {/* Gradient Fade */}
-            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent rounded-b-2xl"></div>
+            {/* Gradient Fade - Removed rounded-b-2xl to prevent text peaking out at corners */}
+            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent"></div>
         </div>
 
         <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2 overflow-hidden">
