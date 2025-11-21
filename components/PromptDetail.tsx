@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     RiArrowLeftLine, 
     RiFileCopyLine, 
@@ -135,6 +136,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
     return JSON.stringify([breadcrumbSchema, articleSchema]);
   }, [prompt, sortedVersions, isLocked]);
 
+  // --- Canonical URL ---
+  const canonicalUrl = useMemo(() => {
+      if (typeof window === 'undefined') return '';
+      const url = new URL(window.location.href);
+      return `${url.origin}/?id=${prompt.id}`;
+  }, [prompt.id]);
+
 
   const viewedVersion = prompt.versions.find(v => v.id === selectedVersionId) || prompt.versions[prompt.versions.length - 1];
 
@@ -198,12 +206,18 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
   return (
     <article className="h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
       
-      {/* Inject Schema.org JSON-LD */}
-      {jsonLd && (
+      {/* Inject Schema.org JSON-LD into HEAD using Portal */}
+      {jsonLd && createPortal(
         <script 
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: jsonLd }}
-        />
+        />,
+        document.head
+      )}
+      {/* Inject Canonical URL for Detail View */}
+      {canonicalUrl && createPortal(
+          <link rel="canonical" href={canonicalUrl} />,
+          document.head
       )}
 
       {/* Main Content Layout - Two independent columns on large screens */}

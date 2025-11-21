@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Sidebar from './components/Sidebar';
 import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
@@ -254,6 +255,16 @@ const App: React.FC = () => {
         }
     });
   }, [view, SITE_NAME]);
+
+  const canonicalUrl = useMemo(() => {
+     if (typeof window === 'undefined') return '';
+     const url = new URL(window.location.href);
+     // Strip query params for canonical to prevent dupes, unless it's a specific ID
+     if (view === 'library') {
+         return url.origin;
+     }
+     return url.href;
+  }, [view]);
 
   // --- Routing & URL Handling ---
   
@@ -628,12 +639,18 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen w-full bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans text-zinc-900 dark:text-zinc-100 relative transition-colors duration-300">
       
-      {/* WebSite Schema Injection */}
-      {websiteSchema && (
+      {/* WebSite Schema Injection into HEAD */}
+      {websiteSchema && createPortal(
         <script 
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: websiteSchema }}
-        />
+        />,
+        document.head
+      )}
+      {/* Canonical URL Injection */}
+      {canonicalUrl && createPortal(
+          <link rel="canonical" href={canonicalUrl} />,
+          document.head
       )}
 
       {/* Confirm Modal */}
@@ -767,7 +784,7 @@ const App: React.FC = () => {
                 /* Library View - Sticky Header & Scrolling Grid */
                 <div className="h-full w-full flex flex-col overflow-hidden">
                     
-                    {/* Fixed Header Container */}
+                    {/* Fixed Header Container (Shrink-0 prevents compression) */}
                     <div className="shrink-0 px-6 md:px-10 pt-6 pb-4 bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-md z-10 border-b border-zinc-200/50 dark:border-zinc-800/50">
                         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
                             <div>
@@ -805,7 +822,7 @@ const App: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Scrollable Content Area */}
+                    {/* Scrollable Content Area (Flex-1 fills remaining space) */}
                     <div className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-10 pt-6">
                          <div className="max-w-[1600px] mx-auto min-h-full flex flex-col">
                             {/* Grid */}
