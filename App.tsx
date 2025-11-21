@@ -258,40 +258,43 @@ const App: React.FC = () => {
   // --- Routing & URL Handling ---
   
   // Navigation Helper
-  const navigateTo = (newView: 'library' | 'detail' | 'editor', params?: { prompt?: PromptData, category?: string, tag?: string }) => {
+  const navigateTo = (
+      newView: 'library' | 'detail' | 'editor', 
+      params?: { 
+          prompt?: PromptData, 
+          category?: string, 
+          tag?: string,
+          preserveState?: boolean
+      }
+  ) => {
       const url = new URL(window.location.href);
       
-      // Reset params
+      // Clean view-specific params always
       url.searchParams.delete('id');
-      url.searchParams.delete('category');
-      url.searchParams.delete('tag');
       url.searchParams.delete('mode');
-      url.searchParams.delete('q'); // Clear search when navigating explicitly
 
       if (newView === 'detail' && params?.prompt) {
           url.searchParams.set('id', params.prompt.id);
+          
+          // For detail view, we clean query params from URL to keep it shareable,
+          // but we do NOT clear the React State (searchQuery, selectedCategory, etc.)
+          // so "Back" can restore them.
+          url.searchParams.delete('category');
+          url.searchParams.delete('tag');
+          url.searchParams.delete('q');
+          
           window.history.pushState({}, '', url);
           setActivePrompt(params.prompt);
           setView('detail');
-      } else if (newView === 'library') {
-          if (params?.category) {
-              url.searchParams.set('category', params.category);
-              setSelectedCategory(params.category);
-              setSelectedTag(null);
-          } else if (params?.tag) {
-              url.searchParams.set('tag', params.tag);
-              setSelectedTag(params.tag);
-              setSelectedCategory('All');
-          } else {
-              setSelectedCategory('All');
-              setSelectedTag(null);
-          }
-          
-          window.history.pushState({}, '', url);
-          setActivePrompt(null);
-          setView('library');
-      } else if (newView === 'editor') {
+      } 
+      else if (newView === 'editor') {
           url.searchParams.set('mode', 'edit');
+          
+          // Clean library params from URL
+          url.searchParams.delete('category');
+          url.searchParams.delete('tag');
+          url.searchParams.delete('q');
+
           if (!params?.prompt) {
              // New Prompt
              setActivePrompt(null);
@@ -303,8 +306,53 @@ const App: React.FC = () => {
           window.history.pushState({}, '', url);
           setView('editor');
       }
+      else if (newView === 'library') {
+          setActivePrompt(null);
+          setView('library');
+
+          if (params?.preserveState) {
+              // RESTORE URL from current state variables
+              // This is used when "returning" to the list from detail/editor
+              if (searchQuery) url.searchParams.set('q', searchQuery);
+              else url.searchParams.delete('q');
+
+              if (selectedTag) {
+                  url.searchParams.set('tag', selectedTag);
+                  url.searchParams.delete('category');
+              } else if (selectedCategory && selectedCategory !== 'All') {
+                  url.searchParams.set('category', selectedCategory);
+                  url.searchParams.delete('tag');
+              } else {
+                  url.searchParams.delete('category');
+                  url.searchParams.delete('tag');
+              }
+              // Note: We do not reset state variables here
+          } else {
+              // Normal navigation (applying filters, resetting search)
+              url.searchParams.delete('q'); 
+              setSearchQuery(''); // Explicitly clear search
+
+              if (params?.category) {
+                  url.searchParams.set('category', params.category);
+                  url.searchParams.delete('tag');
+                  setSelectedCategory(params.category);
+                  setSelectedTag(null);
+              } else if (params?.tag) {
+                  url.searchParams.set('tag', params.tag);
+                  url.searchParams.delete('category');
+                  setSelectedTag(params.tag);
+                  setSelectedCategory('All');
+              } else {
+                  url.searchParams.delete('category');
+                  url.searchParams.delete('tag');
+                  setSelectedCategory('All');
+                  setSelectedTag(null);
+              }
+          }
+          
+          window.history.pushState({}, '', url);
+      }
       
-      // Scroll to top
       window.scrollTo(0, 0);
   };
 
@@ -316,7 +364,7 @@ const App: React.FC = () => {
         const mode = params.get('mode');
         const categoryParam = params.get('category');
         const tagParam = params.get('tag');
-        const searchParam = params.get('q'); // Support search via URL
+        const searchParam = params.get('q');
 
         // Check for Editor Mode first
         if (mode === 'edit') {
@@ -358,23 +406,21 @@ const App: React.FC = () => {
                 setActivePrompt(null);
                 setView('library');
             }
-            // If just clearing filters
+            // If just clearing filters via URL manually
             if (!id && !tagParam && !categoryParam && view === 'library') {
                 setSelectedCategory('All');
                 setSelectedTag(null);
             }
         }
 
-        // Handle Search Query
+        // Handle Search Query from URL
         if (searchParam) {
             setSearchQuery(searchParam);
         } else if (!id && !mode) {
-            // Only clear search if we are in library mode and explicit nav happened,
-            // but allow searchQuery persistence if user just refreshed unless explicitly empty
-            // This logic keeps text in box if 'q' param exists
-            if (searchParam === null && window.location.search === '') {
-                 // optional: setSearchQuery('');
-            }
+             // Only clear search if explicitly missing from URL in library view
+             if (searchParam === null && window.location.search === '') {
+                 // Optional: setSearchQuery('');
+             }
         }
     };
 
@@ -386,7 +432,7 @@ const App: React.FC = () => {
     }
 
     return () => window.removeEventListener('popstate', handleUrlChange);
-  }, [prompts, isLoading, view]); // Dependencies updated to handle transitions
+  }, [prompts, isLoading, view]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
@@ -417,6 +463,14 @@ const App: React.FC = () => {
 
   // Pagination Logic
   const totalPages = Math.ceil(visiblePrompts.length / ITEMS_PER_PAGE);
+  
+  // Correction: If current page exceeds total pages (e.g. after delete), go to last page
+  useEffect(() => {
+      if (currentPage > totalPages) {
+          setCurrentPage(Math.max(1, totalPages));
+      }
+  }, [totalPages, currentPage]);
+
   const paginatedPrompts = visiblePrompts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE, 
     currentPage * ITEMS_PER_PAGE
@@ -485,8 +539,8 @@ const App: React.FC = () => {
       
       setPrompts(updatedPrompts);
       
-      // Return to library
-      navigateTo('library');
+      // Return to library, preserving filter state so user doesn't lose context
+      navigateTo('library', { preserveState: true });
 
       setConfirmState(prev => ({ ...prev, isOpen: false }));
 
@@ -685,12 +739,12 @@ const App: React.FC = () => {
                     initialData={activePrompt} 
                     onSave={savePrompt} 
                     onDelete={requestDeletePrompt}
-                    onCancel={() => navigateTo(activePrompt ? 'detail' : 'library', { prompt: activePrompt || undefined })} 
+                    onCancel={() => activePrompt ? navigateTo('detail', { prompt: activePrompt }) : navigateTo('library', { preserveState: true })} 
                 />
             ) : view === 'detail' && activePrompt ? (
                 <PromptDetail 
                     prompt={activePrompt}
-                    onBack={() => navigateTo('library', { category: selectedCategory })}
+                    onBack={() => navigateTo('library', { preserveState: true })}
                     onEdit={(p) => { 
                         if (!isAuthenticated) {
                              handleLoginRequest();

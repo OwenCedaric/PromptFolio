@@ -13,7 +13,8 @@ import {
     RiDeleteBinLine,
     RiFileTextLine,
     RiInformationLine,
-    RiCopyrightLine
+    RiCopyrightLine,
+    RiShieldCheckLine
 } from '@remixicon/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -257,8 +258,8 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     {/* Tags & Stats Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Tags Card */}
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm">
-                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm flex flex-col">
+                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <RiPriceTag3Line size={14} /> Tags
                             </h3>
                             <div className="flex flex-wrap gap-2">
@@ -275,25 +276,39 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             </div>
                         </div>
 
-                        {/* Info Card */}
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm">
-                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        {/* Info Card (Updated Layout) */}
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
+                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <RiGlobalLine size={14} /> Info
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
+                                {/* Row 1: Status & Versions */}
                                 <div>
-                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Status</span>
-                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">{prompt.status.toLowerCase()}</span>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1.5">Status</span>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 capitalize">
+                                        {prompt.status.toLowerCase()}
+                                    </span>
                                 </div>
                                 <div>
-                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Versions</span>
-                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{prompt.versions.length}</span>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1.5">Versions</span>
+                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 pl-1">{prompt.versions.length}</span>
                                 </div>
-                                <div>
-                                     <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">License</span>
-                                     <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate block" title={prompt.copyright}>
-                                        {prompt.copyright || 'None'}
-                                     </span>
+
+                                {/* Row 2: License (Full Width) */}
+                                <div className="col-span-2 pt-3 border-t border-zinc-100 dark:border-zinc-800 mt-1">
+                                     <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-2">License & Rights</span>
+                                     <div className="flex items-start gap-2.5">
+                                        <div className="shrink-0 text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                            {prompt.copyright && prompt.copyright !== Copyright.NONE ? (
+                                                <RiShieldCheckLine size={16} />
+                                            ) : (
+                                                <RiCopyrightLine size={16} />
+                                            )}
+                                        </div>
+                                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-snug">
+                                            {prompt.copyright || 'None / Unspecified'}
+                                        </span>
+                                     </div>
                                 </div>
                             </div>
                         </div>
@@ -302,16 +317,10 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     {/* Description Content */}
                     {prompt.description ? (
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.02)] dark:shadow-none">
-                            <div className="flex justify-between items-center mb-4">
+                            <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
                                     <RiInformationLine size={14} /> Description
                                 </h3>
-                                {prompt.copyright && prompt.copyright !== Copyright.NONE && (
-                                    <div className="flex items-center gap-1 text-[10px] text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
-                                        <RiCopyrightLine size={10} />
-                                        <span>{prompt.copyright}</span>
-                                    </div>
-                                )}
                             </div>
                             <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
                                 <ReactMarkdown 
