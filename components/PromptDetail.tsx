@@ -57,6 +57,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://promptfolio.pages.dev';
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
+    // Safely get dates, defaulting to now if versions/updatedAt are invalid
+    const datePublished = (sortedVersions.length > 0 && sortedVersions[sortedVersions.length - 1]?.createdAt) 
+        ? new Date(sortedVersions[sortedVersions.length - 1].createdAt).toISOString()
+        : new Date().toISOString();
+        
+    const dateModified = prompt.updatedAt ? new Date(prompt.updatedAt).toISOString() : new Date().toISOString();
+
     // 1. Breadcrumb Schema
     const breadcrumbSchema = {
       "@context": "https://schema.org",
@@ -90,14 +97,14 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
       "name": prompt.title,
       "description": prompt.description || `A comprehensive ${prompt.category} prompt for AI models.`,
       "image": prompt.imageUrl ? [prompt.imageUrl] : undefined,
-      "datePublished": new Date(sortedVersions[sortedVersions.length - 1].createdAt).toISOString(),
-      "dateModified": new Date(prompt.updatedAt).toISOString(),
+      "datePublished": datePublished,
+      "dateModified": dateModified,
       "author": {
         "@type": "Organization",
         "name": "PromptFolio",
         "url": baseUrl
       },
-      "keywords": prompt.tags.join(", "),
+      "keywords": (prompt.tags || []).join(", "),
       "genre": prompt.category,
       "version": sortedVersions.length.toString(),
       "mainEntityOfPage": {
@@ -141,22 +148,18 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                  </button>
                  
                  <div className="flex items-center gap-2">
-                    {isAuthenticated && (
-                        <>
-                             <button 
-                                onClick={() => onToggleFavorite(prompt.id)} 
-                                className={`p-2 rounded-full ${prompt.isFavorite ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-400'}`}
-                            >
-                                {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
-                            </button>
-                            <button 
-                                onClick={() => onEdit(prompt)}
-                                className="text-zinc-700 dark:text-zinc-200 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-200/50 dark:bg-zinc-800"
-                            >
-                                Edit
-                            </button>
-                        </>
-                    )}
+                    <button 
+                        onClick={() => onToggleFavorite(prompt.id)} 
+                        className={`p-2 rounded-full ${prompt.isFavorite ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-400'}`}
+                    >
+                        {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
+                    </button>
+                    <button 
+                        onClick={() => onEdit(prompt)}
+                        className="text-zinc-700 dark:text-zinc-200 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-200/50 dark:bg-zinc-800"
+                    >
+                        Edit
+                    </button>
                  </div>
              </div>
              <h1 className="text-xl font-bold text-zinc-900 dark:text-white mt-2 line-clamp-2">{prompt.title}</h1>
@@ -183,37 +186,33 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                          </div>
 
                          <div className="flex items-center gap-3">
-                             {isAuthenticated && (
-                                 <>
-                                    <button 
-                                        onClick={() => onToggleFavorite(prompt.id)} 
-                                        className={`p-2 rounded-full transition-colors ${prompt.isFavorite ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
-                                        title={prompt.isFavorite ? "Remove from favorites" : "Add to favorites"}
-                                    >
-                                        {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
-                                    </button>
-                                    
-                                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+                            <button 
+                                onClick={() => onToggleFavorite(prompt.id)} 
+                                className={`p-2 rounded-full transition-colors ${prompt.isFavorite ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                                title={prompt.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                            >
+                                {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
+                            </button>
+                            
+                            <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
 
-                                    <button 
-                                        type="button"
-                                        onClick={handleDeletePrompt}
-                                        className="px-3 py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
-                                        title="Delete Entire Prompt"
-                                    >
-                                        <RiDeleteBinLine size={18} />
-                                        <span className="text-sm font-medium">Delete</span>
-                                    </button>
+                            <button 
+                                type="button"
+                                onClick={handleDeletePrompt}
+                                className="px-3 py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
+                                title="Delete Entire Prompt"
+                            >
+                                <RiDeleteBinLine size={18} />
+                                <span className="text-sm font-medium">Delete</span>
+                            </button>
 
-                                    <button 
-                                        onClick={() => onEdit(prompt)}
-                                        className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all"
-                                    >
-                                        <RiPencilLine size={16} />
-                                        <span>Edit Prompt</span>
-                                    </button>
-                                 </>
-                             )}
+                            <button 
+                                onClick={() => onEdit(prompt)}
+                                className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all"
+                            >
+                                <RiPencilLine size={16} />
+                                <span>Edit Prompt</span>
+                            </button>
                          </div>
                     </div>
 

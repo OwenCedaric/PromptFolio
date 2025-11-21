@@ -142,7 +142,16 @@ const App: React.FC = () => {
       try {
           const local = localStorage.getItem('promptfolio_data');
           if (local) {
-              return JSON.parse(local);
+              const parsed = JSON.parse(local);
+              // Ensure parsed data is an array and has content
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                  // Sanitize data to ensure required arrays exist
+                  return parsed.map(p => ({
+                      ...p,
+                      tags: Array.isArray(p.tags) ? p.tags : [],
+                      versions: Array.isArray(p.versions) ? p.versions : []
+                  }));
+              }
           }
       } catch (e) {
           console.error("Failed to parse local data", e);
@@ -332,13 +341,13 @@ const App: React.FC = () => {
   // --- Computed ---
   const visiblePrompts = useMemo(() => {
     return prompts.filter(p => {
-      const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesSearch = (p.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+                            (p.tags || []).some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       
       let matchesFilter = true;
 
       if (selectedTag) {
-          matchesFilter = p.tags.includes(selectedTag);
+          matchesFilter = (p.tags || []).includes(selectedTag);
       } else if (selectedCategory === 'Favorites') {
           matchesFilter = !!p.isFavorite;
       } else if (selectedCategory !== 'All') {
@@ -355,6 +364,32 @@ const App: React.FC = () => {
     (currentPage - 1) * ITEMS_PER_PAGE, 
     currentPage * ITEMS_PER_PAGE
   );
+
+  // --- Auth Logic ---
+  const handleLoginRequest = () => {
+    if (!SITE_PASSWORD) {
+        setIsAuthenticated(true);
+        return;
+    }
+    setIsLoginModalOpen(true);
+  };
+
+  const submitLogin = () => {
+    if (passwordInput === SITE_PASSWORD) {
+        setIsAuthenticated(true);
+        localStorage.setItem('pf_auth_session', '1');
+        setIsLoginModalOpen(false);
+        setPasswordInput('');
+        setLoginError(false);
+    } else {
+        setLoginError(true);
+    }
+  };
+
+  const handleLogout = () => {
+      setIsAuthenticated(false);
+      localStorage.removeItem('pf_auth_session');
+  };
 
   // --- Actions ---
   const savePrompt = async (data: PromptData) => {
@@ -414,6 +449,11 @@ const App: React.FC = () => {
   };
 
   const requestDeletePrompt = (id: string) => {
+      if (!isAuthenticated) {
+          handleLoginRequest();
+          return;
+      }
+
       setConfirmState({
           isOpen: true,
           title: 'Delete Prompt?',
@@ -423,6 +463,11 @@ const App: React.FC = () => {
   };
 
   const toggleFavorite = async (id: string) => {
+      if (!isAuthenticated) {
+          handleLoginRequest();
+          return;
+      }
+
       const prompt = prompts.find(p => p.id === id);
       if (!prompt) return;
 
@@ -452,32 +497,6 @@ const App: React.FC = () => {
            setIsDemoMode(true);
            saveLocalData(updatedList);
       }
-  };
-
-  // --- Auth Logic ---
-  const handleLoginRequest = () => {
-    if (!SITE_PASSWORD) {
-        setIsAuthenticated(true);
-        return;
-    }
-    setIsLoginModalOpen(true);
-  };
-
-  const submitLogin = () => {
-    if (passwordInput === SITE_PASSWORD) {
-        setIsAuthenticated(true);
-        localStorage.setItem('pf_auth_session', '1');
-        setIsLoginModalOpen(false);
-        setPasswordInput('');
-        setLoginError(false);
-    } else {
-        setLoginError(true);
-    }
-  };
-
-  const handleLogout = () => {
-      setIsAuthenticated(false);
-      localStorage.removeItem('pf_auth_session');
   };
 
   const handleCreateNew = () => {
