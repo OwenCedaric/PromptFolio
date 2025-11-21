@@ -86,7 +86,9 @@ const App: React.FC = () => {
   // Safely access process.env using window check to prevent reference errors in strict modules
   const getEnv = (key: string) => {
       try {
-          return (typeof process !== 'undefined' && process.env) ? process.env[key] : undefined;
+          // Explicitly use window.process to avoid module scoping issues
+          const env = typeof window !== 'undefined' ? (window as any).process?.env : {};
+          return env ? env[key] : undefined;
       } catch (e) {
           return undefined;
       }

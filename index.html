@@ -68,6 +68,9 @@
       if (typeof process === 'undefined') {
         window.process = { env: {} };
       }
+      if (typeof global === 'undefined') {
+        window.global = window;
+      }
     </script>
 
     <!-- Theme Initialization Script (Prevents FOUC & Fixes Native UI) -->
@@ -93,12 +96,15 @@
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react/jsx-runtime": "https://aistudiocdn.com/react@^19.2.0/jsx-runtime",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
     "@remixicon/react": "https://aistudiocdn.com/@remixicon/react@^4.7.0",
     "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
   }
 }
 </script>
