@@ -20,6 +20,21 @@
     <meta property="og:description" content="Professional AI Prompt Management System for developers and prompt engineers." />
     <meta property="og:site_name" content="PromptFolio" />
 
+    <!-- Structured Data: WebSite -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "PromptFolio",
+        "url": "https://promptfolio.pages.dev",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://promptfolio.pages.dev/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
@@ -86,7 +101,7 @@
 }
 </script>
   </head>
-  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-screen w-full fixed">
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full fixed scrollbar-hide">
     <div id="root" class="h-full w-full overflow-hidden flex flex-col"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

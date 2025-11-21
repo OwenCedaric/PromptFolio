@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
     RiArrowLeftLine, 
     RiFileCopyLine, 
@@ -16,7 +16,7 @@ import {
 } from '@remixicon/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { PromptData, PromptStatus } from '../types';
+import { PromptData, PromptStatus, Category } from '../types';
 
 interface PromptDetailProps {
   prompt: PromptData;
@@ -50,6 +50,65 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
       }
   }, [prompt.title]);
 
+  // --- Structured Data (Schema.org) Generation ---
+  const jsonLd = useMemo(() => {
+    const isCoding = prompt.category === Category.CODING;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://promptfolio.pages.dev';
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+    // 1. Breadcrumb Schema
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Library",
+          "item": baseUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": prompt.category,
+          "item": `${baseUrl}/?category=${encodeURIComponent(prompt.category)}` // Logical linking
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": prompt.title
+        }
+      ]
+    };
+
+    // 2. Article/CreativeWork Schema
+    const articleSchema = {
+      "@context": "https://schema.org",
+      "@type": isCoding ? "TechArticle" : "CreativeWork",
+      "headline": prompt.title,
+      "name": prompt.title,
+      "description": prompt.description || `A comprehensive ${prompt.category} prompt for AI models.`,
+      "image": prompt.imageUrl ? [prompt.imageUrl] : undefined,
+      "datePublished": new Date(sortedVersions[sortedVersions.length - 1].createdAt).toISOString(),
+      "dateModified": new Date(prompt.updatedAt).toISOString(),
+      "author": {
+        "@type": "Organization",
+        "name": "PromptFolio",
+        "url": baseUrl
+      },
+      "keywords": prompt.tags.join(", "),
+      "genre": prompt.category,
+      "version": sortedVersions.length.toString(),
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": currentUrl
+      }
+    };
+
+    return JSON.stringify([breadcrumbSchema, articleSchema]);
+  }, [prompt, sortedVersions]);
+
+
   const viewedVersion = prompt.versions.find(v => v.id === selectedVersionId) || prompt.versions[prompt.versions.length - 1];
 
   const handleCopy = () => {
@@ -65,26 +124,64 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
   return (
     <article className="h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
       
+      {/* Inject Schema.org JSON-LD */}
+      <script 
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd }}
+      />
+
       {/* Main Content Layout - Two independent columns on large screens */}
       <div className="flex-1 overflow-hidden relative min-h-0">
+        {/* Header fixed outside scrollable area for mobile access */}
+        <div className="lg:hidden shrink-0 px-6 pt-6 pb-4 bg-zinc-50/95 dark:bg-zinc-950/95 border-b border-zinc-200/50 dark:border-zinc-800/50 z-20 backdrop-blur-sm sticky top-0">
+             <div className="flex items-center justify-between">
+                 <button onClick={onBack} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-full transition-colors">
+                    <RiArrowLeftLine size={20} />
+                 </button>
+                 
+                 <div className="flex items-center gap-2">
+                    {isAuthenticated && (
+                        <>
+                             <button 
+                                onClick={() => onToggleFavorite(prompt.id)} 
+                                className={`p-2 rounded-full ${prompt.isFavorite ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-400'}`}
+                            >
+                                {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
+                            </button>
+                            <button 
+                                onClick={() => onEdit(prompt)}
+                                className="text-zinc-700 dark:text-zinc-200 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-200/50 dark:bg-zinc-800"
+                            >
+                                Edit
+                            </button>
+                        </>
+                    )}
+                 </div>
+             </div>
+             <h1 className="text-xl font-bold text-zinc-900 dark:text-white mt-2 line-clamp-2">{prompt.title}</h1>
+             <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
+                 <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 uppercase text-[10px] font-bold tracking-wider">{prompt.category}</span>
+                 <span>•</span>
+                 <span>v{sortedVersions.findIndex(v => v.id === viewedVersion?.id) + 1}</span>
+             </div>
+        </div>
+
         <div className="h-full max-w-[1920px] mx-auto lg:grid lg:grid-cols-12 lg:divide-x lg:divide-zinc-200 dark:lg:divide-zinc-800">
             
             {/* LEFT COLUMN (58%): Info, Description, Metadata */}
-            {/* UPDATED: Flex Column with Fixed Header and Scrolling Body */}
             <section className={`lg:col-span-7 h-full flex flex-col overflow-hidden ${mobileTab === 'prompt' ? 'hidden lg:flex' : 'flex'}`}>
                 
-                {/* Fixed Header Area: Actions + Title */}
-                <div className="shrink-0 px-6 md:px-10 pt-6 md:pt-10 pb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50 z-10">
-                    {/* Header Actions */}
+                {/* Desktop Header Area */}
+                <div className="hidden lg:block shrink-0 px-10 pt-10 pb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50 z-10">
                     <div className="flex items-center justify-between mb-6">
                          <div className="flex items-center gap-4">
                             <button onClick={onBack} aria-label="Go Back" className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                                 <RiArrowLeftLine size={20} />
                             </button>
-                            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hidden md:block">Prompt Details</span>
+                            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Prompt Details</span>
                          </div>
 
-                         <div className="flex items-center gap-2 md:gap-3">
+                         <div className="flex items-center gap-3">
                              {isAuthenticated && (
                                  <>
                                     <button 
@@ -95,16 +192,16 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                         {prompt.isFavorite ? <RiStarFill size={20} /> : <RiStarLine size={20} />}
                                     </button>
                                     
-                                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1 hidden md:block"></div>
+                                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
 
                                     <button 
                                         type="button"
                                         onClick={handleDeletePrompt}
-                                        className="p-2 md:px-3 md:py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
+                                        className="px-3 py-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
                                         title="Delete Entire Prompt"
                                     >
                                         <RiDeleteBinLine size={18} />
-                                        <span className="hidden md:inline text-sm font-medium">Delete</span>
+                                        <span className="text-sm font-medium">Delete</span>
                                     </button>
 
                                     <button 
@@ -112,15 +209,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                         className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all"
                                     >
                                         <RiPencilLine size={16} />
-                                        <span className="hidden md:inline">Edit Prompt</span>
-                                        <span className="md:hidden">Edit</span>
+                                        <span>Edit Prompt</span>
                                     </button>
                                  </>
                              )}
                          </div>
                     </div>
 
-                    {/* Title & Meta Block */}
                     <div>
                         <div className="flex flex-wrap items-center gap-3 mb-4">
                             <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
@@ -136,12 +231,12 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 Updated {new Date(prompt.updatedAt).toLocaleDateString()}
                             </span>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white leading-tight line-clamp-3">{prompt.title}</h1>
+                        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white leading-tight line-clamp-3">{prompt.title}</h1>
                     </div>
                 </div>
 
-                {/* Scrollable Body: Tags, Stats, Description */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 scrollbar-hide">
+                {/* Scrollable Body */}
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-4 md:pt-8 pb-32 lg:pb-10 space-y-8 no-scrollbar">
                     {/* Tags & Stats Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Tags Card */}
@@ -207,7 +302,6 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
             </section>
 
             {/* RIGHT COLUMN (42%): Prompt Content */}
-            {/* Container fixed height, inner content scrolls */}
             <section className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex flex-col h-full">
                     {/* Header for Prompt Column */}
