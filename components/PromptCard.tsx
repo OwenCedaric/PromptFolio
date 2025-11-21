@@ -171,7 +171,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
              
              {/* Minimalist Date for List View */}
              <span className="text-[10px] text-zinc-400 hidden md:block">
-                Updated {new Date(prompt.updatedAt).toLocaleDateString()}
+                {new Date(prompt.updatedAt).toLocaleDateString()}
              </span>
          </div>
 
