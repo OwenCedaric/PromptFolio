@@ -1,5 +1,5 @@
 import React from 'react';
-import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiCommandFill, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine } from '@remixicon/react';
+import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine } from '@remixicon/react';
 import { Category } from '../types';
 
 interface SidebarProps {
@@ -18,6 +18,15 @@ interface SidebarProps {
   toggleCollapse: () => void;
 }
 
+// Inline Logo Component to ensure it displays correctly
+const Logo = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <rect x="2" y="2" width="60" height="60" rx="16" fill="#18181b" stroke="#3f3f46" strokeWidth="2"/>
+    <path d="M18 20L30 32L18 44" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
+    <rect x="36" y="38" width="14" height="6" rx="1" fill="white"/>
+  </svg>
+);
+
 const Sidebar: React.FC<SidebarProps> = ({ 
     siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse
 }) => {
@@ -35,12 +44,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-5'} shrink-0 border-b border-transparent`}>
             {!isCollapsed ? (
                 <div className="flex items-center gap-2.5 overflow-hidden whitespace-nowrap">
-                    <img src="/favicon.svg" alt="Logo" className="w-7 h-7 rounded shrink-0" />
+                    <Logo className="w-7 h-7 rounded shrink-0" />
                     <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-white uppercase">{siteName || 'PROMPTFOLIO'}</span>
                 </div>
             ) : (
                  <div className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer hover:scale-105 transition-transform" onClick={toggleCollapse} title="Expand">
-                    <img src="/favicon.svg" alt="Logo" className="w-full h-full rounded" />
+                    <Logo className="w-full h-full rounded" />
                 </div>
             )}
 

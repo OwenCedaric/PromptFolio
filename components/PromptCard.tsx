@@ -28,7 +28,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 cursor-pointer flex flex-col h-[240px] p-5 relative hover:shadow-sm rounded-2xl overflow-hidden"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 cursor-pointer flex flex-col h-[260px] p-5 relative hover:shadow-sm rounded-2xl overflow-hidden"
     >
       {/* Watermarks (Background Layer) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
@@ -59,19 +59,21 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
             </div>
         </div>
 
-        <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-2 line-clamp-1 group-hover:underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-4">
+        <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-3 line-clamp-1 group-hover:underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-4">
             {prompt.title}
         </h3>
         
-        <div className="flex-1 overflow-hidden relative mb-3">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono leading-relaxed line-clamp-5 opacity-90">
+        {/* Content Bubble - Rounded Rectangle Mask (No BG/Border) */}
+        <div className="flex-1 overflow-hidden relative mb-3 rounded-xl">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono leading-relaxed line-clamp-4 opacity-90">
                 {currentVersion?.content || 'No content'}
             </p>
-            {/* Gradient Fade - Removed rounded-b-2xl to prevent text peaking out at corners */}
-            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent"></div>
+            
+            {/* Gradient Fade - Fades to Card Background Color */}
+            <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-zinc-900 dark:via-zinc-900/80"></div>
         </div>
 
-        <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2 overflow-hidden">
+        <div className="flex gap-2 overflow-hidden mt-auto">
             {prompt.tags.slice(0, 3).map(tag => (
                 <span 
                     key={tag} 
