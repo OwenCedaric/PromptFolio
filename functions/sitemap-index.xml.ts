@@ -27,6 +27,14 @@ export const onRequestGet = async (context: any) => {
     <loc>${baseUrl}/sitemap-prompts.xml</loc>
     <lastmod>${lastMod}</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-categories.xml</loc>
+    <lastmod>${lastMod}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-tags.xml</loc>
+    <lastmod>${lastMod}</lastmod>
+  </sitemap>
 </sitemapindex>`;
 
   return new Response(sitemapIndex, {

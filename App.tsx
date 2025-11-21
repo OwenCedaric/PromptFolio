@@ -4,7 +4,7 @@ import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
 import PromptDetail from './components/PromptDetail';
 import { PromptData, Category, PromptStatus } from './types';
-import { RiMenuLine, RiSearchLine, RiCloseLine, RiErrorWarningLine, RiLoader4Line, RiWifiOffLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
+import { RiMenuLine, RiSearchLine, RiCloseLine, RiErrorWarningLine, RiLoader4Line, RiWifiOffLine, RiArrowLeftSLine, RiArrowRightSLine, RiPriceTag3Line, RiCloseCircleLine } from '@remixicon/react';
 
 // --- Mock Data for Fallback ---
 const MOCK_PROMPTS: PromptData[] = [
@@ -105,6 +105,7 @@ const App: React.FC = () => {
   const [activePrompt, setActivePrompt] = useState<PromptData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const [isDemoMode, setIsDemoMode] = useState(false);
@@ -182,12 +183,34 @@ const App: React.FC = () => {
       fetchPrompts();
   }, []);
 
-  // SEO: Reset title when on library view
+  // --- SEO & Title Management ---
   useEffect(() => {
-      if (view === 'library') {
-          document.title = `Library | ${SITE_NAME}`;
+      let title = SITE_NAME;
+      if (view === 'detail' && activePrompt) {
+          title = `${activePrompt.title} | ${SITE_NAME}`;
+      } else if (selectedTag) {
+          title = `#${selectedTag} Prompts | ${SITE_NAME}`;
+      } else if (selectedCategory !== 'All') {
+          title = `${selectedCategory} Prompts | ${SITE_NAME}`;
+      } else if (view === 'editor') {
+          title = `Editor | ${SITE_NAME}`;
       }
-  }, [view, SITE_NAME]);
+      document.title = title;
+
+      // Update meta description
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+          if (view === 'detail' && activePrompt) {
+              metaDesc.setAttribute('content', activePrompt.description || `View the ${activePrompt.title} prompt on ${SITE_NAME}.`);
+          } else if (selectedTag) {
+               metaDesc.setAttribute('content', `Explore our collection of ${selectedTag} AI prompts.`);
+          } else if (selectedCategory !== 'All') {
+               metaDesc.setAttribute('content', `Browse the best ${selectedCategory} prompts for AI models.`);
+          } else {
+               metaDesc.setAttribute('content', "Organize, version, and optimize your AI prompts with Google Gemini integration.");
+          }
+      }
+  }, [view, activePrompt, selectedCategory, selectedTag, SITE_NAME]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -202,30 +225,90 @@ const App: React.FC = () => {
 
   // --- Routing & URL Handling ---
   
-  // Sync URL state with App state on popstate (browser back/forward)
+  // Navigation Helper
+  const navigateTo = (newView: 'library' | 'detail' | 'editor', params?: { prompt?: PromptData, category?: string, tag?: string }) => {
+      const url = new URL(window.location.href);
+      
+      // Reset params
+      url.searchParams.delete('id');
+      url.searchParams.delete('category');
+      url.searchParams.delete('tag');
+
+      if (newView === 'detail' && params?.prompt) {
+          url.searchParams.set('id', params.prompt.id);
+          window.history.pushState({}, '', url);
+          setActivePrompt(params.prompt);
+          setView('detail');
+      } else if (newView === 'library') {
+          if (params?.category) {
+              url.searchParams.set('category', params.category);
+              setSelectedCategory(params.category);
+              setSelectedTag(null);
+          } else if (params?.tag) {
+              url.searchParams.set('tag', params.tag);
+              setSelectedTag(params.tag);
+              setSelectedCategory('All');
+          } else {
+              setSelectedCategory('All');
+              setSelectedTag(null);
+          }
+          
+          window.history.pushState({}, '', url);
+          setActivePrompt(null);
+          setView('library');
+      } else if (newView === 'editor') {
+          if (!params?.prompt) {
+             // New Prompt
+             setActivePrompt(null);
+          } else {
+             // Editing existing
+             url.searchParams.set('id', params.prompt.id);
+             setActivePrompt(params.prompt);
+          }
+          window.history.pushState({}, '', url);
+          setView('editor');
+      }
+      
+      // Scroll to top
+      window.scrollTo(0, 0);
+  };
+
+  // Sync URL state with App state on popstate (browser back/forward) AND initial load
   useEffect(() => {
     const handleUrlChange = () => {
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
+        const categoryParam = params.get('category');
+        const tagParam = params.get('tag');
 
         if (id) {
             const found = prompts.find(p => p.id === id);
             if (found) {
                 setActivePrompt(found);
                 setView('detail');
-            } else if (!isLoading && prompts.length > 0) {
-                // ID provided but not found in loaded prompts? 
-                // For now, do nothing or fallback to library could be jarring.
-                // We'll wait for prompts to load if they haven't.
+                return;
             }
+        } 
+        
+        if (tagParam) {
+            setSelectedTag(tagParam);
+            setSelectedCategory('All');
+            setView('library');
+        } else if (categoryParam) {
+            setSelectedCategory(categoryParam);
+            setSelectedTag(null);
+            setView('library');
         } else {
-            // No ID in URL
+            // Root or pure library
             if (view === 'detail') {
-                // If we were in detail and URL changed to root, go back to library
                 setActivePrompt(null);
                 setView('library');
             }
-            // Note: If in 'editor', we don't force library, preserving 'New Prompt' state which has no ID yet
+            // If just clearing filters
+            if (!id && !tagParam && !categoryParam && view === 'library') {
+                setSelectedCategory('All');
+                setSelectedTag(null);
+            }
         }
     };
 
@@ -237,45 +320,14 @@ const App: React.FC = () => {
     }
 
     return () => window.removeEventListener('popstate', handleUrlChange);
-  }, [prompts, isLoading, view]);
-
-  // Navigation Helper
-  const navigateTo = (newView: 'library' | 'detail' | 'editor', prompt?: PromptData) => {
-      const url = new URL(window.location.href);
-      
-      if (newView === 'detail' && prompt) {
-          url.searchParams.set('id', prompt.id);
-          window.history.pushState({}, '', url);
-          setActivePrompt(prompt);
-          setView('detail');
-      } else if (newView === 'library') {
-          url.searchParams.delete('id');
-          window.history.pushState({}, '', url);
-          setActivePrompt(null);
-          setView('library');
-      } else if (newView === 'editor') {
-          if (!prompt) {
-             // New Prompt
-             url.searchParams.delete('id');
-             window.history.pushState({}, '', url);
-             setActivePrompt(null);
-          } else {
-             // Editing existing
-             // URL should already be correct, but ensure it
-             url.searchParams.set('id', prompt.id);
-             window.history.replaceState({}, '', url); // replace to not create history dupes
-             setActivePrompt(prompt);
-          }
-          setView('editor');
-      }
-  };
+  }, [prompts, isLoading, view]); // Dependencies updated to handle transitions
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
   // Reset pagination when filter changes
   useEffect(() => {
       setCurrentPage(1);
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, selectedTag]);
 
   // --- Computed ---
   const visiblePrompts = useMemo(() => {
@@ -283,16 +335,19 @@ const App: React.FC = () => {
       const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       
-      let matchesCategory = true;
-      if (selectedCategory === 'Favorites') {
-          matchesCategory = !!p.isFavorite;
+      let matchesFilter = true;
+
+      if (selectedTag) {
+          matchesFilter = p.tags.includes(selectedTag);
+      } else if (selectedCategory === 'Favorites') {
+          matchesFilter = !!p.isFavorite;
       } else if (selectedCategory !== 'All') {
-          matchesCategory = p.category === selectedCategory;
+          matchesFilter = p.category === selectedCategory;
       }
       
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesFilter;
     });
-  }, [prompts, searchQuery, selectedCategory]);
+  }, [prompts, searchQuery, selectedCategory, selectedTag]);
 
   // Pagination Logic
   const totalPages = Math.ceil(visiblePrompts.length / ITEMS_PER_PAGE);
@@ -310,8 +365,8 @@ const App: React.FC = () => {
     
     setPrompts(updatedPrompts);
 
-    // Upon save, show detail view and update URL
-    navigateTo('detail', data);
+    // Upon save, show detail view
+    navigateTo('detail', { prompt: data });
 
     if (isDemoMode) {
         saveLocalData(updatedPrompts);
@@ -338,12 +393,8 @@ const App: React.FC = () => {
       
       setPrompts(updatedPrompts);
       
-      // Clear URL and return to library
-      const url = new URL(window.location.href);
-      url.searchParams.delete('id');
-      window.history.replaceState({}, '', url);
-      setActivePrompt(null);
-      setView('library');
+      // Return to library
+      navigateTo('library');
 
       setConfirmState(prev => ({ ...prev, isOpen: false }));
 
@@ -503,7 +554,7 @@ const App: React.FC = () => {
       <Sidebar 
         siteName={SITE_NAME}
         selectedCategory={selectedCategory}
-        onSelectCategory={(cat) => { setSelectedCategory(cat); navigateTo('library'); if(window.innerWidth < 768) setSidebarOpen(false); }}
+        onSelectCategory={(cat) => { navigateTo('library', { category: cat }); if(window.innerWidth < 768) setSidebarOpen(false); }}
         onCreateNew={handleCreateNew}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -550,22 +601,23 @@ const App: React.FC = () => {
                     initialData={activePrompt} 
                     onSave={savePrompt} 
                     onDelete={requestDeletePrompt}
-                    onCancel={() => navigateTo(activePrompt ? 'detail' : 'library', activePrompt || undefined)} 
+                    onCancel={() => navigateTo(activePrompt ? 'detail' : 'library', { prompt: activePrompt || undefined })} 
                 />
             ) : view === 'detail' && activePrompt ? (
                 <PromptDetail 
                     prompt={activePrompt}
-                    onBack={() => navigateTo('library')}
+                    onBack={() => navigateTo('library', { category: selectedCategory })}
                     onEdit={(p) => { 
                         if (!isAuthenticated) {
                              handleLoginRequest();
                              return;
                         }
-                        navigateTo('editor', p);
+                        navigateTo('editor', { prompt: p });
                     }}
                     onDelete={requestDeletePrompt}
                     onToggleFavorite={toggleFavorite}
                     isAuthenticated={isAuthenticated}
+                    onTagClick={(tag) => navigateTo('library', { tag })}
                 />
             ) : (
                 /* Library View - Grid Scroll */
@@ -575,9 +627,23 @@ const App: React.FC = () => {
                         {/* Library Header */}
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 shrink-0">
                             <div>
-                                <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">{selectedCategory === 'All' ? 'Library' : selectedCategory}</h1>
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
+                                        {selectedTag ? `#${selectedTag}` : (selectedCategory === 'All' ? 'Library' : selectedCategory)}
+                                    </h1>
+                                    {selectedTag && (
+                                        <button 
+                                            onClick={() => navigateTo('library', { category: 'All' })}
+                                            className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                                            title="Clear Tag Filter"
+                                        >
+                                            <RiCloseCircleLine size={20} />
+                                        </button>
+                                    )}
+                                </div>
                                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                                     {visiblePrompts.length} {visiblePrompts.length === 1 ? 'result' : 'results'}
+                                    {selectedTag && <span> with tag <b>#{selectedTag}</b></span>}
                                 </p>
                             </div>
                             
@@ -601,13 +667,26 @@ const App: React.FC = () => {
                                     <PromptCard 
                                         key={prompt.id} 
                                         prompt={prompt} 
-                                        onClick={(p) => navigateTo('detail', p)}
+                                        onClick={(p) => navigateTo('detail', { prompt: p })}
+                                        onTagClick={(t) => navigateTo('library', { tag: t })}
                                     />
                                 ))}
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-32 text-zinc-400 dark:text-zinc-600 flex-1">
-                                <p className="text-sm">No prompts found.</p>
+                                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-300 dark:text-zinc-600">
+                                    <RiSearchLine size={32} />
+                                </div>
+                                <p className="text-sm font-medium mb-1">No prompts found</p>
+                                <p className="text-xs">Try adjusting your filters or search query</p>
+                                {(selectedCategory !== 'All' || selectedTag) && (
+                                    <button 
+                                        onClick={() => navigateTo('library', { category: 'All' })}
+                                        className="mt-4 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                    >
+                                        Clear all filters
+                                    </button>
+                                )}
                             </div>
                         )}
 

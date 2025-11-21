@@ -5,9 +5,10 @@ import { PromptData, PromptStatus } from '../types';
 interface PromptCardProps {
   prompt: PromptData;
   onClick: (prompt: PromptData) => void;
+  onTagClick?: (tag: string) => void;
 }
 
-const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick }) => {
+const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) => {
   const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
   
   // Calculate version number based on creation time
@@ -15,6 +16,12 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick }) => {
   const versionNumber = sortedVersions.findIndex(v => v.id === currentVersion?.id) + 1;
 
   const isDraft = prompt.status === PromptStatus.DRAFT;
+
+  const handleTagClick = (e: React.MouseEvent, tag: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onTagClick) onTagClick(tag);
+  };
 
   return (
     <a 
@@ -58,9 +65,15 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick }) => {
             <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent rounded-b-2xl"></div>
         </div>
 
-        <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2">
+        <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2 overflow-hidden">
             {prompt.tags.slice(0, 3).map(tag => (
-                <span key={tag} className="text-[10px] text-zinc-400 dark:text-zinc-500 bg-white/50 dark:bg-zinc-900/50 px-1.5 py-0.5 rounded backdrop-blur-sm">#{tag}</span>
+                <span 
+                    key={tag} 
+                    onClick={(e) => handleTagClick(e, tag)}
+                    className="text-[10px] text-zinc-400 dark:text-zinc-500 bg-white/50 dark:bg-zinc-900/50 px-1.5 py-0.5 rounded backdrop-blur-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                >
+                    #{tag}
+                </span>
             ))}
         </div>
       </div>

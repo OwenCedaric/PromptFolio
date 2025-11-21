@@ -25,9 +25,10 @@ interface PromptDetailProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   isAuthenticated: boolean;
+  onTagClick?: (tag: string) => void;
 }
 
-const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated }) => {
+const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated, onTagClick }) => {
   // Sort versions newest first for the dropdown
   const sortedVersions = [...prompt.versions].sort((a, b) => b.createdAt - a.createdAt);
   
@@ -246,9 +247,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             </h3>
                             <div className="flex flex-wrap gap-2">
                                 {prompt.tags.map(tag => (
-                                    <span key={tag} className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs px-3 py-1 rounded-full font-medium">
+                                    <button 
+                                        key={tag} 
+                                        onClick={() => onTagClick && onTagClick(tag)}
+                                        className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs px-3 py-1 rounded-full font-medium hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                                    >
                                         #{tag}
-                                    </span>
+                                    </button>
                                 ))}
                                 {prompt.tags.length === 0 && <span className="text-xs text-zinc-400 dark:text-zinc-600 italic">No tags added</span>}
                             </div>
