@@ -14,8 +14,6 @@ import {
     RiFileTextLine,
     RiInformationLine
 } from '@remixicon/react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { PromptData, PromptStatus } from '../types';
 
 interface PromptDetailProps {
@@ -70,11 +68,12 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
         <div className="h-full max-w-[1920px] mx-auto lg:grid lg:grid-cols-12 lg:divide-x lg:divide-zinc-200 dark:lg:divide-zinc-800">
             
             {/* LEFT COLUMN (58%): Info, Description, Metadata */}
-            {/* Unified Scrollable Container: Header Actions + Content */}
-            <section className={`lg:col-span-7 h-full overflow-y-auto scrollbar-hide pb-32 lg:pb-0 ${mobileTab === 'prompt' ? 'hidden lg:block' : 'block'}`}>
-                <div className="p-6 md:p-10 space-y-8">
-                    
-                    {/* "Header" Actions moved into scrollable flow */}
+            {/* UPDATED: Flex Column with Fixed Header and Scrolling Body */}
+            <section className={`lg:col-span-7 h-full flex flex-col overflow-hidden ${mobileTab === 'prompt' ? 'hidden lg:flex' : 'flex'}`}>
+                
+                {/* Fixed Header Area: Actions + Title */}
+                <div className="shrink-0 px-6 md:px-10 pt-6 md:pt-10 pb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50 z-10">
+                    {/* Header Actions */}
                     <div className="flex items-center justify-between mb-6">
                          <div className="flex items-center gap-4">
                             <button onClick={onBack} aria-label="Go Back" className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
@@ -119,81 +118,73 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                          </div>
                     </div>
 
-                    {/* Header Info */}
-                    <div className="space-y-6">
-                         <div>
-                            <div className="flex flex-wrap items-center gap-3 mb-4">
-                                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
-                                    {prompt.category}
+                    {/* Title & Meta Block */}
+                    <div>
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                            <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                                {prompt.category}
+                            </span>
+                            {prompt.status === PromptStatus.DRAFT && (
+                                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30">
+                                    Draft
                                 </span>
-                                {prompt.status === PromptStatus.DRAFT && (
-                                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30">
-                                        Draft
+                            )}
+                            <span className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
+                                <RiTimeLine size={12} />
+                                Updated {new Date(prompt.updatedAt).toLocaleDateString()}
+                            </span>
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white leading-tight line-clamp-3">{prompt.title}</h1>
+                    </div>
+                </div>
+
+                {/* Scrollable Body: Tags, Stats, Description */}
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 scrollbar-hide">
+                    {/* Tags & Stats Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Tags Card */}
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm">
+                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <RiPriceTag3Line size={14} /> Tags
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                                {prompt.tags.map(tag => (
+                                    <span key={tag} className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs px-3 py-1 rounded-full font-medium">
+                                        #{tag}
                                     </span>
-                                )}
-                                <span className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
-                                    <RiTimeLine size={12} />
-                                    Updated {new Date(prompt.updatedAt).toLocaleDateString()}
-                                </span>
+                                ))}
+                                {prompt.tags.length === 0 && <span className="text-xs text-zinc-400 dark:text-zinc-600 italic">No tags added</span>}
                             </div>
-                            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white leading-tight">{prompt.title}</h1>
                         </div>
 
-                        {/* Tags & Stats Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Tags Card */}
-                            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm">
-                                <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <RiPriceTag3Line size={14} /> Tags
-                                </h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {prompt.tags.map(tag => (
-                                        <span key={tag} className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs px-3 py-1 rounded-full font-medium">
-                                            #{tag}
-                                        </span>
-                                    ))}
-                                    {prompt.tags.length === 0 && <span className="text-xs text-zinc-400 dark:text-zinc-600 italic">No tags added</span>}
+                        {/* Info Card */}
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm">
+                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <RiGlobalLine size={14} /> Info
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Status</span>
+                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">{prompt.status.toLowerCase()}</span>
                                 </div>
-                            </div>
-
-                            {/* Info Card */}
-                            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm">
-                                <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <RiGlobalLine size={14} /> Info
-                                </h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Status</span>
-                                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">{prompt.status.toLowerCase()}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Versions</span>
-                                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{prompt.versions.length}</span>
-                                    </div>
+                                <div>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Versions</span>
+                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{prompt.versions.length}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Description Content (Scrolls naturally with the header info) */}
+                    {/* Description Content */}
                     {prompt.description ? (
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.02)] dark:shadow-none">
                             <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <RiInformationLine size={14} /> Description
                             </h3>
                             <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
-                                <ReactMarkdown 
-                                    remarkPlugins={[remarkGfm]}
-                                    components={{
-                                        img: ({node, ...props}) => (
-                                            <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4">
-                                                <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} />
-                                            </div>
-                                        )
-                                    }}
-                                >
+                                <div className="whitespace-pre-wrap font-sans text-zinc-700 dark:text-zinc-300 leading-relaxed">
                                     {prompt.description}
-                                </ReactMarkdown>
+                                </div>
                             </div>
                         </div>
                     ) : (

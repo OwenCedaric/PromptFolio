@@ -1,8 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialize the Gemini API client
-// Note: process.env.API_KEY is injected by the environment
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize the Gemini API client lazily to prevent startup crashes if env is missing
+let aiClient: GoogleGenAI | null = null;
+
+const getAiClient = (): GoogleGenAI => {
+  if (!aiClient) {
+    // Safely access process.env via window to avoid ReferenceError in strict modules
+    // We cast window to any to avoid TS errors about process not existing on Window
+    const env = (typeof window !== 'undefined' && (window as any).process?.env) ? (window as any).process.env : {};
+    const apiKey = env.API_KEY || '';
+    aiClient = new GoogleGenAI({ apiKey });
+  }
+  return aiClient;
+};
 
 export const geminiService = {
   /**
@@ -10,6 +20,7 @@ export const geminiService = {
    */
   optimizePrompt: async (currentPrompt: string): Promise<string> => {
     try {
+      const ai = getAiClient();
       const modelId = 'gemini-2.5-flash';
       const systemInstruction = `You are an expert Prompt Engineer. Your goal is to take a rough prompt and refine it into a high-quality, detailed system instruction or prompt for an LLM. Ensure clarity, context, and specific constraints. Return ONLY the refined prompt text.`;
       
@@ -34,6 +45,7 @@ export const geminiService = {
    */
   suggestTags: async (title: string, description: string): Promise<string[]> => {
     try {
+        const ai = getAiClient();
         const modelId = 'gemini-2.5-flash';
         const prompt = `Generate a list of 5 relevant tags for a prompt with the Title: "${title}" and Description: "${description}". Return the tags as a JSON array of strings.`;
         
@@ -66,6 +78,7 @@ export const geminiService = {
    */
   generateDescription: async (content: string): Promise<string> => {
     try {
+        const ai = getAiClient();
         const modelId = 'gemini-2.5-flash';
         const response = await ai.models.generateContent({
             model: modelId,

@@ -17,9 +17,10 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick }) => {
   const isDraft = prompt.status === PromptStatus.DRAFT;
 
   return (
-    <div 
-      onClick={() => onClick(prompt)}
-      className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 cursor-pointer flex flex-col h-[240px] p-5 relative hover:shadow-sm rounded-2xl overflow-hidden"
+    <a 
+      href={`/?id=${prompt.id}`}
+      onClick={(e) => { e.preventDefault(); onClick(prompt); }}
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 cursor-pointer flex flex-col h-[240px] p-5 relative hover:shadow-sm rounded-2xl overflow-hidden"
     >
       {/* Watermarks (Background Layer) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
@@ -63,7 +64,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick }) => {
             ))}
         </div>
       </div>
-    </div>
+    </a>
   );
 };
 

@@ -83,8 +83,17 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title, message, onC
 
 const App: React.FC = () => {
   // --- Config ---
-  const SITE_NAME = process.env.SITE_NAME || 'PromptFolio';
-  const SITE_PASSWORD = process.env.SITE_PASSWORD;
+  // Safely access process.env using window check to prevent reference errors in strict modules
+  const getEnv = (key: string) => {
+      try {
+          return (typeof process !== 'undefined' && process.env) ? process.env[key] : undefined;
+      } catch (e) {
+          return undefined;
+      }
+  };
+
+  const SITE_NAME = getEnv('SITE_NAME') || 'PromptFolio';
+  const SITE_PASSWORD = getEnv('SITE_PASSWORD');
   const ITEMS_PER_PAGE = 12;
 
   // --- Auth State ---
@@ -200,6 +209,76 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  // --- Routing & URL Handling ---
+  
+  // Sync URL state with App state on popstate (browser back/forward)
+  useEffect(() => {
+    const handleUrlChange = () => {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        if (id) {
+            const found = prompts.find(p => p.id === id);
+            if (found) {
+                setActivePrompt(found);
+                setView('detail');
+            } else if (!isLoading && prompts.length > 0) {
+                // ID provided but not found in loaded prompts? 
+                // For now, do nothing or fallback to library could be jarring.
+                // We'll wait for prompts to load if they haven't.
+            }
+        } else {
+            // No ID in URL
+            if (view === 'detail') {
+                // If we were in detail and URL changed to root, go back to library
+                setActivePrompt(null);
+                setView('library');
+            }
+            // Note: If in 'editor', we don't force library, preserving 'New Prompt' state which has no ID yet
+        }
+    };
+
+    window.addEventListener('popstate', handleUrlChange);
+    
+    // Check URL on initial load (once prompts are ready)
+    if (!isLoading) {
+        handleUrlChange();
+    }
+
+    return () => window.removeEventListener('popstate', handleUrlChange);
+  }, [prompts, isLoading, view]);
+
+  // Navigation Helper
+  const navigateTo = (newView: 'library' | 'detail' | 'editor', prompt?: PromptData) => {
+      const url = new URL(window.location.href);
+      
+      if (newView === 'detail' && prompt) {
+          url.searchParams.set('id', prompt.id);
+          window.history.pushState({}, '', url);
+          setActivePrompt(prompt);
+          setView('detail');
+      } else if (newView === 'library') {
+          url.searchParams.delete('id');
+          window.history.pushState({}, '', url);
+          setActivePrompt(null);
+          setView('library');
+      } else if (newView === 'editor') {
+          if (!prompt) {
+             // New Prompt
+             url.searchParams.delete('id');
+             window.history.pushState({}, '', url);
+             setActivePrompt(null);
+          } else {
+             // Editing existing
+             // URL should already be correct, but ensure it
+             url.searchParams.set('id', prompt.id);
+             window.history.replaceState({}, '', url); // replace to not create history dupes
+             setActivePrompt(prompt);
+          }
+          setView('editor');
+      }
+  };
+
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
   // Reset pagination when filter changes
@@ -240,13 +319,8 @@ const App: React.FC = () => {
     
     setPrompts(updatedPrompts);
 
-    if (activePrompt && activePrompt.id === data.id) {
-        setActivePrompt(data);
-        setView('detail');
-    } else {
-        setView('library');
-        setActivePrompt(null);
-    }
+    // Upon save, show detail view and update URL
+    navigateTo('detail', data);
 
     if (isDemoMode) {
         saveLocalData(updatedPrompts);
@@ -272,10 +346,14 @@ const App: React.FC = () => {
       const updatedPrompts = originalPrompts.filter(p => p.id !== id);
       
       setPrompts(updatedPrompts);
-      if (activePrompt && activePrompt.id === id) {
-          setActivePrompt(null);
-      }
+      
+      // Clear URL and return to library
+      const url = new URL(window.location.href);
+      url.searchParams.delete('id');
+      window.history.replaceState({}, '', url);
+      setActivePrompt(null);
       setView('library');
+
       setConfirmState(prev => ({ ...prev, isOpen: false }));
 
       if (isDemoMode) {
@@ -334,12 +412,6 @@ const App: React.FC = () => {
       }
   };
 
-  const handleViewChange = (newView: string) => {
-      setView(newView);
-      if (newView === 'library') setActivePrompt(null);
-      setSidebarOpen(false);
-  };
-
   // --- Auth Logic ---
   const handleLoginRequest = () => {
     if (!SITE_PASSWORD) {
@@ -371,8 +443,7 @@ const App: React.FC = () => {
           handleLoginRequest();
           return;
       }
-      setActivePrompt(null);
-      setView('editor');
+      navigateTo('editor');
       setSidebarOpen(false);
   };
 
@@ -441,7 +512,7 @@ const App: React.FC = () => {
       <Sidebar 
         siteName={SITE_NAME}
         selectedCategory={selectedCategory}
-        onSelectCategory={(cat) => { setSelectedCategory(cat); setView('library'); if(window.innerWidth < 768) setSidebarOpen(false); }}
+        onSelectCategory={(cat) => { setSelectedCategory(cat); navigateTo('library'); if(window.innerWidth < 768) setSidebarOpen(false); }}
         onCreateNew={handleCreateNew}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -488,19 +559,18 @@ const App: React.FC = () => {
                     initialData={activePrompt} 
                     onSave={savePrompt} 
                     onDelete={requestDeletePrompt}
-                    onCancel={() => handleViewChange(activePrompt ? 'detail' : 'library')} 
+                    onCancel={() => navigateTo(activePrompt ? 'detail' : 'library', activePrompt || undefined)} 
                 />
             ) : view === 'detail' && activePrompt ? (
                 <PromptDetail 
                     prompt={activePrompt}
-                    onBack={() => handleViewChange('library')}
+                    onBack={() => navigateTo('library')}
                     onEdit={(p) => { 
                         if (!isAuthenticated) {
                              handleLoginRequest();
                              return;
                         }
-                        setActivePrompt(p); 
-                        setView('editor'); 
+                        navigateTo('editor', p);
                     }}
                     onDelete={requestDeletePrompt}
                     onToggleFavorite={toggleFavorite}
@@ -540,7 +610,7 @@ const App: React.FC = () => {
                                     <PromptCard 
                                         key={prompt.id} 
                                         prompt={prompt} 
-                                        onClick={(p) => { setActivePrompt(p); setView('detail'); }}
+                                        onClick={(p) => navigateTo('detail', p)}
                                     />
                                 ))}
                             </div>
