@@ -764,12 +764,12 @@ const App: React.FC = () => {
                     onTagClick={(tag) => navigateTo('library', { tag })}
                 />
             ) : (
-                /* Library View - Grid Scroll */
-                <div className="h-full w-full overflow-y-auto scrollbar-hide">
-                    <div className="p-6 md:p-10 max-w-[1600px] mx-auto min-h-full flex flex-col">
-                        
-                        {/* Library Header */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 shrink-0">
+                /* Library View - Sticky Header & Scrolling Grid */
+                <div className="h-full w-full flex flex-col overflow-hidden">
+                    
+                    {/* Fixed Header Container */}
+                    <div className="shrink-0 px-6 md:px-10 pt-6 pb-4 bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-md z-10 border-b border-zinc-200/50 dark:border-zinc-800/50">
+                        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
                             <div>
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
@@ -803,63 +803,68 @@ const App: React.FC = () => {
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Grid */}
-                        {paginatedPrompts.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 mb-auto">
-                                {paginatedPrompts.map(prompt => (
-                                    <PromptCard 
-                                        key={prompt.id} 
-                                        prompt={prompt} 
-                                        onClick={(p) => navigateTo('detail', { prompt: p })}
-                                        onTagClick={(t) => navigateTo('library', { tag: t })}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-32 text-zinc-400 dark:text-zinc-600 flex-1">
-                                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-300 dark:text-zinc-600">
-                                    <RiSearchLine size={32} />
+                    {/* Scrollable Content Area */}
+                    <div className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-10 pt-6">
+                         <div className="max-w-[1600px] mx-auto min-h-full flex flex-col">
+                            {/* Grid */}
+                            {paginatedPrompts.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 mb-auto">
+                                    {paginatedPrompts.map(prompt => (
+                                        <PromptCard 
+                                            key={prompt.id} 
+                                            prompt={prompt} 
+                                            onClick={(p) => navigateTo('detail', { prompt: p })}
+                                            onTagClick={(t) => navigateTo('library', { tag: t })}
+                                        />
+                                    ))}
                                 </div>
-                                <p className="text-sm font-medium mb-1">No prompts found</p>
-                                <p className="text-xs">Try adjusting your filters or search query</p>
-                                {(selectedCategory !== 'All' || selectedTag) && (
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-32 text-zinc-400 dark:text-zinc-600 flex-1">
+                                    <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-300 dark:text-zinc-600">
+                                        <RiSearchLine size={32} />
+                                    </div>
+                                    <p className="text-sm font-medium mb-1">No prompts found</p>
+                                    <p className="text-xs">Try adjusting your filters or search query</p>
+                                    {(selectedCategory !== 'All' || selectedTag) && (
+                                        <button 
+                                            onClick={() => navigateTo('library', { category: 'All' })}
+                                            className="mt-4 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                        >
+                                            Clear all filters
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="mt-12 py-6 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
                                     <button 
-                                        onClick={() => navigateTo('library', { category: 'All' })}
-                                        className="mt-4 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
-                                        Clear all filters
+                                        <RiArrowLeftSLine size={18} />
+                                        Previous
                                     </button>
-                                )}
-                            </div>
-                        )}
 
-                        {/* Pagination Controls */}
-                        {totalPages > 1 && (
-                            <div className="mt-12 py-6 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
-                                <button 
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                    className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    <RiArrowLeftSLine size={18} />
-                                    Previous
-                                </button>
+                                    <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                                        Page <span className="text-zinc-900 dark:text-white">{currentPage}</span> of <span className="text-zinc-900 dark:text-white">{totalPages}</span>
+                                    </div>
 
-                                <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
-                                    Page <span className="text-zinc-900 dark:text-white">{currentPage}</span> of <span className="text-zinc-900 dark:text-white">{totalPages}</span>
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Next
+                                        <RiArrowRightSLine size={18} />
+                                    </button>
                                 </div>
-
-                                <button 
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    Next
-                                    <RiArrowRightSLine size={18} />
-                                </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
