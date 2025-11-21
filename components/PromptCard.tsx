@@ -19,7 +19,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
 
   const isDraft = prompt.status === PromptStatus.DRAFT;
   const isPrivate = prompt.status === PromptStatus.PRIVATE;
-  // Content is locked if it's private AND user is NOT authenticated
+  
+  // CRITICAL SECURITY: Content is strictly locked if it's private AND user is NOT authenticated.
   const isLocked = isPrivate && !isAuthenticated;
 
   const handleTagClick = (e: React.MouseEvent, tag: string) => {
@@ -31,6 +32,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
   const handleQuickCopy = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      // Do not allow copy if locked
+      if (isLocked) return;
+      
       if (currentVersion?.content) {
           navigator.clipboard.writeText(currentVersion.content);
           setCopied(true);
@@ -45,20 +49,21 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
     >
       {/* Watermarks (Background Layer) */}
+      {/* Updated to use specific zinc colors for clearer visibility without transparency issues */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
          {isDraft ? (
             /* Draft Watermark */
-            <div className="absolute -bottom-8 -right-6 text-black/5 dark:text-white/5 group-hover:text-black/15 dark:group-hover:text-white/15 transition-colors duration-500 transform -rotate-12">
+            <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 transform -rotate-12">
                 <RiDraftLine size={140} />
             </div>
          ) : isPrivate ? (
             /* Private/Lock Watermark */
-            <div className="absolute -bottom-6 -right-4 text-black/5 dark:text-white/5 group-hover:text-black/15 dark:group-hover:text-white/15 transition-colors duration-500 transform -rotate-12">
+            <div className="absolute -bottom-6 -right-4 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 transform -rotate-12">
                 <RiLockLine size={120} />
             </div>
          ) : (
             /* Version Watermark */
-            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-black/5 dark:text-white/5 group-hover:text-black/15 dark:group-hover:text-white/15 transition-colors duration-500 leading-none tracking-tighter">
+            <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 leading-none tracking-tighter">
                 v{versionNumber}
             </div>
          )}
@@ -84,7 +89,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
-                    className="w-full h-full object-cover transition-all duration-700 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105" 
+                    className="w-full h-full object-cover transition-all duration-500 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105" 
                     loading="lazy"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                 />
@@ -94,9 +99,10 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
         {/* Content Bubble - Natural Flow with Optimized Gradient Mask */}
         <div className="flex-1 overflow-hidden relative mb-3 rounded-lg min-h-0">
             {isLocked ? (
+                /* SECURITY: Render a placeholder instead of the content. The content is NOT in the DOM. */
                 <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 gap-2 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-lg border border-zinc-100 dark:border-zinc-800/50">
                      <RiLockLine size={24} className="opacity-50" />
-                     <span className="text-[10px] uppercase tracking-widest font-bold opacity-50">Private</span>
+                     <span className="text-[10px] uppercase tracking-widest font-bold opacity-50">Private Content</span>
                 </div>
             ) : (
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words whitespace-pre-wrap">
@@ -104,7 +110,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 </p>
             )}
             
-            {/* Gradient Fade (Only if not locked) */}
+            {/* Gradient Fade (Only if not locked and has content) */}
             {!isLocked && (
                 <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
             )}
@@ -127,7 +133,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             )}
         </div>
 
-        {/* Tags - Flex Wrap with Height Limit (Show as many as fit on one line) */}
+        {/* Tags - Flex Wrap with Height Limit */}
         <div className="flex flex-wrap gap-2 mt-auto h-7 overflow-hidden w-full content-start shrink-0">
             {prompt.tags.map(tag => (
                 <span 

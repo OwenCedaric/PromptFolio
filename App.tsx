@@ -201,7 +201,12 @@ const App: React.FC = () => {
   useEffect(() => {
       let title = SITE_NAME;
       if (view === 'detail' && activePrompt) {
-          title = `${activePrompt.title} | ${SITE_NAME}`;
+          // Mask title for private prompts if unauthenticated
+          if (activePrompt.status === PromptStatus.PRIVATE && !isAuthenticated) {
+             title = `Protected Content | ${SITE_NAME}`;
+          } else {
+             title = `${activePrompt.title} | ${SITE_NAME}`;
+          }
       } else if (selectedTag) {
           title = `#${selectedTag} Prompts | ${SITE_NAME}`;
       } else if (selectedCategory !== 'All') {
@@ -215,695 +220,380 @@ const App: React.FC = () => {
       const metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) {
           if (view === 'detail' && activePrompt) {
-              // Mask description for private prompts if not authenticated
+              // CRITICAL: Mask description for private prompts if not authenticated to prevent SEO leakage
               if (activePrompt.status === PromptStatus.PRIVATE && !isAuthenticated) {
-                  metaDesc.setAttribute('content', `Protected content. Login to view details on ${SITE_NAME}.`);
+                  metaDesc.setAttribute('content', 'This content is private and requires authentication to view.');
               } else {
-                  metaDesc.setAttribute('content', activePrompt.description || `View the ${activePrompt.title} prompt on ${SITE_NAME}.`);
+                  metaDesc.setAttribute('content', activePrompt.description || 'A professional AI prompt managed in PromptFolio.');
               }
-          } else if (selectedTag) {
-               metaDesc.setAttribute('content', `Explore our collection of ${selectedTag} AI prompts.`);
-          } else if (selectedCategory !== 'All') {
-               metaDesc.setAttribute('content', `Browse the best ${selectedCategory} prompts for AI models.`);
           } else {
-               metaDesc.setAttribute('content', "Organize, version, and optimize your AI prompts with Google Gemini integration.");
+              metaDesc.setAttribute('content', 'Organize, version, and optimize your AI prompts with Google Gemini integration.');
           }
       }
-  }, [view, activePrompt, selectedCategory, selectedTag, SITE_NAME, isAuthenticated]);
+  }, [view, activePrompt, selectedCategory, selectedTag, isAuthenticated, SITE_NAME]);
 
+  // --- Theme Toggle ---
+  const toggleTheme = () => {
+      const newMode = !isDarkMode;
+      setIsDarkMode(newMode);
+      localStorage.setItem('pf_theme', newMode ? 'dark' : 'light');
+      if (newMode) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = 'dark';
+      } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.style.colorScheme = 'light';
+      }
+  };
+
+  // --- URL Routing (Simple) ---
   useEffect(() => {
-    const root = document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-      localStorage.setItem('pf_theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('pf_theme', 'light');
-    }
-  }, [isDarkMode]);
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const cat = params.get('category');
+      const tag = params.get('tag');
 
-  // --- Structured Data (WebSite) ---
-  const websiteSchema = useMemo(() => {
-    if (view !== 'library') return null;
-    // Prioritize SITE_URL env var, fallback to window location
-    const origin = process.env.SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://promptfolio.pages.dev');
-    
-    return JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": SITE_NAME,
-        "url": origin,
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": `${origin}/?q={search_term_string}`,
-          "query-input": "required name=search_term_string"
-        }
-    });
-  }, [view, SITE_NAME]);
-
-  const canonicalUrl = useMemo(() => {
-     if (typeof window === 'undefined') return '';
-     const url = new URL(window.location.href);
-     // Strip query params for canonical to prevent dupes, unless it's a specific ID
-     if (view === 'library') {
-         return url.origin;
-     }
-     return url.href;
-  }, [view]);
-
-  // --- Routing & URL Handling ---
-  
-  // Navigation Helper
-  const navigateTo = (
-      newView: 'library' | 'detail' | 'editor', 
-      params?: { 
-          prompt?: PromptData, 
-          category?: string, 
-          tag?: string,
-          preserveState?: boolean
-      }
-  ) => {
-      const url = new URL(window.location.href);
-      
-      // Clean view-specific params always
-      url.searchParams.delete('id');
-      url.searchParams.delete('mode');
-
-      if (newView === 'detail' && params?.prompt) {
-          url.searchParams.set('id', params.prompt.id);
-          
-          // For detail view, we clean query params from URL to keep it shareable,
-          // but we do NOT clear the React State (searchQuery, selectedCategory, etc.)
-          // so "Back" can restore them.
-          url.searchParams.delete('category');
-          url.searchParams.delete('tag');
-          url.searchParams.delete('q');
-          
-          window.history.pushState({}, '', url);
-          setActivePrompt(params.prompt);
-          setView('detail');
-      } 
-      else if (newView === 'editor') {
-          url.searchParams.set('mode', 'edit');
-          
-          // Clean library params from URL
-          url.searchParams.delete('category');
-          url.searchParams.delete('tag');
-          url.searchParams.delete('q');
-
-          if (!params?.prompt) {
-             // New Prompt
-             setActivePrompt(null);
-          } else {
-             // Editing existing
-             url.searchParams.set('id', params.prompt.id);
-             setActivePrompt(params.prompt);
+      if (id) {
+          const found = prompts.find(p => p.id === id);
+          if (found) {
+              setActivePrompt(found);
+              setView('detail');
           }
-          window.history.pushState({}, '', url);
-          setView('editor');
-      }
-      else if (newView === 'library') {
-          setActivePrompt(null);
+      } else if (cat) {
+          setSelectedCategory(cat);
           setView('library');
-
-          if (params?.preserveState) {
-              // RESTORE URL from current state variables
-              // This is used when "returning" to the list from detail/editor
-              if (searchQuery) url.searchParams.set('q', searchQuery);
-              else url.searchParams.delete('q');
-
-              if (selectedTag) {
-                  url.searchParams.set('tag', selectedTag);
-                  url.searchParams.delete('category');
-              } else if (selectedCategory && selectedCategory !== 'All') {
-                  url.searchParams.set('category', selectedCategory);
-                  url.searchParams.delete('tag');
-              } else {
-                  url.searchParams.delete('category');
-                  url.searchParams.delete('tag');
-              }
-              // Note: We do not reset state variables here
-          } else {
-              // Normal navigation (applying filters, resetting search)
-              url.searchParams.delete('q'); 
-              setSearchQuery(''); // Explicitly clear search
-
-              if (params?.category) {
-                  url.searchParams.set('category', params.category);
-                  url.searchParams.delete('tag');
-                  setSelectedCategory(params.category);
-                  setSelectedTag(null);
-              } else if (params?.tag) {
-                  url.searchParams.set('tag', params.tag);
-                  url.searchParams.delete('category');
-                  setSelectedTag(params.tag);
-                  setSelectedCategory('All');
-              } else {
-                  url.searchParams.delete('category');
-                  url.searchParams.delete('tag');
-                  setSelectedCategory('All');
-                  setSelectedTag(null);
-              }
-          }
-          
-          window.history.pushState({}, '', url);
+      } else if (tag) {
+          setSelectedTag(tag);
+          setView('library');
       }
-      
-      window.scrollTo(0, 0);
-  };
+  }, [prompts]); // Run when prompts are loaded
 
-  // Sync URL state with App state on popstate (browser back/forward) AND initial load
-  useEffect(() => {
-    const handleUrlChange = () => {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-        const mode = params.get('mode');
-        const categoryParam = params.get('category');
-        const tagParam = params.get('tag');
-        const searchParam = params.get('q');
-
-        // Check for Editor Mode first
-        if (mode === 'edit') {
-            if (id) {
-                const found = prompts.find(p => p.id === id);
-                if (found) {
-                    setActivePrompt(found);
-                    setView('editor');
-                    return;
-                }
-            } else {
-                // New Prompt mode
-                setActivePrompt(null);
-                setView('editor');
-                return;
-            }
-        }
-
-        if (id) {
-            const found = prompts.find(p => p.id === id);
-            if (found) {
-                // Note: We no longer block Private prompts here via URL.
-                // The PromptDetail component will handle locking the content.
-                setActivePrompt(found);
-                setView('detail');
-                return;
-            }
-        } 
-        
-        if (tagParam) {
-            setSelectedTag(tagParam);
-            setSelectedCategory('All');
-            setView('library');
-        } else if (categoryParam) {
-            setSelectedCategory(categoryParam);
-            setSelectedTag(null);
-            setView('library');
-        } else {
-            // Root or pure library
-            if (view === 'detail' || view === 'editor') {
-                setActivePrompt(null);
-                setView('library');
-            }
-            // If just clearing filters via URL manually
-            if (!id && !tagParam && !categoryParam && view === 'library') {
-                setSelectedCategory('All');
-                setSelectedTag(null);
-            }
-        }
-
-        // Handle Search Query from URL
-        if (searchParam) {
-            setSearchQuery(searchParam);
-        } else if (!id && !mode) {
-             // Only clear search if explicitly missing from URL in library view
-             if (searchParam === null && window.location.search === '') {
-                 // Optional: setSearchQuery('');
-             }
-        }
-    };
-
-    window.addEventListener('popstate', handleUrlChange);
-    
-    // Check URL on initial load (once prompts are ready)
-    if (!isLoading) {
-        handleUrlChange();
-    }
-
-    return () => window.removeEventListener('popstate', handleUrlChange);
-  }, [prompts, isLoading, view, isAuthenticated]);
-
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
-
-  // Reset pagination when filter changes
-  useEffect(() => {
-      setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedTag]);
-
-  // --- Computed ---
-  const visiblePrompts = useMemo(() => {
-    return prompts.filter(p => {
-      // We now show ALL prompts (Private, Drafts) in the list to everyone.
-      // Access control is handled at the Detail level for Private content.
-      
-      const matchesSearch = (p.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
-                            (p.tags || []).some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      let matchesFilter = true;
-
-      if (selectedTag) {
-          matchesFilter = (p.tags || []).includes(selectedTag);
-      } else if (selectedCategory === 'Favorites') {
-          matchesFilter = !!p.isFavorite;
-      } else if (selectedCategory !== 'All') {
-          matchesFilter = p.category === selectedCategory;
+  // --- Auth Handlers ---
+  const handleLogin = () => {
+      if (passwordInput === SITE_PASSWORD) {
+          setIsAuthenticated(true);
+          localStorage.setItem('pf_auth_session', '1');
+          setIsLoginModalOpen(false);
+          setPasswordInput('');
+          setLoginError(false);
+      } else {
+          setLoginError(true);
       }
-      
-      return matchesSearch && matchesFilter;
-    });
-  }, [prompts, searchQuery, selectedCategory, selectedTag]);
-
-  // Pagination Logic
-  const totalPages = Math.ceil(visiblePrompts.length / ITEMS_PER_PAGE);
-  
-  // Correction: If current page exceeds total pages (e.g. after delete), go to last page
-  useEffect(() => {
-      if (currentPage > totalPages) {
-          setCurrentPage(Math.max(1, totalPages));
-      }
-  }, [totalPages, currentPage]);
-
-  const paginatedPrompts = visiblePrompts.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE, 
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  // --- Auth Logic ---
-  const handleLoginRequest = () => {
-    if (!SITE_PASSWORD) {
-        setIsAuthenticated(true);
-        return;
-    }
-    setIsLoginModalOpen(true);
-  };
-
-  const submitLogin = () => {
-    if (passwordInput === SITE_PASSWORD) {
-        setIsAuthenticated(true);
-        localStorage.setItem('pf_auth_session', '1');
-        setIsLoginModalOpen(false);
-        setPasswordInput('');
-        setLoginError(false);
-    } else {
-        setLoginError(true);
-    }
   };
 
   const handleLogout = () => {
       setIsAuthenticated(false);
       localStorage.removeItem('pf_auth_session');
+      // Redirect to library if on a private detail page? 
+      // Just keeping basic logic for now.
   };
 
-  const handleExportData = () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prompts, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `promptfolio_backup_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
+  // --- Handlers ---
+  const handleCreateNew = () => {
+      setActivePrompt(null);
+      setView('editor');
+      setSidebarOpen(false); // Close mobile sidebar
   };
 
-  // --- Actions ---
-  const savePrompt = async (data: PromptData) => {
-    const originalPrompts = [...prompts];
-    const updatedPrompts = originalPrompts.some(p => p.id === data.id) 
-        ? originalPrompts.map(p => p.id === data.id ? data : p) 
-        : [data, ...originalPrompts];
-    
-    setPrompts(updatedPrompts);
-
-    // Upon save, show detail view (this will clear mode=edit from URL)
-    navigateTo('detail', { prompt: data });
-
-    if (isDemoMode) {
-        saveLocalData(updatedPrompts);
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/prompts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error("Failed to save");
-    } catch (e) {
-        console.error("Save failed, falling back to local storage", e);
-        setIsDemoMode(true);
-        saveLocalData(updatedPrompts);
-    }
-  };
-
-  const performDeletePrompt = async (id: string) => {
-      const originalPrompts = [...prompts];
-      const updatedPrompts = originalPrompts.filter(p => p.id !== id);
+  const handleSavePrompt = async (data: PromptData) => {
+      let updatedPrompts = [...prompts];
+      const existingIndex = updatedPrompts.findIndex(p => p.id === data.id);
+      
+      if (existingIndex >= 0) {
+          updatedPrompts[existingIndex] = data;
+      } else {
+          updatedPrompts.unshift(data);
+      }
       
       setPrompts(updatedPrompts);
+      saveLocalData(updatedPrompts);
       
-      // Return to library, preserving filter state so user doesn't lose context
-      navigateTo('library', { preserveState: true });
-
-      setConfirmState(prev => ({ ...prev, isOpen: false }));
-
-      if (isDemoMode) {
-          saveLocalData(updatedPrompts);
-          return;
+      if (!isDemoMode) {
+          try {
+              await fetch('/api/prompts', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+              });
+          } catch (e) {
+              console.error("Sync failed", e);
+          }
       }
-
-      try {
-        const res = await fetch(`/api/prompts/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error("Failed to delete");
-      } catch (e) {
-          console.error("Delete failed, falling back to local", e);
-          setIsDemoMode(true);
-          saveLocalData(updatedPrompts);
-      }
+      
+      setActivePrompt(data);
+      setView('detail');
   };
 
-  const requestDeletePrompt = (id: string) => {
-      if (!isAuthenticated) {
-          handleLoginRequest();
-          return;
-      }
-
+  const handleDeletePrompt = async (id: string) => {
       setConfirmState({
           isOpen: true,
           title: 'Delete Prompt?',
-          message: 'Are you sure you want to delete this entire prompt and all its history? This action cannot be undone.',
-          action: () => performDeletePrompt(id)
+          message: 'This action cannot be undone. All versions of this prompt will be permanently removed.',
+          action: async () => {
+              const updatedPrompts = prompts.filter(p => p.id !== id);
+              setPrompts(updatedPrompts);
+              saveLocalData(updatedPrompts);
+              
+              if (!isDemoMode) {
+                  try {
+                      await fetch(`/api/prompts/${id}`, { method: 'DELETE' });
+                  } catch (e) { console.error(e); }
+              }
+
+              setView('library');
+              setActivePrompt(null);
+              setConfirmState(prev => ({ ...prev, isOpen: false }));
+          }
       });
   };
 
-  const toggleFavorite = async (id: string) => {
-      if (!isAuthenticated) {
-          handleLoginRequest();
-          return;
-      }
-
-      const prompt = prompts.find(p => p.id === id);
-      if (!prompt) return;
-
-      const updatedPrompt = { ...prompt, isFavorite: !prompt.isFavorite };
+  const handleToggleFavorite = async (id: string) => {
+      const p = prompts.find(x => x.id === id);
+      if (!p) return;
       
-      // Optimistic UI
-      const updatedList = prompts.map(p => p.id === id ? updatedPrompt : p);
-      setPrompts(updatedList);
-      if (activePrompt && activePrompt.id === id) {
-          setActivePrompt(updatedPrompt);
-      }
-
-      if (isDemoMode) {
-          saveLocalData(updatedList);
-          return;
-      }
-
-      try {
-          const res = await fetch('/api/prompts', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(updatedPrompt)
-          });
-          if (!res.ok) throw new Error("Failed to update favorite");
-      } catch (e) {
-           console.error("Fav sync failed", e);
-           setIsDemoMode(true);
-           saveLocalData(updatedList);
-      }
+      const updated = { ...p, isFavorite: !p.isFavorite, updatedAt: Date.now() };
+      handleSavePrompt(updated);
   };
 
-  const handleCreateNew = () => {
-      if (!isAuthenticated) {
-          handleLoginRequest();
-          return;
-      }
-      navigateTo('editor');
-      setSidebarOpen(false);
+  const handleExport = () => {
+      const blob = new Blob([JSON.stringify(prompts, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `promptfolio_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
   };
 
-  // --- Main Layout Render ---
+  // --- Filtering ---
+  const filteredPrompts = useMemo(() => {
+      return prompts.filter(p => {
+          // Filter out private prompts if user is NOT authenticated
+          // Although we hide content in cards, showing the card itself is fine unless you want total invisibility.
+          // The prompt requested "partially exposed content", so showing the card with locked content is the solution.
+          
+          const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory || (selectedCategory === 'Favorites' && p.isFavorite);
+          
+          const matchesSearch = searchQuery === '' || 
+              p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+              
+          const matchesTag = selectedTag === null || p.tags.includes(selectedTag);
+
+          return matchesCategory && matchesSearch && matchesTag;
+      });
+  }, [prompts, selectedCategory, searchQuery, selectedTag]); // Removed isAuthenticated dependency to keep list stable, but PromptCard handles internal hiding
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
+  const paginatedPrompts = filteredPrompts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  // Reset pagination on filter change
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [selectedCategory, searchQuery, selectedTag]);
+
+  // --- Render ---
   return (
-    <div className="flex h-screen w-full bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans text-zinc-900 dark:text-zinc-100 relative transition-colors duration-300">
-      
-      {/* WebSite Schema Injection into HEAD */}
-      {websiteSchema && createPortal(
-        <script 
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: websiteSchema }}
-        />,
-        document.head
-      )}
-      {/* Canonical URL Injection */}
-      {canonicalUrl && createPortal(
-          <link rel="canonical" href={canonicalUrl} />,
-          document.head
-      )}
-
-      {/* Confirm Modal */}
-      <ConfirmModal 
-        isOpen={confirmState.isOpen}
-        title={confirmState.title}
-        message={confirmState.message}
-        onConfirm={confirmState.action}
-        onCancel={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
-      />
-
-      {/* Login Modal */}
-      {isLoginModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden ring-1 ring-zinc-200 dark:ring-zinc-800">
-                <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">Admin Access</h3>
-                    <button 
-                        onClick={() => { setIsLoginModalOpen(false); setLoginError(false); setPasswordInput(''); }} 
-                        className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    >
-                        <RiCloseLine size={20} />
-                    </button>
-                </div>
-                <div className="p-6 space-y-4">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                        Please enter the administration password to create or edit prompts.
-                    </p>
-                    <div className="space-y-2">
-                        <input 
-                            type="password" 
-                            value={passwordInput}
-                            onChange={(e) => { setPasswordInput(e.target.value); setLoginError(false); }}
-                            onKeyDown={(e) => e.key === 'Enter' && submitLogin()}
-                            className={`w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border ${loginError ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-400'} rounded-lg outline-none transition-colors text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600`}
-                            placeholder="Password"
-                            autoFocus
-                        />
-                        {loginError && <p className="text-[10px] text-red-500 font-medium">Incorrect password provided.</p>}
-                    </div>
-                    <button 
-                        onClick={submitLogin}
-                        className="w-full bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black font-medium py-2.5 rounded-lg transition-colors text-sm"
-                    >
-                        Verify Identity
-                    </button>
-                </div>
-            </div>
-        </div>
-      )}
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/20 z-40 md:hidden backdrop-blur-sm"
-            onClick={() => setSidebarOpen(false)}
-          />
-      )}
-
-      {/* Sidebar */}
-      <Sidebar 
-        siteName={SITE_NAME}
-        selectedCategory={selectedCategory}
-        onSelectCategory={(cat) => { navigateTo('library', { category: cat }); if(window.innerWidth < 768) setSidebarOpen(false); }}
-        onCreateNew={handleCreateNew}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isAuthenticated={isAuthenticated}
-        onLogin={handleLoginRequest}
-        onLogout={handleLogout}
-        isDarkMode={isDarkMode}
-        onToggleTheme={toggleTheme}
-        isCollapsed={isSidebarCollapsed}
-        toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        onExport={handleExportData}
-      />
-      
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full min-w-0 bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
+    <div className="flex h-full w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950">
         
-        {/* Mobile Header */}
-        <header className="md:hidden h-14 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between px-4 sticky top-0 z-30 flex-shrink-0">
-            <div className="flex items-center gap-3">
-                <button onClick={() => setSidebarOpen(true)} className="text-zinc-900 dark:text-white">
-                    <RiMenuLine size={20} />
-                </button>
-                <span className="font-medium text-sm text-zinc-900 dark:text-white">{SITE_NAME}</span>
-            </div>
-        </header>
+        {/* Modals */}
+        <ConfirmModal 
+            {...confirmState} 
+            onCancel={() => setConfirmState(prev => ({ ...prev, isOpen: false }))} 
+            onConfirm={confirmState.action}
+        />
 
-        {/* Content Switcher */}
-        <div className="flex-1 overflow-hidden relative flex flex-col h-full">
+        {/* Login Modal */}
+        {isLoginModalOpen && createPortal(
+             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-xs p-6 ring-1 ring-zinc-200 dark:ring-zinc-800 animate-in zoom-in-95">
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-1">Admin Access</h2>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Enter password to manage prompts.</p>
+                    <input 
+                        type="password"
+                        autoFocus
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                        placeholder="Password"
+                        className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 mb-2"
+                    />
+                    {loginError && <p className="text-xs text-red-500 mb-2">Incorrect password</p>}
+                    <div className="flex gap-2 mt-2">
+                        <button onClick={() => setIsLoginModalOpen(false)} className="flex-1 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200">Cancel</button>
+                        <button onClick={handleLogin} className="flex-1 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-sm font-medium">Login</button>
+                    </div>
+                </div>
+             </div>,
+             document.body
+        )}
+
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+            <div 
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                onClick={() => setSidebarOpen(false)}
+            />
+        )}
+
+        <Sidebar 
+            siteName={SITE_NAME}
+            selectedCategory={selectedCategory}
+            onSelectCategory={(cat) => { setSelectedCategory(cat); setSelectedTag(null); setView('library'); setSidebarOpen(false); }}
+            onCreateNew={handleCreateNew}
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            isAuthenticated={isAuthenticated}
+            onLogin={() => setIsLoginModalOpen(true)}
+            onLogout={handleLogout}
+            isDarkMode={isDarkMode}
+            onToggleTheme={toggleTheme}
+            isCollapsed={isSidebarCollapsed}
+            toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            onExport={handleExport}
+        />
+
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col h-full min-w-0 relative overflow-hidden transition-all">
             
-            {/* Demo Mode Banner */}
-            {isDemoMode && !isLoading && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30 px-4 py-1.5 flex items-center justify-center gap-2 text-[11px] font-medium text-amber-700 dark:text-amber-500 shrink-0">
-                    <RiWifiOffLine size={12} />
-                    <span>Offline / Demo Mode</span>
-                </div>
-            )}
-
-            {isLoading ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 gap-3">
-                    <RiLoader4Line className="animate-spin" size={32} />
-                    <span className="text-sm font-medium">Loading Library...</span>
-                </div>
-            ) : view === 'editor' ? (
-                <PromptEditor 
-                    initialData={activePrompt} 
-                    onSave={savePrompt} 
-                    onDelete={requestDeletePrompt}
-                    onCancel={() => activePrompt ? navigateTo('detail', { prompt: activePrompt }) : navigateTo('library', { preserveState: true })} 
-                />
-            ) : view === 'detail' && activePrompt ? (
-                <PromptDetail 
-                    prompt={activePrompt}
-                    onBack={() => navigateTo('library', { preserveState: true })}
-                    onEdit={(p) => { 
-                        if (!isAuthenticated) {
-                             handleLoginRequest();
-                             return;
-                        }
-                        navigateTo('editor', { prompt: p });
-                    }}
-                    onDelete={requestDeletePrompt}
-                    onToggleFavorite={toggleFavorite}
-                    isAuthenticated={isAuthenticated}
-                    onLogin={handleLoginRequest}
-                    onTagClick={(tag) => navigateTo('library', { tag })}
-                />
-            ) : (
-                /* Library View - Sticky Header & Scrolling Grid */
-                <div className="h-full w-full flex flex-col overflow-hidden">
-                    
-                    {/* Fixed Header Container (Shrink-0 prevents compression) */}
-                    <div className="shrink-0 px-6 md:px-10 pt-6 pb-4 bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-md z-10 border-b border-zinc-200/50 dark:border-zinc-800/50">
-                        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
-                            <div>
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
-                                        {selectedTag ? `#${selectedTag}` : (selectedCategory === 'All' ? 'Library' : selectedCategory)}
-                                    </h1>
-                                    {selectedTag && (
-                                        <button 
-                                            onClick={() => navigateTo('library', { category: 'All' })}
-                                            className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                                            title="Clear Tag Filter"
-                                        >
-                                            <RiCloseCircleLine size={20} />
-                                        </button>
-                                    )}
-                                </div>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                    {visiblePrompts.length} {visiblePrompts.length === 1 ? 'result' : 'results'}
-                                    {selectedTag && <span> with tag <b>#{selectedTag}</b></span>}
-                                </p>
-                            </div>
-                            
-                            {/* Search */}
-                            <div className="relative w-full md:w-72">
-                                <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
+            {view === 'library' && (
+                <div className="h-full flex flex-col">
+                    {/* Top Bar */}
+                    <div className="px-6 md:px-10 py-6 shrink-0 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center z-10 bg-zinc-50/95 dark:bg-zinc-950/95 backdrop-blur-sm">
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            <button 
+                                className="md:hidden p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                onClick={() => setSidebarOpen(true)}
+                            >
+                                <RiMenuLine size={24} />
+                            </button>
+                            <div className="relative flex-1 md:w-96 group">
+                                <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 transition-colors" size={18} />
                                 <input 
-                                    type="text" 
-                                    placeholder="Search..." 
+                                    type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-100 focus:border-zinc-900 dark:focus:border-zinc-500 outline-none transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                                    placeholder="Search prompts..."
+                                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:ring-4 focus:ring-zinc-100 dark:focus:ring-zinc-800 transition-all shadow-sm"
                                 />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900">
+                                        <RiCloseCircleLine size={16} />
+                                    </button>
+                                )}
                             </div>
                         </div>
-                    </div>
 
-                    {/* Scrollable Content Area (Flex-1 fills remaining space) */}
-                    <div className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-10 pt-6">
-                         <div className="max-w-[1600px] mx-auto min-h-full flex flex-col">
-                            {/* Grid */}
-                            {paginatedPrompts.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 mb-auto">
+                        {selectedTag && (
+                             <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full">
+                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Tag: #{selectedTag}</span>
+                                <button onClick={() => setSelectedTag(null)} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
+                                    <RiCloseLine size={14} />
+                                </button>
+                             </div>
+                        )}
+                    </div>
+                    
+                    {/* Grid Content */}
+                    <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-20 scrollbar-hide">
+                        {isLoading ? (
+                            <div className="h-64 flex flex-col items-center justify-center text-zinc-400 animate-pulse gap-4">
+                                <RiLoader4Line className="animate-spin" size={32} />
+                                <span className="text-sm font-medium">Loading Library...</span>
+                            </div>
+                        ) : filteredPrompts.length > 0 ? (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-8">
                                     {paginatedPrompts.map(prompt => (
                                         <PromptCard 
                                             key={prompt.id} 
                                             prompt={prompt} 
+                                            onClick={(p) => { setActivePrompt(p); setView('detail'); }}
+                                            onTagClick={(t) => setSelectedTag(t)}
                                             isAuthenticated={isAuthenticated}
-                                            onClick={(p) => navigateTo('detail', { prompt: p })}
-                                            onTagClick={(t) => navigateTo('library', { tag: t })}
                                         />
                                     ))}
                                 </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-32 text-zinc-400 dark:text-zinc-600 flex-1">
-                                    <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-300 dark:text-zinc-600">
-                                        <RiSearchLine size={32} />
-                                    </div>
-                                    <p className="text-sm font-medium mb-1">No prompts found</p>
-                                    <p className="text-xs">Try adjusting your filters or search query</p>
-                                    {(selectedCategory !== 'All' || selectedTag) && (
+
+                                {/* Pagination Controls */}
+                                {totalPages > 1 && (
+                                    <div className="flex justify-center items-center gap-4 mb-10">
                                         <button 
-                                            onClick={() => navigateTo('library', { category: 'All' })}
-                                            className="mt-4 text-xs text-zinc-600 dark:text-zinc-400 hover:underline"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-500 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                                         >
-                                            Clear all filters
+                                            <RiArrowLeftSLine size={20} />
                                         </button>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Pagination Controls */}
-                            {totalPages > 1 && (
-                                <div className="mt-12 py-6 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
-                                    <button 
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={currentPage === 1}
-                                        className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <RiArrowLeftSLine size={18} />
-                                        Previous
-                                    </button>
-
-                                    <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
-                                        Page <span className="text-zinc-900 dark:text-white">{currentPage}</span> of <span className="text-zinc-900 dark:text-white">{totalPages}</span>
+                                        <span className="text-sm text-zinc-500 dark:text-zinc-400 font-mono">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <button 
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-500 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                        >
+                                            <RiArrowRightSLine size={20} />
+                                        </button>
                                     </div>
-
-                                    <button 
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        Next
-                                        <RiArrowRightSLine size={18} />
-                                    </button>
+                                )}
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-96 text-zinc-400 dark:text-zinc-600">
+                                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+                                    <RiSearchLine size={24} className="opacity-50"/>
                                 </div>
-                            )}
-                        </div>
+                                <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">No prompts found</p>
+                                <p className="text-sm max-w-xs text-center mt-2">Try adjusting your search terms or category filters.</p>
+                                {isAuthenticated && (
+                                    <button onClick={handleCreateNew} className="mt-6 text-sm font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+                                        Create a new prompt
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
+                    
+                    {isDemoMode && !isLoading && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/30 text-orange-700 dark:text-orange-400 text-xs font-medium rounded-full flex items-center gap-2 shadow-sm z-20">
+                            <RiWifiOffLine size={14} />
+                            <span>Demo Mode (Offline)</span>
+                        </div>
+                    )}
                 </div>
             )}
-        </div>
-      </main>
+
+            {view === 'detail' && activePrompt && (
+                <PromptDetail 
+                    prompt={activePrompt}
+                    onBack={() => { setView('library'); setActivePrompt(null); }}
+                    onEdit={(p) => { setView('editor'); }}
+                    onDelete={handleDeletePrompt}
+                    onToggleFavorite={handleToggleFavorite}
+                    isAuthenticated={isAuthenticated}
+                    onLogin={() => setIsLoginModalOpen(true)}
+                    onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
+                />
+            )}
+
+            {view === 'editor' && (
+                <PromptEditor 
+                    initialData={activePrompt}
+                    onSave={handleSavePrompt}
+                    onDelete={handleDeletePrompt}
+                    onCancel={() => {
+                        if (activePrompt) {
+                            setView('detail');
+                        } else {
+                            setView('library');
+                        }
+                    }}
+                />
+            )}
+
+        </main>
     </div>
   );
 };
