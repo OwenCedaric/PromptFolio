@@ -65,12 +65,12 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick }) 
         
         {/* Content Bubble - Rounded Rectangle Mask (No BG/Border) */}
         <div className="flex-1 overflow-hidden relative mb-3 rounded-xl">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono leading-relaxed line-clamp-4 opacity-90">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words">
                 {currentVersion?.content || 'No content'}
             </p>
             
             {/* Gradient Fade - Fades to Card Background Color */}
-            <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-zinc-900 dark:via-zinc-900/80"></div>
+            <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 pointer-events-none"></div>
         </div>
 
         <div className="flex gap-2 overflow-hidden mt-auto">
