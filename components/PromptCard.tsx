@@ -145,11 +145,12 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden min-h-[160px]"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:block relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
     >
       {/* Side Cover Image */}
+      {/* Mobile: Top Block (h-40). Desktop: Absolute Left Panel (w-48, h-full) */}
       {showImage && (
-           <div className="w-full h-40 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800">
+           <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
@@ -161,7 +162,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       )}
 
       {/* Content Container */}
-      <div className="p-5 flex flex-col min-w-0 relative z-10 md:flex-1">
+      {/* Added min-h-[160px] to ensure card height even with little text. */}
+      {/* Added md:ml-48 to reserve space for the absolute image on desktop. */}
+      <div className={`p-5 flex flex-col min-w-0 relative z-10 min-h-[160px] ${showImage ? 'md:ml-48' : ''}`}>
          
          <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
