@@ -1,0 +1,47 @@
+interface Env {
+  DB: any;
+  SITE_URL?: string;
+}
+
+export const onRequestGet = async (context: any) => {
+  const url = new URL(context.request.url);
+  const baseUrl = context.env.SITE_URL || `${url.protocol}//${url.host}`;
+
+  try {
+    // Get distinct authors from prompts that are NOT private
+    // Ensure author is not null or empty string
+    const { results } = await context.env.DB.prepare(
+      "SELECT DISTINCT author, MAX(updatedAt) as latest FROM prompts WHERE status != 'PRIVATE' AND author IS NOT NULL AND author != '' GROUP BY author"
+    ).all();
+
+    const urls = results.map((row: any) => {
+      const lastMod = new Date(row.latest).toISOString();
+      const authorEncoded = encodeURIComponent(row.author);
+      return `
+  <url>
+    <loc>${baseUrl}/?author=${authorEncoded}</loc>
+    <lastmod>${lastMod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+    }).join('');
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>`;
+
+    return new Response(sitemap, {
+      headers: { 
+        "Content-Type": "application/xml",
+        "Cache-Control": "public, max-age=3600"
+      },
+    });
+
+  } catch (err: any) {
+    console.error("Sitemap authors error:", err);
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`, {
+      headers: { "Content-Type": "application/xml" },
+    });
+  }
+};
