@@ -289,10 +289,10 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 scrollbar-hide">
                     {/* Properties Card */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
-                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
+                        <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
                         
                         <div className="space-y-1">
-                            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Author</label>
+                            <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Author</label>
                             <input 
                                 type="text" 
                                 value={author}
@@ -303,7 +303,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Category</label>
+                            <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Category</label>
                             <div className="relative">
                                 <select 
                                     value={category} 
@@ -324,7 +324,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">Status</label>
+                                <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Status</label>
                                 <div className="relative">
                                     <select 
                                         value={status} 
@@ -344,7 +344,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">License</label>
+                                <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">License</label>
                                 <div className="relative">
                                     <select 
                                         value={copyright} 
@@ -392,11 +392,11 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                      {/* Description Area */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-2xl p-6 shadow-sm flex flex-col min-h-[300px]">
                         <div className="flex justify-between items-center mb-4 shrink-0">
-                            <label className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Description / Context</label>
+                            <label className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Description / Context</label>
                             <button 
                                 onClick={() => handleAI('desc')} 
                                 disabled={isProcessing || !content}
-                                className="flex items-center gap-1.5 text-[10px] font-medium bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-300 px-2 py-1 rounded transition-colors"
+                                className="flex items-center gap-1.5 text-xs font-medium bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-300 px-2 py-1 rounded transition-colors"
                             >
                             {activeAiTask === 'desc' ? <RiLoader4Line className="animate-spin" size={12} /> : <RiMagicLine size={12} />}
                             Auto-Generate
@@ -409,7 +409,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             placeholder="Describe the purpose, goals, or context of this prompt. Support Markdown for images..."
                             className="flex-1 w-full text-sm text-zinc-700 dark:text-zinc-300 bg-transparent border-none p-0 focus:ring-0 focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700 resize-none leading-relaxed font-mono"
                         />
-                        <p className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-600 shrink-0">
+                        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-600 shrink-0">
                             Tip: Use Markdown to embed images or videos directly.
                         </p>
                     </div>
@@ -417,11 +417,11 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                     {/* Tags Card - Moved Below Description */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Tags</h3>
+                            <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Tags</h3>
                             <button 
                                 onClick={() => handleAI('tags')} 
                                 disabled={isProcessing}
-                                className="text-[10px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1"
+                                className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1"
                             >
                                 {activeAiTask === 'tags' ? <RiLoader4Line className="animate-spin" size={10} /> : <RiMagicLine size={10} />} Auto
                             </button>
@@ -511,7 +511,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                 )}
                              </div>
 
-                             <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">
+                             <span className="text-xs font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">
                                 EDITOR
                              </span>
                         </div>

@@ -67,7 +67,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="flex justify-between items-start mb-3 shrink-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
                 <div className="flex gap-2">
                     {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
                 </div>
@@ -93,10 +93,10 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 {isLocked ? (
                     <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 gap-2 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-lg border border-zinc-100 dark:border-zinc-800/50">
                         <RiLockLine size={24} className="opacity-50" />
-                        <span className="text-[10px] uppercase tracking-widest font-bold opacity-50">Private Content</span>
+                        <span className="text-xs uppercase tracking-widest font-bold opacity-50">Private Content</span>
                     </div>
                 ) : (
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed opacity-90 break-words whitespace-pre-wrap">
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
                         {currentVersion?.content || 'No content'}
                     </p>
                 )}
@@ -127,7 +127,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     <span 
                         key={tag} 
                         onClick={(e) => handleTagClick(e, tag)}
-                        className="text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
+                        className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
                     >
                         #{tag}
                     </span>
@@ -149,7 +149,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     >
       {/* Side Cover Image */}
       {showImage && (
-           <div className="w-full h-40 md:w-48 md:h-auto shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800">
+           <div className="w-full h-40 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
@@ -165,12 +165,12 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          
          <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
                 {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
              </div>
              
              {/* Minimalist Date for List View */}
-             <span className="text-[10px] text-zinc-400 hidden md:block">
+             <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden md:block">
                 {new Date(prompt.updatedAt).toLocaleDateString()}
              </span>
          </div>
@@ -180,7 +180,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          </h3>
 
          <div className="flex-1 relative mb-3 min-h-0">
-             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-mono line-clamp-3 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
+             <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
                 {isLocked ? "Content is private." : (currentVersion?.content || 'No content')}
              </p>
          </div>
@@ -188,9 +188,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          <div className="flex items-center justify-between mt-auto">
              <div className="flex flex-wrap gap-2 h-6 overflow-hidden">
                 {prompt.tags.slice(0, 4).map(tag => (
-                    <span key={tag} className="text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">#{tag}</span>
+                    <span key={tag} className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">#{tag}</span>
                 ))}
-                {prompt.tags.length > 4 && <span className="text-[10px] text-zinc-400 self-center">+{prompt.tags.length - 4}</span>}
+                {prompt.tags.length > 4 && <span className="text-xs text-zinc-400 self-center">+{prompt.tags.length - 4}</span>}
              </div>
 
              {/* Quick Action for List View */}

@@ -161,20 +161,20 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
       switch (status) {
           case PromptStatus.PRIVATE:
               return (
-                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-500 border border-red-200/50 dark:border-red-800/30 flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-500 border border-red-200/50 dark:border-red-800/30 flex items-center gap-1">
                       <RiLockLine size={12} /> Private
                   </span>
               );
           case PromptStatus.DRAFT:
                return (
-                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30 flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 border border-yellow-200/50 dark:border-yellow-800/30 flex items-center gap-1">
                       <RiPencilLine size={12} /> Draft
                   </span>
               );
           case PromptStatus.PUBLISHED:
           default:
                return (
-                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-500 border border-green-200/50 dark:border-green-800/30 flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-500 border border-green-200/50 dark:border-green-800/30 flex items-center gap-1">
                        <RiEyeLine size={12} /> Published
                   </span>
               );
@@ -274,7 +274,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
              </div>
              <h1 className="text-xl font-bold text-zinc-900 dark:text-white mt-2 line-clamp-2">{prompt.title}</h1>
              <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
-                 <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 uppercase text-[10px] font-bold tracking-wider">{prompt.category}</span>
+                 <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 uppercase text-xs font-bold tracking-wider">{prompt.category}</span>
                  <span>•</span>
                  {prompt.author && (
                      <>
@@ -337,13 +337,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
                     <div>
                         <div className="flex flex-wrap items-center gap-3 mb-4">
-                            <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                            <span className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                                 {prompt.category}
                             </span>
                             
                             {renderStatusBadge(prompt.status)}
 
-                            <span className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
+                            <span className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">
                                 <RiTimeLine size={12} />
                                 Updated {new Date(prompt.updatedAt).toLocaleDateString()}
                             </span>
@@ -374,13 +374,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
                     {/* Info Card (Expanded to Full Width) */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
-                        <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <RiGlobalLine size={14} /> Metadata & Rights
                         </h3>
                         <div className="grid grid-cols-2 lg:grid-cols-[auto_auto_1fr] gap-y-6 gap-x-8 items-start">
                             {/* Status */}
                             <div className="flex flex-col gap-1.5">
-                                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
+                                <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
                                     <RiToggleLine size={12}/> Status
                                 </span>
                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">
@@ -390,7 +390,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
                              {/* Version Count */}
                             <div className="flex flex-col gap-1.5">
-                                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
+                                <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
                                     <RiGitCommitLine size={12}/> History
                                 </span>
                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
@@ -400,7 +400,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
                             {/* License & Copyright - Full Width on last row */}
                             <div className="col-span-2 flex flex-col gap-1.5">
-                                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
+                                 <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
                                     {prompt.copyright && prompt.copyright !== Copyright.NONE ? <RiShieldCheckLine size={12} /> : <RiCopyrightLine size={12} />}
                                     License
                                  </span>
@@ -420,7 +420,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     ) : prompt.description ? (
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.02)] dark:shadow-none">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
                                     <RiInformationLine size={14} /> Description
                                 </h3>
                             </div>
@@ -450,7 +450,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
                     {/* Tags Card (Moved from Right Column) */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
-                         <h3 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                         <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <RiPriceTag3Line size={14} /> Tags
                         </h3>
                          <div className="flex flex-wrap gap-2">
@@ -534,8 +534,8 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     ) : (
                         <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col">
                             <div className="h-8 bg-zinc-50/50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between select-none shrink-0">
-                                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">SOURCE</span>
-                                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                                <span className="text-xs font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">SOURCE</span>
+                                <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">
                                     {viewedVersion?.content.length || 0} CHARS
                                 </span>
                             </div>

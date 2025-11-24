@@ -71,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {/* Mobile Close */}
-            <button onClick={onClose} className="md:hidden ml-auto text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
+            <button onClick={onClose} className="md:hidden ml-auto text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">
                 <RiCloseLine size={24} />
             </button>
         </div>
@@ -128,7 +128,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Categories - Completely Hidden when collapsed */}
             {!isCollapsed && (
                 <div className="animate-in fade-in duration-300 slide-in-from-left-2 mt-8">
-                    <div className="mb-3 px-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-wider">Collections</div>
+                    <div className="mb-3 px-3 text-xs font-bold text-zinc-500 dark:text-zinc-600 uppercase tracking-wider">Collections</div>
                     
                     <nav className="space-y-0.5">
                         {Object.values(Category).map((cat) => (
@@ -155,7 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({
              {/* Collapse Toggle */}
              <button 
                 onClick={toggleCollapse}
-                className={`hidden md:flex items-center gap-3 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
+                className={`hidden md:flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
                 title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
                 {isCollapsed ? <RiSidebarUnfoldLine size={20} /> : <RiSidebarFoldLine size={20} />}
