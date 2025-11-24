@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import Sidebar from './components/Sidebar';
+import Sidebar, { Logo } from './components/Sidebar';
 import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
 import PromptDetail from './components/PromptDetail';
@@ -644,13 +644,20 @@ const App: React.FC = () => {
                                 >
                                     <RiMenuLine size={24} />
                                 </button>
+                                
+                                {/* Mobile Brand */}
+                                <div className="flex items-center gap-2 md:hidden mr-2 shrink-0">
+                                    <Logo className="w-6 h-6 text-zinc-900 dark:text-zinc-100" />
+                                    <span className="font-bold text-zinc-900 dark:text-white truncate max-w-[100px]">{SITE_NAME}</span>
+                                </div>
+
                                 <div className="relative flex-1 group">
                                     <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 transition-colors" size={16} />
                                     <input 
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Search prompts..."
+                                        placeholder="Search..."
                                         className="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:ring-2 focus:ring-zinc-100 dark:focus:ring-zinc-800 transition-all shadow-sm"
                                     />
                                     {searchQuery && (
@@ -715,7 +722,7 @@ const App: React.FC = () => {
                                     </div>
                                  )}
                                  {selectedAuthor && (
-                                     <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200 border border-blue-200 dark:border-blue-800">
+                                     <div className="flex items-center gap-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200 border border-zinc-300 dark:border-zinc-700">
                                          <RiUser3Line size={12} />
                                          <span className="text-xs font-bold">{selectedAuthor}</span>
                                          <button onClick={() => setSelectedAuthor(null)} className="hover:opacity-70 transition-opacity">

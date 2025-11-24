@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 // Inline Logo Component: Standalone Cedar "C" (No Background)
-const Logo = ({ className }: { className?: string }) => (
+export const Logo = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
     <g transform="translate(2, 2)">
         {/* The Serif 'C' Shape - Standalone with thicker strokes for visibility without background */}
