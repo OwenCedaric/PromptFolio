@@ -583,7 +583,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Write your prompt here..."
-                            className="w-full flex-1 bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 border-none focus:ring-0 focus:outline-none resize-none leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
+                            className="w-full flex-1 bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 pb-28 lg:pb-6 border-none focus:ring-0 focus:outline-none resize-none leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
                         />
                      </div>
                 </div>

@@ -550,7 +550,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     {viewedVersion?.content.length || 0} CHARS
                                 </span>
                             </div>
-                            <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
+                            <div className="flex-1 p-6 pb-28 lg:pb-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
                                 <pre className="font-mono text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words selection:bg-zinc-200 dark:selection:bg-zinc-700">
                                     <HighlightedContent content={viewedVersion?.content || ''} />
                                 </pre>

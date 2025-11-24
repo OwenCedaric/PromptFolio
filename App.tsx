@@ -301,9 +301,8 @@ const App: React.FC = () => {
 
   // --- SEO, Title & URL Management ---
   useEffect(() => {
-      // 0. Safety Guard: Do not rewrite URL if loading initial deep link
-      // This prevents the "clear URL before data loads" race condition
-      if (isLoading && initialIdRef.current) return;
+      // 0. Safety Guard: Do not rewrite URL while loading
+      if (isLoading) return;
 
       // 1. Update Title
       let title = SITE_NAME;
@@ -761,7 +760,7 @@ const App: React.FC = () => {
                     </div>
                     
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-20 scrollbar-hide pt-6">
+                    <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-[calc(6rem+env(safe-area-inset-bottom))] scrollbar-hide pt-6">
                         {isLoading ? (
                             <div className="h-64 flex flex-col items-center justify-center text-zinc-400 animate-pulse gap-4">
                                 <RiLoader4Line className="animate-spin" size={32} />
