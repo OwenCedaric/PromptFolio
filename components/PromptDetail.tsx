@@ -383,45 +383,6 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         </div>
                     )}
 
-                    {/* Info Card (Expanded to Full Width) */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
-                        <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <RiGlobalLine size={14} /> Metadata & Rights
-                        </h3>
-                        <div className="grid grid-cols-2 lg:grid-cols-[auto_auto_1fr] gap-y-6 gap-x-8 items-start">
-                            {/* Status */}
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
-                                    <RiToggleLine size={12}/> Status
-                                </span>
-                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">
-                                    {prompt.status.toLowerCase()}
-                                </span>
-                            </div>
-
-                             {/* Version Count */}
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
-                                    <RiGitCommitLine size={12}/> History
-                                </span>
-                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
-                                    {prompt.versions.length} <span className="text-zinc-400 text-xs font-normal">versions</span>
-                                </span>
-                            </div>
-
-                            {/* License & Copyright - Full Width on last row */}
-                            <div className="col-span-2 flex flex-col gap-1.5">
-                                 <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
-                                    {prompt.copyright && prompt.copyright !== Copyright.NONE ? <RiShieldCheckLine size={12} /> : <RiCopyrightLine size={12} />}
-                                    License
-                                 </span>
-                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-snug whitespace-pre-wrap">
-                                    {prompt.copyright || 'None / Unspecified'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Description Content - LOCKED IF PRIVATE */}
                     {isLocked ? (
                         <LockedPlaceholder 
@@ -459,7 +420,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         </div>
                     )}
 
-                    {/* Tags Card (Moved from Right Column) */}
+                    {/* Tags Card */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
                          <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <RiPriceTag3Line size={14} /> Tags
@@ -478,6 +439,45 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 ) : (
                                     <span className="text-xs text-zinc-400 dark:text-zinc-600 italic px-1">No tags added</span>
                                 )}
+                        </div>
+                    </div>
+
+                    {/* Info Card (Metadata & Rights) - MOVED TO BOTTOM */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
+                        <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <RiGlobalLine size={14} /> Metadata & Rights
+                        </h3>
+                        <div className="grid grid-cols-2 lg:grid-cols-[auto_auto_1fr] gap-y-6 gap-x-8 items-start">
+                            {/* Status */}
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
+                                    <RiToggleLine size={12}/> Status
+                                </span>
+                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">
+                                    {prompt.status.toLowerCase()}
+                                </span>
+                            </div>
+
+                             {/* Version Count */}
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
+                                    <RiGitCommitLine size={12}/> History
+                                </span>
+                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
+                                    {prompt.versions.length} <span className="text-zinc-400 text-xs font-normal">versions</span>
+                                </span>
+                            </div>
+
+                            {/* License & Copyright - Full Width on last row */}
+                            <div className="col-span-2 flex flex-col gap-1.5">
+                                 <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
+                                    {prompt.copyright && prompt.copyright !== Copyright.NONE ? <RiShieldCheckLine size={12} /> : <RiCopyrightLine size={12} />}
+                                    License
+                                 </span>
+                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-snug whitespace-pre-wrap">
+                                    {prompt.copyright || 'None / Unspecified'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
