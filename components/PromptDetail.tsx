@@ -368,7 +368,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     </div>
                 </div>
 
-                {/* Scrollable Body */}
+                {/* Scrollable Body - Order: Cover -> Desc -> Tags -> Metadata */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-4 md:pt-8 pb-32 lg:pb-10 space-y-8 no-scrollbar">
                     
                     {/* Cover Image (If Present) */}
@@ -485,7 +485,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
             </section>
 
             {/* RIGHT COLUMN (42% - Approx 40%): Prompt Content */}
-            <section className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'}`}>
+            <section className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'} pb-24 md:pb-8`}>
                 <div className="flex flex-col h-full">
                     
                     {/* Header for Prompt Column */}
@@ -502,7 +502,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     <select 
                                         value={selectedVersionId}
                                         onChange={(e) => setSelectedVersionId(e.target.value)}
-                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none max-w-[100px] sm:max-w-none"
+                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none max-w-[160px] sm:max-w-none"
                                     >
                                         {sortedVersions.map((v, idx) => {
                                             const originalIndex = prompt.versions.findIndex(ver => ver.id === v.id);
