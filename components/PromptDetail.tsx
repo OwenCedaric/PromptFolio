@@ -288,7 +288,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         <span>•</span>
                      </>
                  )}
-                 <span>v{sortedVersions.findIndex(v => v.id === viewedVersion?.id) + 1}</span>
+                 <span>v{prompt.versions.findIndex(v => v.id === viewedVersion?.id) + 1}</span>
              </div>
         </div>
 
@@ -489,7 +489,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                 <div className="flex flex-col h-full">
                     
                     {/* Header for Prompt Column */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-3 shrink-0">
+                    <div className="flex items-center justify-between mb-3 gap-3 shrink-0">
                         <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                             <div className="w-2 h-2 bg-zinc-900 dark:bg-white rounded-full"></div>
                             Prompt Content
@@ -502,7 +502,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     <select 
                                         value={selectedVersionId}
                                         onChange={(e) => setSelectedVersionId(e.target.value)}
-                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none"
+                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none max-w-[100px] sm:max-w-none"
                                     >
                                         {sortedVersions.map((v, idx) => {
                                             const originalIndex = prompt.versions.findIndex(ver => ver.id === v.id);
@@ -528,7 +528,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     title="Copy content"
                                 >
                                     {copied ? <RiCheckLine size={14} /> : <RiFileCopyLine size={14} />}
-                                    {copied ? 'Copied' : 'Copy'}
+                                    <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
                                 </button>
                             </div>
                         )}
