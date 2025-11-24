@@ -368,16 +368,16 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     </div>
                 </div>
 
-                {/* Scrollable Body - Order: Cover -> Desc -> Tags -> Metadata */}
+                {/* Scrollable Body - Order: Case Image -> Desc -> Tags -> Metadata */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-4 md:pt-8 pb-32 lg:pb-10 space-y-8 no-scrollbar">
                     
-                    {/* Cover Image (If Present) */}
+                    {/* Case / Example Image (If Present) */}
                     {prompt.imageUrl && (
                         <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm bg-zinc-100 dark:bg-zinc-900">
                             <img 
                                 src={prompt.imageUrl} 
-                                alt={`${prompt.title} Cover`} 
-                                className="w-full h-auto max-h-[400px] object-cover" 
+                                alt={`${prompt.title} Case Example`} 
+                                className="w-full h-auto block" 
                                 loading="lazy"
                             />
                         </div>
@@ -543,7 +543,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             />
                         </div>
                     ) : (
-                        <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                        <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col pb-[env(safe-area-inset-bottom)] md:pb-0">
                             <div className="h-8 bg-zinc-50/50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between select-none shrink-0">
                                 <span className="text-xs font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">SOURCE</span>
                                 <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">

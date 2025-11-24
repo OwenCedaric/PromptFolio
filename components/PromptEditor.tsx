@@ -404,7 +404,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                         </div>
                     </div>
                     
-                    {/* Cover Image Input & Preview */}
+                    {/* Case / Example Image Input & Preview */}
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl p-2 px-4 shadow-sm">
                             <RiImage2Line size={16} className="text-zinc-400" />
@@ -412,16 +412,16 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                 type="text"
                                 value={imageUrl}
                                 onChange={(e) => setImageUrl(e.target.value)}
-                                placeholder="Cover Image URL (Optional)"
+                                placeholder="Case / Example Image URL (Optional) - e.g. Result screenshot"
                                 className="flex-1 text-sm bg-transparent border-none outline-none focus:ring-0 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                             />
                         </div>
                         {imageUrl && (
-                            <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm h-48 w-full bg-zinc-100 dark:bg-zinc-900">
+                            <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm w-full bg-zinc-100 dark:bg-zinc-900">
                                 <img 
                                     src={imageUrl} 
-                                    alt="Cover Preview" 
-                                    className="w-full h-full object-cover"
+                                    alt="Case Example Preview" 
+                                    className="w-full h-auto block"
                                     onError={(e) => e.currentTarget.style.display='none'} 
                                 />
                             </div>
@@ -520,7 +520,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
 
             {/* RIGHT COLUMN (40%): Prompt Editor */}
             {/* Scrolls independently */}
-            <div className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'}`}>
+            <div className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'} pb-[env(safe-area-inset-bottom)]`}>
                 <div className="flex flex-col h-full">
                      <div className="flex justify-between items-center mb-3 shrink-0">
                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
@@ -538,7 +538,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                      </div>
                      
                      {/* Editor Container */}
-                     <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl overflow-hidden shadow-sm flex flex-col">
+                     <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl overflow-hidden shadow-sm flex flex-col mb-[env(safe-area-inset-bottom)]">
                          {/* Editor Header - Stays fixed inside the column */}
                         <div className="h-10 bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between shrink-0">
                              
@@ -593,7 +593,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       </div>
 
       {/* Mobile Floating Navigation */}
-      <div className="lg:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="lg:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 pb-[env(safe-area-inset-bottom)]">
         <div className="bg-zinc-900/90 dark:bg-zinc-800/90 backdrop-blur-md text-white p-1.5 rounded-full flex shadow-2xl border border-white/10 dark:border-black/10">
              <button 
                 onClick={() => setMobileTab('settings')}
