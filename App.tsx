@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Sidebar, { Logo } from './components/Sidebar';
 import PromptCard from './components/PromptCard';
@@ -145,6 +145,11 @@ const App: React.FC = () => {
     }
     return null;
   });
+
+  // Capture initial deep link ID to survive initial URL syncs
+  const initialIdRef = useRef<string | null>(
+      typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : null
+  );
   
   // Layout & Sort State
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -233,15 +238,16 @@ const App: React.FC = () => {
           if (res.ok && contentType && contentType.includes("application/json")) {
               const data = await res.json();
               
-              // Handle Deep Linking (ID) immediately after data load to prevent SEO effect from clearing URL
-              const params = new URLSearchParams(window.location.search);
-              const id = params.get('id');
+              // Handle Deep Linking (ID) via Ref to ensure it works even if URL was cleared
+              const id = initialIdRef.current;
               if (id) {
                   const found = data.find((p: PromptData) => p.id === id);
                   if (found) {
                       setActivePrompt(found);
                       setView('detail');
                   }
+                  // Consume the ID so subsequent fetches (e.g. login/logout) don't force-navigate back
+                  initialIdRef.current = null;
               }
 
               setPrompts(data);
@@ -255,14 +261,14 @@ const App: React.FC = () => {
           const localData = loadLocalData();
 
           // Handle Deep Linking (ID) for local data too
-          const params = new URLSearchParams(window.location.search);
-          const id = params.get('id');
+          const id = initialIdRef.current;
           if (id) {
               const found = localData.find((p: PromptData) => p.id === id);
               if (found) {
                   setActivePrompt(found);
                   setView('detail');
               }
+              initialIdRef.current = null;
           }
 
           setPrompts(localData);
@@ -295,6 +301,10 @@ const App: React.FC = () => {
 
   // --- SEO, Title & URL Management ---
   useEffect(() => {
+      // 0. Safety Guard: Do not rewrite URL if loading initial deep link
+      // This prevents the "clear URL before data loads" race condition
+      if (isLoading && initialIdRef.current) return;
+
       // 1. Update Title
       let title = SITE_NAME;
       if (view === 'detail' && activePrompt) {
@@ -362,7 +372,7 @@ const App: React.FC = () => {
            window.history.pushState({}, '', newSearch || window.location.pathname);
       }
 
-  }, [view, activePrompt, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME]);
+  }, [view, activePrompt, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME, isLoading]);
 
   // --- Handle Browser Back/Forward Buttons ---
   useEffect(() => {
