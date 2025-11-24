@@ -123,9 +123,28 @@ const App: React.FC = () => {
   
   // Filter & Search State
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
+  
+  // Lazy initialize filters from URL to prevent race conditions causing redirects
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+        return new URLSearchParams(window.location.search).get('category') || 'All';
+    }
+    return 'All';
+  });
+
+  const [selectedTag, setSelectedTag] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+        return new URLSearchParams(window.location.search).get('tag') || null;
+    }
+    return null;
+  });
+
+  const [selectedAuthor, setSelectedAuthor] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+        return new URLSearchParams(window.location.search).get('author') || null;
+    }
+    return null;
+  });
   
   // Layout & Sort State
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -213,6 +232,18 @@ const App: React.FC = () => {
           const contentType = res.headers.get("content-type");
           if (res.ok && contentType && contentType.includes("application/json")) {
               const data = await res.json();
+              
+              // Handle Deep Linking (ID) immediately after data load to prevent SEO effect from clearing URL
+              const params = new URLSearchParams(window.location.search);
+              const id = params.get('id');
+              if (id) {
+                  const found = data.find((p: PromptData) => p.id === id);
+                  if (found) {
+                      setActivePrompt(found);
+                      setView('detail');
+                  }
+              }
+
               setPrompts(data);
               setIsDemoMode(false);
           } else {
@@ -221,7 +252,20 @@ const App: React.FC = () => {
       } catch (error) {
           console.warn("Backend unavailable. Switching to Offline/Demo Mode.", error);
           setIsDemoMode(true);
-          setPrompts(loadLocalData());
+          const localData = loadLocalData();
+
+          // Handle Deep Linking (ID) for local data too
+          const params = new URLSearchParams(window.location.search);
+          const id = params.get('id');
+          if (id) {
+              const found = localData.find((p: PromptData) => p.id === id);
+              if (found) {
+                  setActivePrompt(found);
+                  setView('detail');
+              }
+          }
+
+          setPrompts(localData);
       } finally {
           setIsLoading(false);
       }
@@ -357,34 +401,6 @@ const App: React.FC = () => {
       
       return () => window.removeEventListener('popstate', handlePopState);
   }, [prompts]);
-
-  // --- Initial Load from URL ---
-  useEffect(() => {
-      if (prompts.length === 0) return;
-      
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const cat = params.get('category');
-      const tag = params.get('tag');
-      const author = params.get('author');
-
-      if (id) {
-          const found = prompts.find(p => p.id === id);
-          if (found) {
-              setActivePrompt(found);
-              setView('detail');
-          }
-      } else if (cat) {
-          setSelectedCategory(cat);
-          setView('library');
-      } else if (tag) {
-          setSelectedTag(tag);
-          setView('library');
-      } else if (author) {
-          setSelectedAuthor(author);
-          setView('library');
-      }
-  }, [prompts.length]);
 
   // --- Theme Toggle ---
   const toggleTheme = () => {
