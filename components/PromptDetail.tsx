@@ -35,9 +35,10 @@ interface PromptDetailProps {
   isAuthenticated: boolean;
   onLogin?: () => void;
   onTagClick?: (tag: string) => void;
+  onAuthorClick?: (author: string) => void;
 }
 
-const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated, onLogin, onTagClick }) => {
+const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated, onLogin, onTagClick, onAuthorClick }) => {
   // Sort versions newest first for the dropdown
   const sortedVersions = [...prompt.versions].sort((a, b) => b.createdAt - a.createdAt);
   
@@ -278,7 +279,12 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                  <span>•</span>
                  {prompt.author && (
                      <>
-                        <span className="font-medium text-zinc-700 dark:text-zinc-300">by {prompt.author}</span>
+                        <button 
+                            onClick={() => onAuthorClick && onAuthorClick(prompt.author!)}
+                            className="font-medium text-zinc-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline decoration-blue-300 underline-offset-2 transition-colors"
+                        >
+                            by {prompt.author}
+                        </button>
                         <span>•</span>
                      </>
                  )}
@@ -349,7 +355,12 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             </span>
                              {prompt.author && (
                                 <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300 border-l border-zinc-300 dark:border-zinc-700 pl-3">
-                                    by {prompt.author}
+                                    by <button 
+                                        onClick={() => onAuthorClick && onAuthorClick(prompt.author!)}
+                                        className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline decoration-blue-300 underline-offset-2 transition-colors"
+                                    >
+                                        {prompt.author}
+                                    </button>
                                 </span>
                             )}
                         </div>

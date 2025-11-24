@@ -17,7 +17,8 @@ import {
     RiCloseCircleLine,
     RiLayoutGridLine,
     RiListCheck2,
-    RiArrowUpDownLine
+    RiArrowUpDownLine,
+    RiUser3Line
 } from '@remixicon/react';
 
 // --- Mock Data for Fallback ---
@@ -124,6 +125,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
   
   // Layout & Sort State
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -257,6 +259,8 @@ const App: React.FC = () => {
           } else {
              title = `${activePrompt.title} | ${SITE_NAME}`;
           }
+      } else if (selectedAuthor) {
+          title = `Prompts by ${selectedAuthor} | ${SITE_NAME}`;
       } else if (selectedTag) {
           title = `#${selectedTag} Prompts | ${SITE_NAME}`;
       } else if (selectedCategory !== 'All') {
@@ -275,6 +279,8 @@ const App: React.FC = () => {
               } else {
                   metaDesc.setAttribute('content', activePrompt.description || 'A professional AI prompt managed in PromptFolio.');
               }
+          } else if (selectedAuthor) {
+              metaDesc.setAttribute('content', `Browse AI prompts created by ${selectedAuthor}.`);
           } else {
               metaDesc.setAttribute('content', 'Organize, version, and optimize your AI prompts with Google Gemini integration.');
           }
@@ -288,6 +294,7 @@ const App: React.FC = () => {
       params.delete('id');
       params.delete('category');
       params.delete('tag');
+      params.delete('author');
 
       if (view === 'detail' && activePrompt) {
           params.set('id', activePrompt.id);
@@ -297,6 +304,9 @@ const App: React.FC = () => {
           }
           if (selectedTag) {
               params.set('tag', selectedTag);
+          }
+          if (selectedAuthor) {
+              params.set('author', selectedAuthor);
           }
       }
       
@@ -308,7 +318,7 @@ const App: React.FC = () => {
            window.history.pushState({}, '', newSearch || window.location.pathname);
       }
 
-  }, [view, activePrompt, selectedCategory, selectedTag, isAuthenticated, SITE_NAME]);
+  }, [view, activePrompt, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME]);
 
   // --- Handle Browser Back/Forward Buttons ---
   useEffect(() => {
@@ -317,6 +327,7 @@ const App: React.FC = () => {
           const id = params.get('id');
           const category = params.get('category');
           const tag = params.get('tag');
+          const author = params.get('author');
 
           if (id) {
               const p = prompts.find(x => x.id === id);
@@ -336,6 +347,9 @@ const App: React.FC = () => {
               
               if (tag) setSelectedTag(tag);
               else setSelectedTag(null);
+
+              if (author) setSelectedAuthor(author);
+              else setSelectedAuthor(null);
           }
       };
 
@@ -352,6 +366,7 @@ const App: React.FC = () => {
       const id = params.get('id');
       const cat = params.get('category');
       const tag = params.get('tag');
+      const author = params.get('author');
 
       if (id) {
           const found = prompts.find(p => p.id === id);
@@ -364,6 +379,9 @@ const App: React.FC = () => {
           setView('library');
       } else if (tag) {
           setSelectedTag(tag);
+          setView('library');
+      } else if (author) {
+          setSelectedAuthor(author);
           setView('library');
       }
   }, [prompts.length]);
@@ -520,7 +538,9 @@ const App: React.FC = () => {
               
           const matchesTag = selectedTag === null || p.tags.includes(selectedTag);
 
-          return matchesCategory && matchesSearch && matchesTag;
+          const matchesAuthor = selectedAuthor === null || p.author === selectedAuthor;
+
+          return matchesCategory && matchesSearch && matchesTag && matchesAuthor;
       });
 
       // 2. Sort
@@ -536,7 +556,7 @@ const App: React.FC = () => {
       });
 
       return result;
-  }, [prompts, selectedCategory, searchQuery, selectedTag, sortOrder]);
+  }, [prompts, selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder]);
 
   // Pagination Logic
   const totalPages = Math.ceil(processedPrompts.length / ITEMS_PER_PAGE);
@@ -545,7 +565,7 @@ const App: React.FC = () => {
   // Reset pagination on filter change
   useEffect(() => {
       setCurrentPage(1);
-  }, [selectedCategory, searchQuery, selectedTag, sortOrder]);
+  }, [selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder]);
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950">
@@ -593,7 +613,7 @@ const App: React.FC = () => {
         <Sidebar 
             siteName={SITE_NAME}
             selectedCategory={selectedCategory}
-            onSelectCategory={(cat) => { setSelectedCategory(cat); setSelectedTag(null); setView('library'); setSidebarOpen(false); }}
+            onSelectCategory={(cat) => { setSelectedCategory(cat); setSelectedTag(null); setSelectedAuthor(null); setView('library'); setSidebarOpen(false); }}
             onCreateNew={handleCreateNew}
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
@@ -683,15 +703,26 @@ const App: React.FC = () => {
                              </div>
                         </div>
 
-                        {/* Active Tags Row */}
-                        {selectedTag && (
-                             <div className="mt-3 flex items-center">
-                                 <div className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200">
-                                    <span className="text-xs font-bold">#{selectedTag}</span>
-                                    <button onClick={() => setSelectedTag(null)} className="hover:opacity-70 transition-opacity">
-                                        <RiCloseLine size={14} />
-                                    </button>
-                                 </div>
+                        {/* Active Filters Row */}
+                        {(selectedTag || selectedAuthor) && (
+                             <div className="mt-3 flex flex-wrap items-center gap-2">
+                                 {selectedTag && (
+                                    <div className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200">
+                                        <span className="text-xs font-bold">#{selectedTag}</span>
+                                        <button onClick={() => setSelectedTag(null)} className="hover:opacity-70 transition-opacity">
+                                            <RiCloseLine size={14} />
+                                        </button>
+                                    </div>
+                                 )}
+                                 {selectedAuthor && (
+                                     <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200 border border-blue-200 dark:border-blue-800">
+                                         <RiUser3Line size={12} />
+                                         <span className="text-xs font-bold">{selectedAuthor}</span>
+                                         <button onClick={() => setSelectedAuthor(null)} className="hover:opacity-70 transition-opacity">
+                                             <RiCloseLine size={14} />
+                                         </button>
+                                     </div>
+                                 )}
                              </div>
                         )}
                     </div>
@@ -788,6 +819,7 @@ const App: React.FC = () => {
                     isAuthenticated={isAuthenticated}
                     onLogin={() => setIsLoginModalOpen(true)}
                     onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
+                    onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
                 />
             )}
 
