@@ -236,6 +236,17 @@ const App: React.FC = () => {
       }
   }, [isAuthenticated]);
 
+  // --- Calculated Lists for Autocomplete ---
+  const allAuthors = useMemo(() => {
+      const authors = prompts.map(p => p.author).filter(Boolean) as string[];
+      return Array.from(new Set(authors)).sort();
+  }, [prompts]);
+
+  const allTags = useMemo(() => {
+      const tags = prompts.flatMap(p => p.tags);
+      return Array.from(new Set(tags)).sort();
+  }, [prompts]);
+
   // --- SEO, Title & URL Management ---
   useEffect(() => {
       // 1. Update Title
@@ -792,6 +803,8 @@ const App: React.FC = () => {
                             setView('library');
                         }
                     }}
+                    existingAuthors={allAuthors}
+                    existingTags={allTags}
                 />
             )}
 

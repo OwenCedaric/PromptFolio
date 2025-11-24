@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine } from '@remixicon/react';
 import { PromptData, PromptStatus, Category, PromptVersion, Copyright } from '../types';
 import { geminiService } from '../services/geminiService';
@@ -8,6 +8,8 @@ interface PromptEditorProps {
   onSave: (data: PromptData) => void;
   onDelete: (id: string) => void;
   onCancel: () => void;
+  existingAuthors?: string[];
+  existingTags?: string[];
 }
 
 // Safer ID generator
@@ -18,7 +20,7 @@ const generateId = () => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
-const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDelete, onCancel }) => {
+const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDelete, onCancel, existingAuthors = [], existingTags = [] }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState('');
   const [description, setDescription] = useState(initialData?.description || '');
@@ -42,6 +44,9 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
 
   // Delete Confirmation State for Version
   const [confirmDeleteVersionId, setConfirmDeleteVersionId] = useState<string | null>(null);
+
+  // Tag suggestion state
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
   // Initialize state
   useEffect(() => {
@@ -167,7 +172,10 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
             setContent(res);
         } else if (action === 'tags' && (title || description)) {
             const res = await geminiService.suggestTags(title, description);
-            setTags(Array.from(new Set([...tags, ...res])));
+            // Deduplicate incoming AI tags against existing ones
+            const currentTagsLower = tags.map(t => t.toLowerCase().trim());
+            const newTags = res.filter(t => !currentTagsLower.includes(t.toLowerCase().trim()));
+            setTags([...tags, ...newTags]);
         } else if (action === 'desc' && content) {
             const res = await geminiService.generateDescription(content);
             setDescription(res);
@@ -179,6 +187,30 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
         setActiveAiTask(null);
     }
   };
+
+  // Add tag with duplication check
+  const handleAddTag = (tagToAdd: string) => {
+      const cleanTag = tagToAdd.trim();
+      if (!cleanTag) return;
+      
+      // Case-insensitive check
+      const exists = tags.some(t => t.toLowerCase() === cleanTag.toLowerCase());
+      if (exists) {
+          setTagInput('');
+          setShowTagSuggestions(false);
+          return;
+      }
+      
+      setTags([...tags, cleanTag]);
+      setTagInput('');
+      setShowTagSuggestions(false);
+  };
+
+  // Filtered tag suggestions
+  const filteredTagSuggestions = existingTags.filter(t => 
+      t.toLowerCase().includes(tagInput.toLowerCase()) && 
+      !tags.some(existing => existing.toLowerCase() === t.toLowerCase())
+  );
 
   // Sort versions for dropdown (Newest first)
   const sortedVersions = [...versions].sort((a, b) => b.createdAt - a.createdAt);
@@ -293,13 +325,20 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                         
                         <div className="space-y-1">
                             <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Author</label>
+                            {/* Datalist for Autocomplete */}
                             <input 
+                                list="authors-list"
                                 type="text" 
                                 value={author}
                                 onChange={(e) => setAuthor(e.target.value)}
                                 placeholder="Creator Name (Optional)"
                                 className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
                             />
+                            <datalist id="authors-list">
+                                {existingAuthors.map(auth => (
+                                    <option key={auth} value={auth} />
+                                ))}
+                            </datalist>
                         </div>
 
                         <div className="space-y-1">
@@ -436,19 +475,44 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             ))}
                         </div>
                         
-                        <input 
-                            value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && tagInput) {
-                                    e.preventDefault();
-                                    setTags([...tags, tagInput]);
-                                    setTagInput('');
-                                }
-                            }}
-                            placeholder="Type tag & hit Enter..."
-                            className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
-                        />
+                        <div className="relative">
+                            <input 
+                                value={tagInput}
+                                onChange={(e) => {
+                                    setTagInput(e.target.value);
+                                    setShowTagSuggestions(true);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && tagInput) {
+                                        e.preventDefault();
+                                        handleAddTag(tagInput);
+                                    }
+                                }}
+                                onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+                                onFocus={() => setShowTagSuggestions(true)}
+                                placeholder="Type tag & hit Enter..."
+                                className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                            />
+                            
+                            {/* Tags Suggestion Dropdown */}
+                            {showTagSuggestions && tagInput && filteredTagSuggestions.length > 0 && (
+                                <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                                    {filteredTagSuggestions.map((suggestion) => (
+                                        <li 
+                                            key={suggestion}
+                                            onMouseDown={(e) => {
+                                                e.preventDefault(); // Prevent blur before click
+                                                handleAddTag(suggestion);
+                                            }}
+                                            className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer flex items-center justify-between"
+                                        >
+                                            <span>{suggestion}</span>
+                                            <span className="text-xs text-zinc-400">Add</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
                     </div>
 
                 </div>
