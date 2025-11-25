@@ -17,6 +17,7 @@ interface SidebarProps {
   isCollapsed: boolean;
   toggleCollapse: () => void;
   onExport?: () => void;
+  onLogoClick?: () => void;
 }
 
 // Inline Logo Component: Standalone Cedar "C" (No Background)
@@ -45,7 +46,7 @@ export const Logo = ({ className }: { className?: string }) => (
 );
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport
+    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport, onLogoClick
 }) => {
   
   return (
@@ -60,14 +61,18 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand */}
         <div className={`h-20 flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-start px-6'} shrink-0`}>
             {!isCollapsed ? (
-                <div className="flex items-center gap-3 overflow-hidden whitespace-nowrap group">
-                    <Logo className="w-8 h-8 shrink-0 text-zinc-900 dark:text-zinc-100 group-hover:opacity-80 transition-opacity" />
+                <button 
+                    onClick={onLogoClick}
+                    className="flex items-center gap-3 overflow-hidden whitespace-nowrap group cursor-pointer hover:opacity-70 transition-opacity focus:outline-none"
+                    title="Reset to Home"
+                >
+                    <Logo className="w-8 h-8 shrink-0 text-zinc-900 dark:text-zinc-100" />
                     <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white font-sans">{siteName || 'CedarPrompt'}</span>
-                </div>
+                </button>
             ) : (
-                 <div className="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer hover:opacity-70 transition-opacity" onClick={toggleCollapse} title="Expand">
+                 <button className="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer hover:opacity-70 transition-opacity" onClick={toggleCollapse} title="Expand">
                     <Logo className="w-full h-full text-zinc-900 dark:text-zinc-100" />
-                </div>
+                </button>
             )}
 
             {/* Mobile Close */}

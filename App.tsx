@@ -63,6 +63,33 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title, message, onC
     );
 };
 
+// Helper for pagination range generation (e.g. 1 ... 4 5 6 ... 10)
+const getPaginationRange = (current: number, total: number) => {
+    const delta = 1; // Number of pages to show on each side of current
+    const range: number[] = [];
+    const rangeWithDots: (number | string)[] = [];
+    let l: number | undefined;
+
+    for (let i = 1; i <= total; i++) {
+        if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+            range.push(i);
+        }
+    }
+
+    for (let i of range) {
+        if (l) {
+            if (i - l === 2) {
+                rangeWithDots.push(l + 1);
+            } else if (i - l !== 1) {
+                rangeWithDots.push('...');
+            }
+        }
+        rangeWithDots.push(i);
+        l = i;
+    }
+    return rangeWithDots;
+};
+
 const App: React.FC = () => {
   // --- Config ---
   const SITE_NAME = process.env.SITE_NAME || 'PromptFolio';
@@ -189,11 +216,23 @@ const App: React.FC = () => {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   };
 
+  // --- Navigation & Reset Handlers ---
+  const handleResetHome = () => {
+      setSelectedCategory('All');
+      setSelectedTag(null);
+      setSelectedAuthor(null);
+      setSearchQuery('');
+      setCurrentPage(1);
+      setView('library');
+      setActivePrompt(null);
+      setSidebarOpen(false);
+  };
+
   // --- Data Fetching ---
   const fetchPrompts = async () => {
       setIsLoading(true);
       try {
-          // Send auth header if we have a token, to potentially see private prompts
+          // Send auth header if we have a token, to potentially see private items
           const headers: Record<string, string> = { ...getAuthHeaders() };
           
           const res = await fetch('/api/prompts', { headers });
@@ -209,7 +248,7 @@ const App: React.FC = () => {
                       setActivePrompt(found);
                       setView('detail');
                   }
-                  // Consume the ID so subsequent fetches (e.g. login/logout) don't force-navigate back
+                  // Consume the ID so subsequent fetches don't force-navigate back
                   initialIdRef.current = null;
               }
 
@@ -391,7 +430,6 @@ const App: React.FC = () => {
   // --- Auth Handlers ---
   const handleLogin = () => {
       // Basic client-side check for immediate feedback, but real test is API access
-      // We store the token regardless to send to API.
       if (ENV_SITE_PASSWORD && passwordInput !== ENV_SITE_PASSWORD) {
           setLoginError(true);
           return;
@@ -402,14 +440,12 @@ const App: React.FC = () => {
       setIsLoginModalOpen(false);
       setPasswordInput('');
       setLoginError(false);
-      // Fetch will trigger via useEffect dependency on isAuthenticated
   };
 
   const handleLogout = () => {
       setIsAuthenticated(false);
       localStorage.removeItem('pf_auth_token');
       setView('library'); // Reset view in case we were editing
-      // Fetch will trigger via useEffect, likely removing private items from list
   };
 
   // --- Handlers ---
@@ -481,7 +517,6 @@ const App: React.FC = () => {
                       if (res.status === 401) {
                           alert("Session expired or unauthorized. Please login again.");
                           handleLogout();
-                          // We don't revert optimistic delete here for simplicity, but in real app maybe we should
                       }
                   } catch (e) { console.error(e); }
               }
@@ -502,8 +537,6 @@ const App: React.FC = () => {
   };
 
   const handleExport = () => {
-      // For export, we dump what the frontend currently has. 
-      // Since fetchPrompts only returns what we are allowed to see, this is safe.
       const blob = new Blob([JSON.stringify(prompts, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -613,6 +646,7 @@ const App: React.FC = () => {
             isCollapsed={isSidebarCollapsed}
             toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onExport={handleExport}
+            onLogoClick={handleResetHome}
         />
 
         {/* Main Content */}
@@ -633,8 +667,8 @@ const App: React.FC = () => {
                                     <RiMenuLine size={24} />
                                 </button>
                                 
-                                {/* Mobile Brand */}
-                                <div className="flex items-center gap-2 md:hidden mr-2 shrink-0">
+                                {/* Mobile Brand - Clickable */}
+                                <div className="flex items-center gap-2 md:hidden mr-2 shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={handleResetHome}>
                                     <Logo className="w-6 h-6 text-zinc-900 dark:text-zinc-100" />
                                     <span className="font-bold text-zinc-900 dark:text-white truncate max-w-[100px]">{SITE_NAME}</span>
                                 </div>
@@ -749,32 +783,45 @@ const App: React.FC = () => {
                                     ))}
                                 </div>
 
-                                {/* Minimalist Pagination (No border, justified) */}
+                                {/* Smart Numeric Pagination */}
                                 {totalPages > 1 && (
-                                    <div className="flex justify-between items-center py-4 mt-auto">
-                                        {/* Previous - Left Aligned */}
+                                    <div className="flex justify-center items-center gap-2 py-6 mt-auto select-none">
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="flex items-center gap-2 px-3 py-1.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-medium group"
+                                            className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                            title="Previous Page"
                                         >
-                                            <RiArrowLeftSLine size={18} className="group-hover:-translate-x-0.5 transition-transform" />
-                                            <span>Previous</span>
+                                            <RiArrowLeftSLine size={20} />
                                         </button>
                                         
-                                        {/* Page Indicator - Center Aligned */}
-                                        <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
-                                            Page <span className="text-zinc-900 dark:text-zinc-100">{currentPage}</span> of {totalPages}
+                                        <div className="flex items-center gap-1">
+                                            {getPaginationRange(currentPage, totalPages).map((page, idx) => (
+                                                page === '...' ? (
+                                                    <span key={`dots-${idx}`} className="w-8 text-center text-xs text-zinc-400">...</span>
+                                                ) : (
+                                                    <button
+                                                        key={`page-${page}`}
+                                                        onClick={() => setCurrentPage(Number(page))}
+                                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all ${
+                                                            currentPage === page 
+                                                            ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm' 
+                                                            : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                                        }`}
+                                                    >
+                                                        {page}
+                                                    </button>
+                                                )
+                                            ))}
                                         </div>
 
-                                        {/* Next - Right Aligned */}
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="flex items-center gap-2 px-3 py-1.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-medium group"
+                                            className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                            title="Next Page"
                                         >
-                                            <span>Next</span>
-                                            <RiArrowRightSLine size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                                            <RiArrowRightSLine size={20} />
                                         </button>
                                     </div>
                                 )}
