@@ -63,31 +63,47 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title, message, onC
     );
 };
 
-// Helper for pagination range generation (e.g. 1 ... 4 5 6 ... 10)
-const getPaginationRange = (current: number, total: number) => {
-    const delta = 1; // Number of pages to show on each side of current
-    const range: number[] = [];
-    const rangeWithDots: (number | string)[] = [];
-    let l: number | undefined;
+// Helper for stable pagination range generation (Fixed 7 slots logic)
+const getPaginationRange = (currentPage: number, totalPages: number) => {
+    const siblingCount = 1;
+    const totalNumbers = 2 * siblingCount + 3; // 5
+    const totalBlocks = totalNumbers + 2; // 7 (1 + ... + current-1 + current + current+1 + ... + total)
 
-    for (let i = 1; i <= total; i++) {
-        if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
-            range.push(i);
-        }
+    if (totalPages <= totalBlocks) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
-    for (let i of range) {
-        if (l) {
-            if (i - l === 2) {
-                rangeWithDots.push(l + 1);
-            } else if (i - l !== 1) {
-                rangeWithDots.push('...');
-            }
-        }
-        rangeWithDots.push(i);
-        l = i;
+    const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+    const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+    // We show dots if there are more than 1 page number to be hidden
+    const shouldShowLeftDots = leftSiblingIndex > 2;
+    const shouldShowRightDots = rightSiblingIndex < totalPages - 2;
+
+    const firstPageIndex = 1;
+    const lastPageIndex = totalPages;
+
+    // Case 1: Show right dots only (Start of list)
+    if (!shouldShowLeftDots && shouldShowRightDots) {
+        let leftItemCount = 3 + 2 * siblingCount;
+        let leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
+        return [...leftRange, '...', totalPages];
     }
-    return rangeWithDots;
+
+    // Case 2: Show left dots only (End of list)
+    if (shouldShowLeftDots && !shouldShowRightDots) {
+        let rightItemCount = 3 + 2 * siblingCount;
+        let rightRange = Array.from({ length: rightItemCount }, (_, i) => totalPages - rightItemCount + i + 1);
+        return [firstPageIndex, '...', ...rightRange];
+    }
+
+    // Case 3: Show both dots (Middle of list)
+    if (shouldShowLeftDots && shouldShowRightDots) {
+        let middleRange = Array.from({ length: rightSiblingIndex - leftSiblingIndex + 1 }, (_, i) => leftSiblingIndex + i);
+        return [firstPageIndex, '...', ...middleRange, '...', lastPageIndex];
+    }
+    
+    return [];
 };
 
 const App: React.FC = () => {
