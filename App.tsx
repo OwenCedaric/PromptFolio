@@ -809,7 +809,7 @@ const App: React.FC = () => {
 
                                 {/* Smart Numeric Pagination */}
                                 {totalPages > 1 && (
-                                    <div className="flex justify-center items-center gap-2 py-6 mt-auto select-none">
+                                    <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 py-6 mt-auto select-none w-full">
                                         <button 
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
@@ -819,7 +819,7 @@ const App: React.FC = () => {
                                             <RiArrowLeftSLine size={20} />
                                         </button>
                                         
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex flex-wrap justify-center items-center gap-1">
                                             {getPaginationRange(currentPage, totalPages).map((page, idx) => (
                                                 page === '...' ? (
                                                     <span key={`dots-${idx}`} className="w-8 text-center text-xs text-zinc-400">...</span>
