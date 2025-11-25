@@ -520,7 +520,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
 
             {/* RIGHT COLUMN (40%): Prompt Editor */}
             {/* Scrolls independently */}
-            <div className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'} pb-[env(safe-area-inset-bottom)]`}>
+            <div className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex flex-col h-full">
                      <div className="flex justify-between items-center mb-3 shrink-0">
                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
@@ -538,7 +538,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                      </div>
                      
                      {/* Editor Container */}
-                     <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl overflow-hidden shadow-sm flex flex-col mb-[env(safe-area-inset-bottom)]">
+                     <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl overflow-hidden shadow-sm flex flex-col">
                          {/* Editor Header - Stays fixed inside the column */}
                         <div className="h-10 bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between shrink-0">
                              
@@ -583,7 +583,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Write your prompt here..."
-                            className="w-full flex-1 bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 pb-28 lg:pb-6 border-none focus:ring-0 focus:outline-none resize-none leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
+                            className="w-full flex-1 bg-transparent text-zinc-800 dark:text-zinc-200 font-mono text-sm p-6 pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-6 border-none focus:ring-0 focus:outline-none resize-none leading-relaxed placeholder:text-zinc-400 dark:placeholder:text-zinc-600 selection:bg-zinc-100 dark:selection:bg-zinc-800"
                         />
                      </div>
                 </div>

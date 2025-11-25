@@ -369,7 +369,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                 </div>
 
                 {/* Scrollable Body - Order: Case Image -> Desc -> Tags -> Metadata */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-4 md:pt-8 pb-32 lg:pb-10 space-y-8 no-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-4 md:pt-8 pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-10 space-y-8 no-scrollbar">
                     
                     {/* Case / Example Image (If Present) */}
                     {prompt.imageUrl && (
@@ -485,7 +485,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
             </section>
 
             {/* RIGHT COLUMN (42% - Approx 40%): Prompt Content */}
-            <section className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'} pb-24 md:pb-8`}>
+            <section className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'info' ? 'hidden lg:flex' : 'flex'} md:pb-8`}>
                 <div className="flex flex-col h-full">
                     
                     {/* Header for Prompt Column */}
@@ -496,13 +496,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         </h3>
                         
                         {!isLocked && (
-                            <div className="flex items-center gap-0.5 bg-white dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                                {/* Version Selector */}
-                                <div className="relative flex items-center">
+                            <div className="flex items-center gap-0.5 bg-white dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm min-w-0">
+                                {/* Version Selector - Use flex-1 to allow shrinking/growing properly */}
+                                <div className="relative flex items-center flex-1 min-w-0">
                                     <select 
                                         value={selectedVersionId}
                                         onChange={(e) => setSelectedVersionId(e.target.value)}
-                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none max-w-[160px] sm:max-w-none"
+                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none w-full"
                                     >
                                         {sortedVersions.map((v, idx) => {
                                             const originalIndex = prompt.versions.findIndex(ver => ver.id === v.id);
@@ -516,11 +516,11 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     <RiHistoryLine size={12} className="text-zinc-400 dark:text-zinc-500 absolute right-2 pointer-events-none" />
                                 </div>
 
-                                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
+                                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-1 shrink-0"></div>
 
                                 <button 
                                     onClick={handleCopy}
-                                    className={`text-xs flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                                    className={`text-xs flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors shrink-0 ${
                                         copied 
                                         ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
                                         : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -543,14 +543,14 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             />
                         </div>
                     ) : (
-                        <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col pb-[env(safe-area-inset-bottom)] md:pb-0">
+                        <div className="flex-1 group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col md:pb-0">
                             <div className="h-8 bg-zinc-50/50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between select-none shrink-0">
                                 <span className="text-xs font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">SOURCE</span>
                                 <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">
                                     {viewedVersion?.content.length || 0} CHARS
                                 </span>
                             </div>
-                            <div className="flex-1 p-6 pb-28 lg:pb-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
+                            <div className="flex-1 p-6 pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-6 overflow-y-auto bg-white dark:bg-zinc-900 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700">
                                 <pre className="font-mono text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words selection:bg-zinc-200 dark:selection:bg-zinc-700">
                                     <HighlightedContent content={viewedVersion?.content || ''} />
                                 </pre>

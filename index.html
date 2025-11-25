@@ -21,35 +21,6 @@
     <meta property="og:site_name" content="PromptFolio" />
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-            colors: {
-               zinc: {
-                  50: '#fafafa',
-                  100: '#f4f4f5',
-                  200: '#e4e4e7',
-                  300: '#d4d4d8',
-                  400: '#a1a1aa',
-                  500: '#71717a',
-                  600: '#52525b',
-                  700: '#3f3f46',
-                  800: '#27272a',
-                  900: '#18181b',
-                  950: '#09090b',
-               }
-            }
-          },
-        },
-      }
-    </script>
     
     <!-- Theme Initialization Script (Prevents FOUC & Fixes Native UI) -->
     <script>
@@ -69,24 +40,23 @@
         } catch (e) {}
       })();
     </script>
-
-    <script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "remark-gfm": "https://aistudiocdn.com/remark-gfm@^4.0.1",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
-    "remark-gfm": "https://aistudiocdn.com/remark-gfm@^4.0.0",
-    "@remixicon/react": "https://aistudiocdn.com/@remixicon/react@^4.7.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
     "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
     "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@remixicon/react": "https://aistudiocdn.com/@remixicon/react@^4.7.0"
   }
 }
 </script>
-  </head>
+</head>
   <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full fixed scrollbar-hide">
     <div id="root" class="h-full w-full overflow-hidden flex flex-col"></div>
     <script type="module" src="/index.tsx"></script>
