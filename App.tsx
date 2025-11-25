@@ -177,6 +177,7 @@ const App: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // --- Theme State ---
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -604,6 +605,13 @@ const App: React.FC = () => {
       setCurrentPage(1);
   }, [selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder]);
 
+  // Scroll to top when page changes
+  useEffect(() => {
+    if (contentRef.current) {
+        contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
+
   return (
     <div className="flex h-full w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950">
         
@@ -773,7 +781,7 @@ const App: React.FC = () => {
                     </div>
                     
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-[calc(6rem+env(safe-area-inset-bottom))] scrollbar-hide pt-6">
+                    <div ref={contentRef} className="flex-1 overflow-y-auto px-6 md:px-10 pb-[calc(6rem+env(safe-area-inset-bottom))] scrollbar-hide pt-6">
                         {isLoading ? (
                             <div className="h-64 flex flex-col items-center justify-center text-zinc-400 animate-pulse gap-4">
                                 <RiLoader4Line className="animate-spin" size={32} />
