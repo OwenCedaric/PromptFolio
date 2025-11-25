@@ -496,13 +496,13 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         </h3>
                         
                         {!isLocked && (
-                            <div className="flex items-center gap-0.5 bg-white dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm min-w-0">
-                                {/* Version Selector - Use flex-1 to allow shrinking/growing properly */}
-                                <div className="relative flex items-center flex-1 min-w-0">
+                            <div className="flex items-center gap-0.5 bg-white dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                                {/* Version Selector */}
+                                <div className="relative flex items-center">
                                     <select 
                                         value={selectedVersionId}
                                         onChange={(e) => setSelectedVersionId(e.target.value)}
-                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none w-full"
+                                        className="bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-300 py-1 pl-2 pr-6 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none max-w-[160px] sm:max-w-none"
                                     >
                                         {sortedVersions.map((v, idx) => {
                                             const originalIndex = prompt.versions.findIndex(ver => ver.id === v.id);
@@ -516,11 +516,11 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     <RiHistoryLine size={12} className="text-zinc-400 dark:text-zinc-500 absolute right-2 pointer-events-none" />
                                 </div>
 
-                                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-1 shrink-0"></div>
+                                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-1"></div>
 
                                 <button 
                                     onClick={handleCopy}
-                                    className={`text-xs flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors shrink-0 ${
+                                    className={`text-xs flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
                                         copied 
                                         ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
                                         : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'

@@ -21,43 +21,6 @@ import {
     RiUser3Line
 } from '@remixicon/react';
 
-// --- Mock Data for Fallback ---
-const MOCK_PROMPTS: PromptData[] = [
-  {
-    id: '1',
-    title: 'Cyberpunk City Description',
-    description: 'Generates a vivid description of a futuristic city. Useful for sci-fi novels or game environment concepts.',
-    category: Category.CREATIVE_WRITING,
-    tags: ['scifi', 'environment', 'detailed'],
-    status: PromptStatus.PUBLISHED,
-    copyright: Copyright.CC_BY,
-    author: 'PromptFolio Team',
-    versions: [
-      { id: 'v1', content: 'Describe a cyberpunk city.', createdAt: Date.now() - 100000, note: 'Draft' },
-      { id: 'v2', content: 'Describe a neon-lit cyberpunk city with flying cars and rain-slicked streets.', createdAt: Date.now(), note: 'Refined' }
-    ],
-    currentVersionId: 'v2',
-    updatedAt: Date.now(),
-    isFavorite: true
-  },
-  {
-      id: '2',
-      title: 'Python API Boilerplate',
-      description: 'FastAPI starter code with JWT auth.',
-      category: Category.CODING,
-      tags: ['python', 'fastapi', 'backend'],
-      status: PromptStatus.DRAFT,
-      copyright: Copyright.MIT,
-      author: 'DevUser_01',
-      versions: [
-          { id: 'v1', content: 'Write a python api.', createdAt: Date.now(), note: 'Initial' }
-      ],
-      currentVersionId: 'v1',
-      updatedAt: Date.now() - 50000,
-      isFavorite: false
-  }
-];
-
 // Internal Confirmation Modal Component
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -214,7 +177,7 @@ const App: React.FC = () => {
       } catch (e) {
           console.error("Failed to parse local data", e);
       }
-      return MOCK_PROMPTS;
+      return [];
   };
 
   const saveLocalData = (data: PromptData[]) => {
