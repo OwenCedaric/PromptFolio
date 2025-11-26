@@ -26,12 +26,29 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
         }
     };
 
-    // Asymmetric Border Radius Logic
-    // Even items: Rounded Top-Left & Bottom-Right
-    // Odd items: Rounded Top-Right & Bottom-Left
-    const shapeClass = isEven 
-        ? 'rounded-tl-[3rem] rounded-br-[3rem] rounded-tr-none rounded-bl-none' 
-        : 'rounded-tr-[3rem] rounded-bl-[3rem] rounded-tl-none rounded-br-none';
+    // Advanced Asymmetric Border Radius Logic (4-step cycle)
+    // Creates a richer visual rhythm than simple alternation
+    const getShapeClass = (idx: number) => {
+        const mod = idx % 4;
+        switch (mod) {
+            case 0: 
+                // Cycle 1: Classic Diagonal (Top-Left & Bottom-Right)
+                return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
+            case 1:
+                // Cycle 2: Right Side Rounded (D-shape)
+                return 'rounded-r-[4rem] rounded-l-none';
+            case 2:
+                // Cycle 3: Reverse Diagonal (Top-Right & Bottom-Left)
+                return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
+            case 3:
+                // Cycle 4: Left Side Rounded (C-shape)
+                return 'rounded-l-[4rem] rounded-r-none';
+            default:
+                return 'rounded-none';
+        }
+    };
+
+    const shapeClass = getShapeClass(index);
 
     return (
         <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group">
