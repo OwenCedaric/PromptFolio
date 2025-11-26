@@ -6,6 +6,7 @@ PromptFolio is a professional, single-user prompt management system designed for
 
 *   **Prompt Management**: Create, read, update, and delete prompts with ease.
 *   **Versioning System**: Maintain history of your prompts (v1, v2, etc.) and switch between versions.
+*   **Topic Collections**: Group prompts into magazine-style topic collections (e.g., Photography, Coding).
 *   **AI-Powered Tools**: Integrated with Google Gemini API to refine prompts, generate descriptions, and suggest tags.
 *   **Attribution & Licensing**: Define copyright (CC0, MIT, etc.) and author info for your prompts.
 *   **SEO & Sitemap**: Auto-generated Sitemaps and Schema.org structured data for better discoverability.
@@ -117,16 +118,16 @@ CREATE TABLE prompts (
   updatedAt INTEGER,
   isFavorite INTEGER DEFAULT 0,
   copyright TEXT,
-  author TEXT
+  author TEXT,
+  topic TEXT
 );
 ```
 
 ### 🔄 Migration / Updates
-If you are updating from an older version, you may need to add columns to your existing database:
+If you are updating from an older version, you need to add the `topic` column to your existing database:
 
 ```bash
-npx wrangler d1 execute promptfolio-db --command "ALTER TABLE prompts ADD COLUMN copyright TEXT"
-npx wrangler d1 execute promptfolio-db --command "ALTER TABLE prompts ADD COLUMN author TEXT"
+npx wrangler d1 execute promptfolio-db --command "ALTER TABLE prompts ADD COLUMN topic TEXT"
 ```
 
 ## 📂 Project Structure

@@ -10,6 +10,7 @@ interface PromptEditorProps {
   onCancel: () => void;
   existingAuthors?: string[];
   existingTags?: string[];
+  existingTopics?: string[];
 }
 
 // Safer ID generator
@@ -20,7 +21,7 @@ const generateId = () => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
-const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDelete, onCancel, existingAuthors = [], existingTags = [] }) => {
+const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDelete, onCancel, existingAuthors = [], existingTags = [], existingTopics = [] }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState('');
   const [description, setDescription] = useState(initialData?.description || '');
@@ -352,11 +353,17 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                     <div className="absolute left-3 text-zinc-400"><RiHashtag size={14} /></div>
                                     <input 
                                         type="text" 
+                                        list="topics-list"
                                         value={topic}
                                         onChange={(e) => setTopic(e.target.value)}
                                         placeholder="e.g. Portrait, Landscape"
                                         className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg pl-9 pr-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
                                     />
+                                    <datalist id="topics-list">
+                                        {existingTopics.map(t => (
+                                            <option key={t} value={t} />
+                                        ))}
+                                    </datalist>
                                 </div>
                             </div>
                         </div>

@@ -957,6 +957,7 @@ const App: React.FC = () => {
                     }}
                     existingAuthors={allAuthors}
                     existingTags={allTags}
+                    existingTopics={allTopics.map(t => t.name)}
                 />
             )}
 
