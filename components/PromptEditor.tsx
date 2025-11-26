@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine } from '@remixicon/react';
+import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine, RiHashtag } from '@remixicon/react';
 import { PromptData, PromptStatus, Category, PromptVersion, Copyright } from '../types';
 import { geminiService } from '../services/geminiService';
 
@@ -28,6 +28,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
   const [status, setStatus] = useState<PromptStatus>(initialData?.status || PromptStatus.DRAFT);
   const [copyright, setCopyright] = useState<Copyright>(initialData?.copyright || Copyright.NONE);
   const [author, setAuthor] = useState(initialData?.author || '');
+  const [topic, setTopic] = useState(initialData?.topic || '');
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || '');
   const [versions, setVersions] = useState<PromptVersion[]>(initialData?.versions || []);
@@ -63,6 +64,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       setStatus(initialData.status);
       setCopyright(initialData.copyright || Copyright.NONE);
       setAuthor(initialData.author || '');
+      setTopic(initialData.topic || '');
       setTags(initialData.tags);
       setImageUrl(initialData.imageUrl || '');
     } else {
@@ -77,6 +79,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       setStatus(PromptStatus.DRAFT);
       setCopyright(Copyright.NONE);
       setAuthor('');
+      setTopic('');
       setTags([]);
       setImageUrl('');
     }
@@ -153,6 +156,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       status,
       copyright,
       author,
+      topic,
       tags,
       imageUrl, 
       versions: finalVersions,
@@ -323,22 +327,38 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
                         <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
                         
-                        <div className="space-y-1">
-                            <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Author</label>
-                            {/* Datalist for Autocomplete */}
-                            <input 
-                                list="authors-list"
-                                type="text" 
-                                value={author}
-                                onChange={(e) => setAuthor(e.target.value)}
-                                placeholder="Creator Name (Optional)"
-                                className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
-                            />
-                            <datalist id="authors-list">
-                                {existingAuthors.map(auth => (
-                                    <option key={auth} value={auth} />
-                                ))}
-                            </datalist>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Author</label>
+                                {/* Datalist for Autocomplete */}
+                                <input 
+                                    list="authors-list"
+                                    type="text" 
+                                    value={author}
+                                    onChange={(e) => setAuthor(e.target.value)}
+                                    placeholder="Creator Name (Optional)"
+                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                                />
+                                <datalist id="authors-list">
+                                    {existingAuthors.map(auth => (
+                                        <option key={auth} value={auth} />
+                                    ))}
+                                </datalist>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Topic (Optional)</label>
+                                <div className="relative flex items-center">
+                                    <div className="absolute left-3 text-zinc-400"><RiHashtag size={14} /></div>
+                                    <input 
+                                        type="text" 
+                                        value={topic}
+                                        onChange={(e) => setTopic(e.target.value)}
+                                        placeholder="e.g. Portrait, Landscape"
+                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg pl-9 pr-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-1">

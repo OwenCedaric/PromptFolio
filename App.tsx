@@ -4,6 +4,7 @@ import Sidebar, { Logo } from './components/Sidebar';
 import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
 import PromptDetail from './components/PromptDetail';
+import TopicDetail from './components/TopicDetail';
 import { PromptData, Category, PromptStatus, Copyright } from './types';
 import { 
     RiMenuLine, 
@@ -876,17 +877,27 @@ const App: React.FC = () => {
             )}
 
             {view === 'detail' && activePrompt && (
-                <PromptDetail 
-                    prompt={activePrompt}
-                    onBack={() => { setView('library'); setActivePrompt(null); }}
-                    onEdit={(p) => { setView('editor'); }}
-                    onDelete={handleDeletePrompt}
-                    onToggleFavorite={handleToggleFavorite}
-                    isAuthenticated={isAuthenticated}
-                    onLogin={() => setIsLoginModalOpen(true)}
-                    onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
-                    onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
-                />
+                // Conditional Rendering: TopicDetail (Magazine) vs Standard PromptDetail
+                activePrompt.topic ? (
+                    <TopicDetail 
+                        prompt={activePrompt}
+                        onBack={() => { setView('library'); setActivePrompt(null); }}
+                        onEdit={(p) => { setView('editor'); }}
+                        isAuthenticated={isAuthenticated}
+                    />
+                ) : (
+                    <PromptDetail 
+                        prompt={activePrompt}
+                        onBack={() => { setView('library'); setActivePrompt(null); }}
+                        onEdit={(p) => { setView('editor'); }}
+                        onDelete={handleDeletePrompt}
+                        onToggleFavorite={handleToggleFavorite}
+                        isAuthenticated={isAuthenticated}
+                        onLogin={() => setIsLoginModalOpen(true)}
+                        onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
+                        onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
+                    />
+                )
             )}
 
             {view === 'editor' && (

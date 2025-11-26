@@ -46,6 +46,7 @@ export interface PromptData {
   status: PromptStatus;
   copyright?: Copyright;
   author?: string;
+  topic?: string;
   versions: PromptVersion[];
   currentVersionId: string;
   updatedAt: number;

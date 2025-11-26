@@ -57,8 +57,8 @@ export const onRequestPost = async (context: any) => {
 
     await context.env.DB.prepare(
       `INSERT OR REPLACE INTO prompts 
-      (id, title, description, imageUrl, category, tags, status, versions, currentVersionId, updatedAt, isFavorite, copyright, author) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      (id, title, description, imageUrl, category, tags, status, versions, currentVersionId, updatedAt, isFavorite, copyright, author, topic) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         data.id,
@@ -73,7 +73,8 @@ export const onRequestPost = async (context: any) => {
         data.updatedAt,
         isFavInt,
         data.copyright || 'None',
-        data.author || null
+        data.author || null,
+        data.topic || null
       )
       .run();
 
