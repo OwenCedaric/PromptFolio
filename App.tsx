@@ -124,11 +124,29 @@ const App: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   
   // --- App State ---
-  const [view, setView] = useState<string>('library'); // 'library', 'detail', 'editor', 'topics', 'topic-detail'
+  // Initialize Active Topic from URL if present
+  const [activeTopic, setActiveTopic] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+        return new URLSearchParams(window.location.search).get('topic') || null;
+    }
+    return null;
+  });
+
+  // Initialize View based on URL params
+  const [view, setView] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        // Note: 'id' (Prompt Detail) is handled via fetchPrompts for data availability, 
+        // but Topics can be initialized immediately.
+        if (params.get('topic')) return 'topic-detail';
+        if (params.get('view') === 'topics') return 'topics';
+    }
+    return 'library';
+  }); 
+
   const [prompts, setPrompts] = useState<PromptData[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [activePrompt, setActivePrompt] = useState<PromptData | null>(null);
-  const [activeTopic, setActiveTopic] = useState<string | null>(null);
   
   // Filter & Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -351,7 +369,7 @@ const App: React.FC = () => {
   // --- SEO, Title & URL Management ---
   useEffect(() => {
       // 0. Safety Guard: Do not rewrite URL while loading
-      if (isLoading) return;
+      if (isLoading && view === 'library') return;
 
       // 1. Update Title
       let title = SITE_NAME;
@@ -363,6 +381,8 @@ const App: React.FC = () => {
           }
       } else if (view === 'topic-detail' && activeTopic) {
           title = `${activeTopic} | ${SITE_NAME}`;
+      } else if (view === 'topics') {
+          title = `Topics | ${SITE_NAME}`;
       } else if (selectedAuthor) {
           title = `Prompts by ${selectedAuthor} | ${SITE_NAME}`;
       } else if (selectedTag) {
@@ -399,9 +419,15 @@ const App: React.FC = () => {
       params.delete('category');
       params.delete('tag');
       params.delete('author');
+      params.delete('topic');
+      params.delete('view');
 
       if (view === 'detail' && activePrompt) {
           params.set('id', activePrompt.id);
+      } else if (view === 'topic-detail' && activeTopic) {
+          params.set('topic', activeTopic);
+      } else if (view === 'topics') {
+          params.set('view', 'topics');
       } else if (view === 'library') {
           if (selectedCategory && selectedCategory !== 'All') {
               params.set('category', selectedCategory);
@@ -429,6 +455,8 @@ const App: React.FC = () => {
       const handlePopState = () => {
           const params = new URLSearchParams(window.location.search);
           const id = params.get('id');
+          const topic = params.get('topic');
+          const viewParam = params.get('view');
           const category = params.get('category');
           const tag = params.get('tag');
           const author = params.get('author');
@@ -443,9 +471,14 @@ const App: React.FC = () => {
                   setActivePrompt(null);
                   setView('library');
               }
+          } else if (topic) {
+              setActiveTopic(topic);
+              setView('topic-detail');
+          } else if (viewParam === 'topics') {
+              setView('topics');
           } else {
-              // Should handle returning to Topics too, but for now reset to Library
               setActivePrompt(null);
+              setActiveTopic(null);
               setView('library');
               if (category) setSelectedCategory(category);
               else setSelectedCategory('All');
@@ -936,7 +969,7 @@ const App: React.FC = () => {
                     topic={activeTopic}
                     prompts={activeTopicPrompts}
                     onBack={() => { setView('topics'); setActiveTopic(null); }}
-                    onEdit={(p) => { setActivePrompt(p); setView('editor'); }}
+                    onViewDetail={(p) => { setActivePrompt(p); setView('detail'); }}
                     isAuthenticated={isAuthenticated}
                 />
             )}
