@@ -28,7 +28,8 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic }) => {
                             <button 
                                 key={topic.name}
                                 onClick={() => onSelectTopic(topic.name)}
-                                className="group relative aspect-[4/3] md:aspect-[16/9] lg:aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 text-left transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                className="group relative aspect-[4/3] md:aspect-[16/9] lg:aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 text-left transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl transform-gpu"
+                                style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
                             >
                                 {topic.previewImage ? (
                                     <img 
