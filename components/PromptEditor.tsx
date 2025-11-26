@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine, RiHashtag } from '@remixicon/react';
+import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine, RiHashtag, RiArrowDownSLine } from '@remixicon/react';
 import { PromptData, PromptStatus, Category, PromptVersion, Copyright } from '../types';
 import { geminiService } from '../services/geminiService';
 
@@ -220,6 +220,10 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
   // Sort versions for dropdown (Newest first)
   const sortedVersions = [...versions].sort((a, b) => b.createdAt - a.createdAt);
 
+  // Unified styles
+  const commonInputClass = "w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0";
+  const commonSelectClass = "w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0 pr-10 cursor-pointer";
+
   return (
     <div className="h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
       
@@ -338,7 +342,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                     value={author}
                                     onChange={(e) => setAuthor(e.target.value)}
                                     placeholder="Creator Name (Optional)"
-                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                                    className={commonInputClass}
                                 />
                                 <datalist id="authors-list">
                                     {existingAuthors.map(auth => (
@@ -357,7 +361,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                         value={topic}
                                         onChange={(e) => setTopic(e.target.value)}
                                         placeholder="e.g. Portrait, Landscape"
-                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg pl-9 pr-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                                        className={`pl-9 ${commonInputClass.replace('px-3', 'pr-3')}`}
                                     />
                                     <datalist id="topics-list">
                                         {existingTopics.map(t => (
@@ -374,7 +378,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                 <select 
                                     value={category} 
                                     onChange={(e) => setCategory(e.target.value as Category)}
-                                    className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
+                                    className={commonSelectClass}
                                 >
                                     {Object.values(Category).map(c => (
                                         <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
@@ -383,7 +387,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                     ))}
                                 </select>
                                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    <RiArrowDownSLine size={16} />
                                 </div>
                             </div>
                         </div>
@@ -395,7 +399,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                     <select 
                                         value={status} 
                                         onChange={(e) => setStatus(e.target.value as PromptStatus)}
-                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
+                                        className={commonSelectClass}
                                     >
                                         {Object.values(PromptStatus).map(s => (
                                             <option key={s} value={s} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
@@ -404,7 +408,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                         ))}
                                     </select>
                                     <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        <RiArrowDownSLine size={16} />
                                     </div>
                                 </div>
                             </div>
@@ -415,7 +419,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                     <select 
                                         value={copyright} 
                                         onChange={(e) => setCopyright(e.target.value as Copyright)}
-                                        className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0"
+                                        className={commonSelectClass}
                                     >
                                         {Object.values(Copyright).map(c => (
                                             <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
@@ -424,7 +428,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                         ))}
                                     </select>
                                     <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        <RiArrowDownSLine size={16} />
                                     </div>
                                 </div>
                             </div>
@@ -518,7 +522,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                 onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
                                 onFocus={() => setShowTagSuggestions(true)}
                                 placeholder="Type tag & hit Enter..."
-                                className="w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0"
+                                className={commonInputClass}
                             />
                             
                             {/* Tags Suggestion Dropdown */}
@@ -571,12 +575,12 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                              
                              {/* Version Control */}
                              <div className="flex items-center gap-2">
-                                <div className="relative group flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-2 py-1">
-                                    <RiHistoryLine size={12} className="text-zinc-400 dark:text-zinc-500" />
+                                <div className="relative group flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-2 py-1">
+                                    <RiHistoryLine size={12} className="text-zinc-400 dark:text-zinc-500 ml-1" />
                                     <select 
                                         value={activeVersionId || ''}
                                         onChange={(e) => handleVersionChange(e.target.value)}
-                                        className="bg-transparent text-[11px] font-medium text-zinc-700 dark:text-zinc-300 ml-2 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none pr-4"
+                                        className="bg-transparent text-xs font-medium text-zinc-700 dark:text-zinc-300 ml-1.5 outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 appearance-none pr-6 py-0.5"
                                     >
                                         {sortedVersions.map((v, idx) => {
                                             const originalIndex = versions.findIndex(ver => ver.id === v.id);
@@ -587,6 +591,9 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                             );
                                         })}
                                     </select>
+                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                        <RiArrowDownSLine size={12} />
+                                    </div>
                                 </div>
 
                                 {/* Delete Version Button */}
