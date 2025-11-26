@@ -1,5 +1,5 @@
 import React from 'react';
-import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiDownloadLine } from '@remixicon/react';
+import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiDownloadLine, RiBookOpenLine } from '@remixicon/react';
 import { Category } from '../types';
 
 interface SidebarProps {
@@ -18,6 +18,8 @@ interface SidebarProps {
   toggleCollapse: () => void;
   onExport?: () => void;
   onLogoClick?: () => void;
+  currentView: string;
+  onNavigate: (view: string) => void;
 }
 
 // Inline Logo Component: Standalone Cedar "C" (No Background)
@@ -46,7 +48,7 @@ export const Logo = ({ className }: { className?: string }) => (
 );
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport, onLogoClick
+    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport, onLogoClick, currentView, onNavigate
 }) => {
   
   return (
@@ -100,32 +102,47 @@ const Sidebar: React.FC<SidebarProps> = ({
             
             <nav className="space-y-1">
                 <button
-                    onClick={() => onSelectCategory('All')}
+                    onClick={() => { onNavigate('library'); onSelectCategory('All'); }}
                     title={isCollapsed ? "All Prompts" : undefined}
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
-                    selectedCategory === 'All'
+                    currentView === 'library' && selectedCategory === 'All'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
                     }`}
                 >
                     <div className="flex items-center gap-3">
-                        <RiApps2Line size={20} className={selectedCategory === 'All' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
+                        <RiApps2Line size={20} className={currentView === 'library' && selectedCategory === 'All' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
                         {!isCollapsed && <span>All Prompts</span>}
                     </div>
                 </button>
 
                 <button
-                    onClick={() => onSelectCategory('Favorites')}
+                    onClick={() => { onNavigate('library'); onSelectCategory('Favorites'); }}
                     title={isCollapsed ? "Favorites" : undefined}
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
-                    selectedCategory === 'Favorites'
+                    currentView === 'library' && selectedCategory === 'Favorites'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
                     }`}
                 >
                     <div className="flex items-center gap-3">
-                        <RiStarLine size={20} className={selectedCategory === 'Favorites' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
+                        <RiStarLine size={20} className={currentView === 'library' && selectedCategory === 'Favorites' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
                         {!isCollapsed && <span>Favorites</span>}
+                    </div>
+                </button>
+
+                <button
+                    onClick={() => onNavigate('topics')}
+                    title={isCollapsed ? "Topics" : undefined}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
+                    currentView === 'topics' || currentView === 'topic-detail'
+                        ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
+                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    }`}
+                >
+                    <div className="flex items-center gap-3">
+                        <RiBookOpenLine size={20} className={currentView === 'topics' || currentView === 'topic-detail' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
+                        {!isCollapsed && <span>Topics</span>}
                     </div>
                 </button>
             </nav>
@@ -139,14 +156,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {Object.values(Category).map((cat) => (
                             <button
                                 key={cat}
-                                onClick={() => onSelectCategory(cat)}
+                                onClick={() => { onNavigate('library'); onSelectCategory(cat); }}
                                 className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
-                                selectedCategory === cat
+                                currentView === 'library' && selectedCategory === cat
                                     ? 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-medium'
                                     : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-200'
                                 }`}
                             >
-                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 transition-all ${selectedCategory === cat ? 'bg-zinc-900 dark:bg-zinc-100' : 'bg-zinc-300 dark:bg-zinc-700'}`}></span>
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 transition-all ${currentView === 'library' && selectedCategory === cat ? 'bg-zinc-900 dark:bg-zinc-100' : 'bg-zinc-300 dark:bg-zinc-700'}`}></span>
                                 <span className="truncate">{cat}</span>
                             </button>
                         ))}

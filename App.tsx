@@ -5,6 +5,7 @@ import PromptCard from './components/PromptCard';
 import PromptEditor from './components/PromptEditor';
 import PromptDetail from './components/PromptDetail';
 import TopicDetail from './components/TopicDetail';
+import TopicList from './components/TopicList';
 import { PromptData, Category, PromptStatus, Copyright } from './types';
 import { 
     RiMenuLine, 
@@ -123,10 +124,11 @@ const App: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   
   // --- App State ---
-  const [view, setView] = useState<string>('library');
+  const [view, setView] = useState<string>('library'); // 'library', 'detail', 'editor', 'topics', 'topic-detail'
   const [prompts, setPrompts] = useState<PromptData[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [activePrompt, setActivePrompt] = useState<PromptData | null>(null);
+  const [activeTopic, setActiveTopic] = useState<string | null>(null);
   
   // Filter & Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -243,6 +245,7 @@ const App: React.FC = () => {
       setCurrentPage(1);
       setView('library');
       setActivePrompt(null);
+      setActiveTopic(null);
       setSidebarOpen(false);
   };
 
@@ -319,6 +322,32 @@ const App: React.FC = () => {
       return Array.from(new Set(tags)).sort();
   }, [prompts]);
 
+  const allTopics = useMemo(() => {
+    const topicMap = new Map<string, { count: number; previewImage?: string }>();
+    
+    prompts.forEach(p => {
+        if (p.topic) {
+            const entry = topicMap.get(p.topic) || { count: 0, previewImage: undefined };
+            entry.count++;
+            if (!entry.previewImage && p.imageUrl) {
+                entry.previewImage = p.imageUrl;
+            }
+            topicMap.set(p.topic, entry);
+        }
+    });
+
+    return Array.from(topicMap.entries()).map(([name, data]) => ({
+        name,
+        count: data.count,
+        previewImage: data.previewImage
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [prompts]);
+
+  const activeTopicPrompts = useMemo(() => {
+      if (!activeTopic) return [];
+      return prompts.filter(p => p.topic === activeTopic);
+  }, [prompts, activeTopic]);
+
   // --- SEO, Title & URL Management ---
   useEffect(() => {
       // 0. Safety Guard: Do not rewrite URL while loading
@@ -332,6 +361,8 @@ const App: React.FC = () => {
           } else {
              title = `${activePrompt.title} | ${SITE_NAME}`;
           }
+      } else if (view === 'topic-detail' && activeTopic) {
+          title = `${activeTopic} | ${SITE_NAME}`;
       } else if (selectedAuthor) {
           title = `Prompts by ${selectedAuthor} | ${SITE_NAME}`;
       } else if (selectedTag) {
@@ -391,7 +422,7 @@ const App: React.FC = () => {
            window.history.pushState({}, '', newSearch || window.location.pathname);
       }
 
-  }, [view, activePrompt, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME, isLoading]);
+  }, [view, activePrompt, activeTopic, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME, isLoading]);
 
   // --- Handle Browser Back/Forward Buttons ---
   useEffect(() => {
@@ -413,6 +444,7 @@ const App: React.FC = () => {
                   setView('library');
               }
           } else {
+              // Should handle returning to Topics too, but for now reset to Library
               setActivePrompt(null);
               setView('library');
               if (category) setSelectedCategory(category);
@@ -672,6 +704,8 @@ const App: React.FC = () => {
             toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onExport={handleExport}
             onLogoClick={handleResetHome}
+            currentView={view}
+            onNavigate={(v) => { setView(v); setSidebarOpen(false); }}
         />
 
         {/* Main Content */}
@@ -877,27 +911,34 @@ const App: React.FC = () => {
             )}
 
             {view === 'detail' && activePrompt && (
-                // Conditional Rendering: TopicDetail (Magazine) vs Standard PromptDetail
-                activePrompt.topic ? (
-                    <TopicDetail 
-                        prompt={activePrompt}
-                        onBack={() => { setView('library'); setActivePrompt(null); }}
-                        onEdit={(p) => { setView('editor'); }}
-                        isAuthenticated={isAuthenticated}
-                    />
-                ) : (
-                    <PromptDetail 
-                        prompt={activePrompt}
-                        onBack={() => { setView('library'); setActivePrompt(null); }}
-                        onEdit={(p) => { setView('editor'); }}
-                        onDelete={handleDeletePrompt}
-                        onToggleFavorite={handleToggleFavorite}
-                        isAuthenticated={isAuthenticated}
-                        onLogin={() => setIsLoginModalOpen(true)}
-                        onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
-                        onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
-                    />
-                )
+                <PromptDetail 
+                    prompt={activePrompt}
+                    onBack={() => { setView('library'); setActivePrompt(null); }}
+                    onEdit={(p) => { setView('editor'); }}
+                    onDelete={handleDeletePrompt}
+                    onToggleFavorite={handleToggleFavorite}
+                    isAuthenticated={isAuthenticated}
+                    onLogin={() => setIsLoginModalOpen(true)}
+                    onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
+                    onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
+                />
+            )}
+
+            {view === 'topics' && (
+                <TopicList 
+                    topics={allTopics}
+                    onSelectTopic={(t) => { setActiveTopic(t); setView('topic-detail'); }}
+                />
+            )}
+
+            {view === 'topic-detail' && activeTopic && (
+                <TopicDetail 
+                    topic={activeTopic}
+                    prompts={activeTopicPrompts}
+                    onBack={() => { setView('topics'); setActiveTopic(null); }}
+                    onEdit={(p) => { setActivePrompt(p); setView('editor'); }}
+                    isAuthenticated={isAuthenticated}
+                />
             )}
 
             {view === 'editor' && (
@@ -907,9 +948,11 @@ const App: React.FC = () => {
                     onDelete={handleDeletePrompt}
                     onCancel={() => {
                         if (activePrompt) {
-                            setView('detail');
+                            if (activeTopic) setView('topic-detail');
+                            else setView('detail');
                         } else {
-                            setView('library');
+                            if (activeTopic) setView('topic-detail');
+                            else setView('library');
                         }
                     }}
                     existingAuthors={allAuthors}
