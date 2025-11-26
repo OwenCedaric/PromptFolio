@@ -56,7 +56,7 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
                                     
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 flex flex-col justify-end">
                                         <span className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">Collection</span>
-                                        <h3 className="text-2xl md:text-3xl font-serif font-medium text-white mb-2 group-hover:underline decoration-1 underline-offset-4 decoration-white/50">
+                                        <h3 className="text-2xl md:text-3xl font-serif font-medium text-white mb-2">
                                             {topic.name}
                                         </h3>
                                         <div className="flex items-center justify-between mt-2">
