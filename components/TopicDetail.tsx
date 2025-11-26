@@ -139,7 +139,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                             {topic}
                         </h1>
                         <p className="text-base md:text-lg text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed">
-                            A selection of {prompts.length} prompt{prompts.length !== 1 ? 's' : ''} specifically designed for {topic.toLowerCase()} tasks.
+                            A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
                         </p>
                      </div>
                      
