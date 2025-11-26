@@ -1,6 +1,6 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect, useState } from 'react';
 import { PromptData } from '../types';
-import { RiArrowLeftLine, RiArrowRightLine, RiEyeLine } from '@remixicon/react';
+import { RiArrowLeftLine, RiArrowRightLine, RiEyeLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
 
 interface TopicDetailProps {
   topic: string;
@@ -15,6 +15,16 @@ interface TopicDetailProps {
 const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, index: number, onViewDetail: (p: PromptData) => void }) => {
     const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
     const isEven = index % 2 === 0;
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (currentVersion?.content) {
+            navigator.clipboard.writeText(currentVersion.content);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
 
     return (
         <div className="w-full min-h-[90vh] flex flex-col md:flex-row relative group">
@@ -76,7 +86,7 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                         {currentVersion?.content}
                     </div>
 
-                    <div className="mt-2 pt-4">
+                    <div className="mt-2 pt-4 flex flex-wrap items-center gap-8">
                          <button 
                             onClick={() => onViewDetail(prompt)}
                             className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
@@ -84,6 +94,20 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                             Explore Detail
                             <span className="bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full p-1 transition-transform duration-300 group-hover/btn:translate-x-2">
                                 <RiArrowRightLine size={14} />
+                            </span>
+                         </button>
+
+                         <button 
+                            onClick={handleCopy}
+                            className={`group/copy flex items-center gap-2 text-sm uppercase tracking-widest font-bold transition-all ${
+                                copied 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                            }`}
+                         >
+                            <span>{copied ? 'Copied' : 'Copy Prompt'}</span>
+                            <span className={`p-1 transition-transform duration-300 ${copied ? 'scale-110' : 'group-hover/copy:scale-110'}`}>
+                                {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                             </span>
                          </button>
                     </div>
