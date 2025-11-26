@@ -86,7 +86,8 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                         {currentVersion?.content}
                     </div>
 
-                    <div className="mt-2 pt-4 flex flex-wrap items-center gap-8">
+                    {/* Action Bar: Explore Left, Copy Right (Icon Only) */}
+                    <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between">
                          <button 
                             onClick={() => onViewDetail(prompt)}
                             className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
@@ -99,16 +100,14 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
 
                          <button 
                             onClick={handleCopy}
-                            className={`group/copy flex items-center gap-2 text-sm uppercase tracking-widest font-bold transition-all ${
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                                 copied 
-                                ? 'text-green-600 dark:text-green-400' 
-                                : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                                ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 scale-110' 
+                                : 'bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
+                            title="Copy Prompt"
                          >
-                            <span>{copied ? 'Copied' : 'Copy Prompt'}</span>
-                            <span className={`p-1 transition-transform duration-300 ${copied ? 'scale-110' : 'group-hover/copy:scale-110'}`}>
-                                {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
-                            </span>
+                            {copied ? <RiCheckLine size={20} /> : <RiFileCopyLine size={20} />}
                          </button>
                     </div>
                 </div>
