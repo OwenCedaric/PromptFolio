@@ -186,7 +186,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
             <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 
                 {/* Intro / Title Card */}
-                <div className="w-full min-h-[70vh] flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 relative pb-20">
+                <div className="w-full min-h-[50vh] md:min-h-[60vh] flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 relative pb-10 md:pb-20">
                      <div className="text-center px-4 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
                         <span className="inline-block py-1 px-3 border border-zinc-300 dark:border-zinc-700 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-8">
                             Curated Collection
@@ -197,11 +197,6 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                         <p className="text-base md:text-lg text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed">
                             A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
                         </p>
-                     </div>
-                     
-                     <div className="absolute bottom-10 flex flex-col items-center gap-2 opacity-40 animate-pulse">
-                        <span className="text-[10px] uppercase tracking-widest">Scroll</span>
-                        <div className="w-px h-12 bg-zinc-900 dark:bg-white"></div>
                      </div>
                 </div>
 
