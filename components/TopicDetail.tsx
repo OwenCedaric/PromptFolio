@@ -27,22 +27,30 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
     };
 
     // Advanced Asymmetric Border Radius Logic (4-step cycle)
-    // Creates a richer visual rhythm than simple alternation
+    // Ensures the "flat" or "connected" side always faces the content text
     const getShapeClass = (idx: number) => {
         const mod = idx % 4;
         switch (mod) {
             case 0: 
-                // Cycle 1: Classic Diagonal (Top-Left & Bottom-Right)
+                // Cycle 1 (Even, Image Left): Diagonal A
+                // Rounded: Top-Left (Outer), Bottom-Right (Inner-Bottom). 
+                // Flat: Top-Right (Inner-Top) facing content header.
                 return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
             case 1:
-                // Cycle 2: Right Side Rounded (D-shape)
-                return 'rounded-r-[4rem] rounded-l-none';
-            case 2:
-                // Cycle 3: Reverse Diagonal (Top-Right & Bottom-Left)
+                // Cycle 2 (Odd, Image Right): Diagonal B
+                // Rounded: Top-Right (Outer), Bottom-Left (Inner-Bottom).
+                // Flat: Top-Left (Inner-Top) facing content header.
                 return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
-            case 3:
-                // Cycle 4: Left Side Rounded (C-shape)
+            case 2:
+                // Cycle 3 (Even, Image Left): Left Side Rounded (C-shape)
+                // Rounded: Left side (Outer).
+                // Flat: Right side (Inner) facing content.
                 return 'rounded-l-[4rem] rounded-r-none';
+            case 3:
+                // Cycle 4 (Odd, Image Right): Right Side Rounded (D-shape)
+                // Rounded: Right side (Outer).
+                // Flat: Left side (Inner) facing content.
+                return 'rounded-r-[4rem] rounded-l-none';
             default:
                 return 'rounded-none';
         }
@@ -64,7 +72,7 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                  {/* Image Container - Adaptive Size with Asymmetric Shape */}
                  <div className="relative z-10 w-full flex justify-center">
                     {prompt.imageUrl ? (
-                        <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.05)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.05)] ${shapeClass}`}>
+                        <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.15)] ${shapeClass}`}>
                             <img 
                                 src={prompt.imageUrl} 
                                 alt={prompt.title} 
