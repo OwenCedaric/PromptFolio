@@ -87,18 +87,8 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                         {currentVersion?.content}
                     </div>
 
-                    {/* Action Bar: Explore & Copy Grouped */}
-                    <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-wrap items-center gap-8">
-                         <button 
-                            onClick={() => onViewDetail(prompt)}
-                            className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-                         >
-                            Explore Detail
-                            <span className="bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full p-1 transition-transform duration-300 group-hover/btn:translate-x-2">
-                                <RiArrowRightLine size={14} />
-                            </span>
-                         </button>
-
+                    {/* Action Bar: Copy (Utility) Left, Explore (Nav) Right -> */}
+                    <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between gap-4">
                          <button 
                             onClick={handleCopy}
                             className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
@@ -109,6 +99,16 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                          >
                             {copied ? <RiCheckLine size={14} /> : <RiFileCopyLine size={14} />}
                             <span>{copied ? 'Copied' : 'Copy'}</span>
+                         </button>
+
+                         <button 
+                            onClick={() => onViewDetail(prompt)}
+                            className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors text-right"
+                         >
+                            Explore Detail
+                            <span className="bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full p-1 transition-transform duration-300 group-hover/btn:translate-x-2">
+                                <RiArrowRightLine size={14} />
+                            </span>
                          </button>
                     </div>
                 </div>
