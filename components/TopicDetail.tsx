@@ -26,6 +26,13 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
         }
     };
 
+    // Asymmetric Border Radius Logic
+    // Even items: Rounded Top-Left & Bottom-Right
+    // Odd items: Rounded Top-Right & Bottom-Left
+    const shapeClass = isEven 
+        ? 'rounded-tl-[3rem] rounded-br-[3rem] rounded-tr-none rounded-bl-none' 
+        : 'rounded-tr-[3rem] rounded-bl-[3rem] rounded-tl-none rounded-br-none';
+
     return (
         <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group">
             
@@ -37,10 +44,10 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                  {/* Visual decoration: background line */}
                  <div className={`hidden md:block absolute top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-800 ${isEven ? 'right-0' : 'left-0'}`}></div>
 
-                 {/* Image Container - Adaptive Size */}
+                 {/* Image Container - Adaptive Size with Asymmetric Shape */}
                  <div className="relative z-10 w-full flex justify-center">
                     {prompt.imageUrl ? (
-                        <div className="relative rounded-lg overflow-hidden shadow-2xl bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700">
+                        <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.05)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.05)] ${shapeClass}`}>
                             <img 
                                 src={prompt.imageUrl} 
                                 alt={prompt.title} 
@@ -50,7 +57,7 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                             />
                         </div>
                     ) : (
-                        <div className="w-full aspect-[3/4] md:max-w-md bg-zinc-100 dark:bg-zinc-900 rounded-lg flex flex-col items-center justify-center text-zinc-300 dark:text-zinc-700 shadow-inner">
+                        <div className={`w-full aspect-[3/4] md:max-w-md bg-zinc-100 dark:bg-zinc-900 flex flex-col items-center justify-center text-zinc-300 dark:text-zinc-700 shadow-inner ${shapeClass}`}>
                              <span className="text-8xl font-serif italic opacity-20">{index + 1}</span>
                         </div>
                     )}
