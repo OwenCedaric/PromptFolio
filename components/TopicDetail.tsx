@@ -59,7 +59,7 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
     const shapeClass = getShapeClass(index);
 
     return (
-        <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group">
+        <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group overflow-hidden">
             
             {/* Image Section */}
             <div className={`
@@ -183,7 +183,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
             </div>
 
             {/* Scrollable Feed - No Snapping for better flow */}
-            <div ref={containerRef} className="flex-1 overflow-y-auto scrollbar-hide">
+            <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 
                 {/* Intro / Title Card */}
                 <div className="w-full min-h-[70vh] flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 relative pb-20">

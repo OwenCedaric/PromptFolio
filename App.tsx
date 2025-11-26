@@ -974,6 +974,7 @@ const App: React.FC = () => {
                 <TopicList 
                     topics={allTopics}
                     onSelectTopic={(t) => { setActiveTopic(t); setView('topic-detail'); setTopicScrollPos(0); }}
+                    onOpenSidebar={() => setSidebarOpen(true)}
                 />
             )}
 
