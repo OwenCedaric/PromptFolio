@@ -27,29 +27,30 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
     };
 
     return (
-        <div className="w-full min-h-[90vh] flex flex-col md:flex-row relative group">
+        <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group">
             
             {/* Image Section */}
             <div className={`
-                relative h-[50vh] md:h-auto w-full
+                relative w-full md:min-h-full flex items-center justify-center p-6 md:p-12
                 ${isEven ? 'md:w-[55%] md:order-1' : 'md:w-[60%] md:order-2'}
-                overflow-hidden flex items-center justify-center
             `}>
-                 {/* Visual decoration: extended background line */}
-                 <div className={`hidden md:block absolute top-10 bottom-10 w-px bg-zinc-200 dark:bg-zinc-800 ${isEven ? 'right-0' : 'left-0'}`}></div>
+                 {/* Visual decoration: background line */}
+                 <div className={`hidden md:block absolute top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-800 ${isEven ? 'right-0' : 'left-0'}`}></div>
 
-                 <div className="relative w-full h-full md:h-[90%] md:w-[90%] overflow-hidden rounded-none md:rounded-sm">
+                 {/* Image Container - Adaptive Size */}
+                 <div className="relative z-10 w-full flex justify-center">
                     {prompt.imageUrl ? (
-                        <>
+                        <div className="relative rounded-lg overflow-hidden shadow-2xl bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700">
                             <img 
                                 src={prompt.imageUrl} 
                                 alt={prompt.title} 
-                                className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105"
+                                // Mobile: Width full, Height auto. Desktop: Max height constrained, Width auto (preserve aspect ratio)
+                                className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
                             />
-                        </>
+                        </div>
                     ) : (
-                        <div className="w-full h-full bg-zinc-100 dark:bg-zinc-900 flex flex-col items-center justify-center text-zinc-300 dark:text-zinc-700">
+                        <div className="w-full aspect-[3/4] md:max-w-md bg-zinc-100 dark:bg-zinc-900 rounded-lg flex flex-col items-center justify-center text-zinc-300 dark:text-zinc-700 shadow-inner">
                              <span className="text-8xl font-serif italic opacity-20">{index + 1}</span>
                         </div>
                     )}
@@ -57,8 +58,8 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
 
                 {/* Index / Number Watermark - Positioned creatively */}
                 <div className={`
-                    absolute text-[8rem] md:text-[12rem] leading-none font-serif font-black text-transparent stroke-text opacity-10 md:opacity-20 select-none pointer-events-none z-10
-                    ${isEven ? '-left-4 md:-left-12 bottom-0' : '-right-4 md:-right-12 top-0'}
+                    absolute text-[6rem] md:text-[12rem] leading-none font-serif font-black text-transparent stroke-text opacity-10 md:opacity-10 select-none pointer-events-none z-0
+                    ${isEven ? '-left-2 md:-left-4 bottom-0' : '-right-2 md:-right-4 top-0'}
                 `}>
                     {(index + 1).toString().padStart(2, '0')}
                 </div>
@@ -66,7 +67,7 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
 
             {/* Content Section */}
             <div className={`
-                relative w-full md:min-h-[90vh] flex flex-col justify-center p-8 md:p-16 lg:p-24
+                relative w-full flex flex-col justify-center p-8 md:p-16 lg:p-24
                 ${isEven ? 'md:w-[45%] md:order-2' : 'md:w-[40%] md:order-1'}
             `}>
                 <div className="flex flex-col gap-6 md:gap-10 max-w-lg mx-auto md:mx-0">
@@ -86,8 +87,8 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
                         {currentVersion?.content}
                     </div>
 
-                    {/* Action Bar: Explore Left, Copy Right (Icon Only) */}
-                    <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between">
+                    {/* Action Bar: Explore & Copy Grouped */}
+                    <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-wrap items-center gap-8">
                          <button 
                             onClick={() => onViewDetail(prompt)}
                             className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
@@ -100,14 +101,14 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
 
                          <button 
                             onClick={handleCopy}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                                 copied 
-                                ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 scale-110' 
-                                : 'bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' 
+                                : 'bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-900 dark:hover:border-zinc-100 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
-                            title="Copy Prompt"
                          >
-                            {copied ? <RiCheckLine size={20} /> : <RiFileCopyLine size={20} />}
+                            {copied ? <RiCheckLine size={14} /> : <RiFileCopyLine size={14} />}
+                            <span>{copied ? 'Copied' : 'Copy'}</span>
                          </button>
                     </div>
                 </div>
