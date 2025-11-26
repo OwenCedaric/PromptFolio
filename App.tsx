@@ -132,6 +132,9 @@ const App: React.FC = () => {
     return null;
   });
 
+  // Track scroll position of the Topic Detail view to restore it when returning from Prompt Detail
+  const [topicScrollPos, setTopicScrollPos] = useState(0);
+
   // Initialize View based on URL params
   const [view, setView] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -264,6 +267,7 @@ const App: React.FC = () => {
       setView('library');
       setActivePrompt(null);
       setActiveTopic(null);
+      setTopicScrollPos(0);
       setSidebarOpen(false);
   };
 
@@ -474,6 +478,7 @@ const App: React.FC = () => {
           } else if (topic) {
               setActiveTopic(topic);
               setView('topic-detail');
+              // Note: Browser back won't restore exact scroll position automatically for our virtualized-like views without complex handling
           } else if (viewParam === 'topics') {
               setView('topics');
           } else {
@@ -946,7 +951,15 @@ const App: React.FC = () => {
             {view === 'detail' && activePrompt && (
                 <PromptDetail 
                     prompt={activePrompt}
-                    onBack={() => { setView('library'); setActivePrompt(null); }}
+                    onBack={() => { 
+                        if (activeTopic) {
+                            setView('topic-detail');
+                            setActivePrompt(null);
+                        } else {
+                            setView('library'); 
+                            setActivePrompt(null); 
+                        }
+                    }}
                     onEdit={(p) => { setView('editor'); }}
                     onDelete={handleDeletePrompt}
                     onToggleFavorite={handleToggleFavorite}
@@ -960,7 +973,7 @@ const App: React.FC = () => {
             {view === 'topics' && (
                 <TopicList 
                     topics={allTopics}
-                    onSelectTopic={(t) => { setActiveTopic(t); setView('topic-detail'); }}
+                    onSelectTopic={(t) => { setActiveTopic(t); setView('topic-detail'); setTopicScrollPos(0); }}
                 />
             )}
 
@@ -968,9 +981,14 @@ const App: React.FC = () => {
                 <TopicDetail 
                     topic={activeTopic}
                     prompts={activeTopicPrompts}
-                    onBack={() => { setView('topics'); setActiveTopic(null); }}
-                    onViewDetail={(p) => { setActivePrompt(p); setView('detail'); }}
+                    onBack={() => { setView('topics'); setActiveTopic(null); setTopicScrollPos(0); }}
+                    onViewDetail={(p, scrollPos) => { 
+                        setTopicScrollPos(scrollPos);
+                        setActivePrompt(p); 
+                        setView('detail'); 
+                    }}
                     isAuthenticated={isAuthenticated}
+                    initialScrollPos={topicScrollPos}
                 />
             )}
 

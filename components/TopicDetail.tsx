@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { PromptData } from '../types';
 import { RiArrowLeftLine, RiArrowRightLine, RiEyeLine } from '@remixicon/react';
 
@@ -6,8 +6,9 @@ interface TopicDetailProps {
   topic: string;
   prompts: PromptData[];
   onBack: () => void;
-  onViewDetail: (prompt: PromptData) => void;
+  onViewDetail: (prompt: PromptData, scrollPos: number) => void;
   isAuthenticated: boolean;
+  initialScrollPos?: number;
 }
 
 // Magazine Item Component
@@ -93,8 +94,22 @@ const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, ind
     );
 };
 
-const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onViewDetail, isAuthenticated }) => {
-    
+const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onViewDetail, isAuthenticated, initialScrollPos = 0 }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Restore scroll position on mount
+    useLayoutEffect(() => {
+        if (containerRef.current && initialScrollPos > 0) {
+            containerRef.current.scrollTop = initialScrollPos;
+        }
+    }, [initialScrollPos]);
+
+    const handleViewDetail = (prompt: PromptData) => {
+        // Capture current scroll position before navigating away
+        const currentPos = containerRef.current?.scrollTop || 0;
+        onViewDetail(prompt, currentPos);
+    };
+
     return (
         <div className="fixed inset-0 z-50 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden font-sans">
             
@@ -112,7 +127,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
             </div>
 
             {/* Scrollable Feed - No Snapping for better flow */}
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
+            <div ref={containerRef} className="flex-1 overflow-y-auto scrollbar-hide">
                 
                 {/* Intro / Title Card */}
                 <div className="w-full min-h-[70vh] flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 relative pb-20">
@@ -141,7 +156,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                             key={p.id}
                             prompt={p} 
                             index={idx} 
-                            onViewDetail={onViewDetail}
+                            onViewDetail={handleViewDetail}
                         />
                     ))}
                 </div>

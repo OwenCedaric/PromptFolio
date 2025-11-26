@@ -51,6 +51,10 @@ export const onRequestGet = async (context: any) => {
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${promptSitemaps}
   <sitemap>
+    <loc>${baseUrl}/sitemap-topics.xml</loc>
+    <lastmod>${lastMod}</lastmod>
+  </sitemap>
+  <sitemap>
     <loc>${baseUrl}/sitemap-categories.xml</loc>
     <lastmod>${lastMod}</lastmod>
   </sitemap>
