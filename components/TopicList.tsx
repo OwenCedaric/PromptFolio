@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PromptData } from '../types';
-import { RiArrowRightLine, RiPriceTag3Line, RiMenuLine } from '@remixicon/react';
+import { RiArrowRightLine, RiPriceTag3Line, RiMenuLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
 
 interface TopicListProps {
   topics: { name: string; count: number; previewImage?: string }[];
@@ -8,7 +8,67 @@ interface TopicListProps {
   onOpenSidebar?: () => void;
 }
 
+// Helper for stable pagination range generation (Fixed 7 slots logic)
+const getPaginationRange = (currentPage: number, totalPages: number) => {
+    const siblingCount = 1;
+    const totalNumbers = 2 * siblingCount + 3; // 5
+    const totalBlocks = totalNumbers + 2; // 7
+
+    if (totalPages <= totalBlocks) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+    const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+    const shouldShowLeftDots = leftSiblingIndex > 2;
+    const shouldShowRightDots = rightSiblingIndex < totalPages - 2;
+
+    const firstPageIndex = 1;
+    const lastPageIndex = totalPages;
+
+    if (!shouldShowLeftDots && shouldShowRightDots) {
+        let leftItemCount = 3 + 2 * siblingCount;
+        let leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
+        return [...leftRange, '...', totalPages];
+    }
+
+    if (shouldShowLeftDots && !shouldShowRightDots) {
+        let rightItemCount = 3 + 2 * siblingCount;
+        let rightRange = Array.from({ length: rightItemCount }, (_, i) => totalPages - rightItemCount + i + 1);
+        return [firstPageIndex, '...', ...rightRange];
+    }
+
+    if (shouldShowLeftDots && shouldShowRightDots) {
+        let middleRange = Array.from({ length: rightSiblingIndex - leftSiblingIndex + 1 }, (_, i) => leftSiblingIndex + i);
+        return [firstPageIndex, '...', ...middleRange, '...', lastPageIndex];
+    }
+    
+    return [];
+};
+
 const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSidebar }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const ITEMS_PER_PAGE = 12;
+
+    const totalPages = Math.ceil(topics.length / ITEMS_PER_PAGE);
+    const paginatedTopics = topics.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    // Reset pagination if topics count changes significantly (optional safety)
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+        }
+    }, [topics.length, totalPages]);
+
+    // Scroll to top on page change
+    useEffect(() => {
+        if (contentRef.current) {
+            contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [currentPage]);
+
     return (
         <div className="w-full h-full flex flex-col overflow-hidden">
             {/* Mobile Header */}
@@ -22,9 +82,9 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
                 </button>
             </div>
 
-            <div className="flex-1 p-6 md:p-10 pt-2 md:pt-10 overflow-y-auto scrollbar-hide">
-                <div className="max-w-7xl mx-auto">
-                    <div className="mb-10">
+            <div ref={contentRef} className="flex-1 p-6 md:p-10 pt-2 md:pt-10 overflow-y-auto scrollbar-hide">
+                <div className="max-w-7xl mx-auto flex flex-col min-h-full">
+                    <div className="mb-10 shrink-0">
                         <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Topics</h1>
                         <p className="text-zinc-500 dark:text-zinc-400">Curated collections of prompts grouped by theme.</p>
                     </div>
@@ -36,41 +96,86 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
                             <p className="text-sm text-zinc-400 dark:text-zinc-600 mt-1">Edit a prompt and add a Topic to see it here.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {topics.map((topic) => (
-                                <button 
-                                    key={topic.name}
-                                    onClick={() => onSelectTopic(topic.name)}
-                                    className="group relative aspect-[4/3] md:aspect-[16/9] lg:aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 text-left transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl transform-gpu"
-                                    style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
-                                >
-                                    {topic.previewImage ? (
-                                        <img 
-                                            src={topic.previewImage} 
-                                            alt={topic.name} 
-                                            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900 opacity-50"></div>
-                                    )}
-                                    
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                                        <span className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">Collection</span>
-                                        <h3 className="text-2xl md:text-3xl font-serif font-medium text-white mb-2">
-                                            {topic.name}
-                                        </h3>
-                                        <div className="flex items-center justify-between mt-2">
-                                            <span className="text-sm font-medium text-white/80 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                                                {topic.count} Prompts
-                                            </span>
-                                            <div className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-                                                <RiArrowRightLine size={16} />
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                                {paginatedTopics.map((topic) => (
+                                    <button 
+                                        key={topic.name}
+                                        onClick={() => onSelectTopic(topic.name)}
+                                        className="group relative aspect-[4/3] md:aspect-[16/9] lg:aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 text-left transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl transform-gpu"
+                                        style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
+                                    >
+                                        {topic.previewImage ? (
+                                            <img 
+                                                src={topic.previewImage} 
+                                                alt={topic.name} 
+                                                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900 opacity-50"></div>
+                                        )}
+                                        
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 flex flex-col justify-end">
+                                            <span className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">Collection</span>
+                                            <h3 className="text-2xl md:text-3xl font-serif font-medium text-white mb-2">
+                                                {topic.name}
+                                            </h3>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className="text-sm font-medium text-white/80 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                                                    {topic.count} Prompts
+                                                </span>
+                                                <div className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+                                                    <RiArrowRightLine size={16} />
+                                                </div>
                                             </div>
                                         </div>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 py-6 mt-auto select-none w-full shrink-0">
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        title="Previous Page"
+                                    >
+                                        <RiArrowLeftSLine size={20} />
+                                    </button>
+                                    
+                                    <div className="flex flex-wrap justify-center items-center gap-1">
+                                        {getPaginationRange(currentPage, totalPages).map((page, idx) => (
+                                            page === '...' ? (
+                                                <span key={`dots-${idx}`} className="w-8 text-center text-xs text-zinc-400">...</span>
+                                            ) : (
+                                                <button
+                                                    key={`page-${page}`}
+                                                    onClick={() => setCurrentPage(Number(page))}
+                                                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all ${
+                                                        currentPage === page 
+                                                        ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm' 
+                                                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                                    }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            )
+                                        ))}
                                     </div>
-                                </button>
-                            ))}
-                        </div>
+
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        title="Next Page"
+                                    >
+                                        <RiArrowRightSLine size={20} />
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
