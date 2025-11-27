@@ -49,6 +49,10 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
 
   // Tag suggestion state
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  
+  // Author & Topic suggestion state
+  const [showAuthorSuggestions, setShowAuthorSuggestions] = useState(false);
+  const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
 
   // Initialize state
   useEffect(() => {
@@ -217,6 +221,16 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       !tags.some(existing => existing.toLowerCase() === t.toLowerCase())
   );
 
+  // Filtered author suggestions
+  const filteredAuthors = existingAuthors.filter(a => 
+    a.toLowerCase().includes(author.toLowerCase()) && a !== author
+  );
+
+  // Filtered topic suggestions
+  const filteredTopics = existingTopics.filter(t => 
+    t.toLowerCase().includes(topic.toLowerCase()) && t !== topic
+  );
+
   // Sort versions for dropdown (Newest first)
   const sortedVersions = [...versions].sort((a, b) => b.createdAt - a.createdAt);
 
@@ -333,42 +347,73 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                         <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
+                            <div className="space-y-1 relative">
                                 <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Author</label>
-                                {/* Datalist for Autocomplete */}
                                 <input 
-                                    list="authors-list"
                                     type="text" 
                                     value={author}
-                                    onChange={(e) => setAuthor(e.target.value)}
+                                    onChange={(e) => {
+                                        setAuthor(e.target.value);
+                                        setShowAuthorSuggestions(true);
+                                    }}
+                                    onFocus={() => setShowAuthorSuggestions(true)}
+                                    onBlur={() => setTimeout(() => setShowAuthorSuggestions(false), 200)}
                                     placeholder="Creator Name (Optional)"
                                     className={commonInputClass}
                                 />
-                                <datalist id="authors-list">
-                                    {existingAuthors.map(auth => (
-                                        <option key={auth} value={auth} />
-                                    ))}
-                                </datalist>
+                                {showAuthorSuggestions && filteredAuthors.length > 0 && (
+                                    <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {filteredAuthors.map((auth) => (
+                                            <li 
+                                                key={auth}
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault(); // Prevent blur
+                                                    setAuthor(auth);
+                                                    setShowAuthorSuggestions(false);
+                                                }}
+                                                className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
+                                            >
+                                                {auth}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
 
-                            <div className="space-y-1">
+                            <div className="space-y-1 relative">
                                 <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Topic (Optional)</label>
                                 <div className="relative flex items-center">
-                                    <div className="absolute left-3 text-zinc-400"><RiHashtag size={14} /></div>
+                                    <div className="absolute left-3 text-zinc-400 pointer-events-none"><RiHashtag size={14} /></div>
                                     <input 
                                         type="text" 
-                                        list="topics-list"
                                         value={topic}
-                                        onChange={(e) => setTopic(e.target.value)}
+                                        onChange={(e) => {
+                                            setTopic(e.target.value);
+                                            setShowTopicSuggestions(true);
+                                        }}
+                                        onFocus={() => setShowTopicSuggestions(true)}
+                                        onBlur={() => setTimeout(() => setShowTopicSuggestions(false), 200)}
                                         placeholder="e.g. Portrait, Landscape"
                                         className={`pl-9 ${commonInputClass.replace('px-3', 'pr-3')}`}
                                     />
-                                    <datalist id="topics-list">
-                                        {existingTopics.map(t => (
-                                            <option key={t} value={t} />
-                                        ))}
-                                    </datalist>
                                 </div>
+                                {showTopicSuggestions && filteredTopics.length > 0 && (
+                                    <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {filteredTopics.map((t) => (
+                                            <li 
+                                                key={t}
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    setTopic(t);
+                                                    setShowTopicSuggestions(false);
+                                                }}
+                                                className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
+                                            >
+                                                {t}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
                         </div>
 
