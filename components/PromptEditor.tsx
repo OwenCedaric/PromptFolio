@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine, RiHashtag, RiArrowDownSLine } from '@remixicon/react';
+import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine, RiHashtag, RiArrowDownSLine, RiCheckLine, RiToggleLine, RiShieldCheckLine, RiPriceTag3Line, RiUser3Line } from '@remixicon/react';
 import { PromptData, PromptStatus, Category, PromptVersion, Copyright } from '../types';
 import { geminiService } from '../services/geminiService';
 
@@ -19,6 +19,76 @@ const generateId = () => {
         return crypto.randomUUID();
     }
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
+};
+
+// Helper Hook for Click Outside
+function useClickOutside(ref: React.RefObject<HTMLElement>, handler: () => void) {
+  useEffect(() => {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      if (!ref.current || ref.current.contains(event.target as Node)) {
+        return;
+      }
+      handler();
+    };
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
+    return () => {
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
+    };
+  }, [ref, handler]);
+}
+
+// Reusable Custom Select Component
+const CustomSelect = ({ 
+    label, 
+    value, 
+    options, 
+    onChange, 
+    icon: Icon 
+}: { 
+    label: string, 
+    value: string, 
+    options: { label: string, value: string }[], 
+    onChange: (val: string) => void, 
+    icon?: any 
+}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    useClickOutside(ref, () => setIsOpen(false));
+
+    const selectedLabel = options.find(o => o.value === value)?.label || value;
+
+    return (
+        <div className="space-y-1 relative" ref={ref}>
+            <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">{label}</label>
+            <div 
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full text-sm bg-zinc-50 dark:bg-zinc-800 border ${isOpen ? 'border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-200 dark:ring-zinc-700' : 'border-zinc-200 dark:border-zinc-700'} rounded-lg px-3 py-2 outline-none text-zinc-900 dark:text-zinc-100 transition-all flex items-center justify-between cursor-pointer select-none`}
+            >
+                <div className="flex items-center gap-2 truncate">
+                    {Icon && <Icon size={16} className="text-zinc-400 shrink-0" />}
+                    <span className="truncate">{selectedLabel}</span>
+                </div>
+                <RiArrowDownSLine size={16} className={`text-zinc-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+            
+            {isOpen && (
+                <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700 animate-in fade-in zoom-in-95 duration-100 origin-top flex flex-col p-1">
+                    {options.map((opt) => (
+                        <div 
+                            key={opt.value}
+                            onClick={() => { onChange(opt.value); setIsOpen(false); }}
+                            className={`px-3 py-2 text-sm rounded-md cursor-pointer flex items-center justify-between transition-colors ${value === opt.value ? 'bg-zinc-100 dark:bg-zinc-700/50 font-medium text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'}`}
+                        >
+                            <span className="truncate mr-2">{opt.label}</span>
+                            {value === opt.value && <RiCheckLine size={14} className="text-zinc-900 dark:text-white shrink-0" />}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 };
 
 const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDelete, onCancel, existingAuthors = [], existingTags = [], existingTopics = [] }) => {
@@ -47,12 +117,18 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
   // Delete Confirmation State for Version
   const [confirmDeleteVersionId, setConfirmDeleteVersionId] = useState<string | null>(null);
 
-  // Tag suggestion state
-  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
-  
-  // Author & Topic suggestion state
+  // Suggestion Visibility Refs
+  const authorRef = useRef<HTMLDivElement>(null);
+  const topicRef = useRef<HTMLDivElement>(null);
+  const tagsRef = useRef<HTMLDivElement>(null);
+
   const [showAuthorSuggestions, setShowAuthorSuggestions] = useState(false);
   const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
+  useClickOutside(authorRef, () => setShowAuthorSuggestions(false));
+  useClickOutside(topicRef, () => setShowTopicSuggestions(false));
+  useClickOutside(tagsRef, () => setShowTagSuggestions(false));
 
   // Initialize state
   useEffect(() => {
@@ -234,9 +310,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
   // Sort versions for dropdown (Newest first)
   const sortedVersions = [...versions].sort((a, b) => b.createdAt - a.createdAt);
 
-  // Unified styles
+  // Common Input Styles for Author/Topic to match CustomSelect
   const commonInputClass = "w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:ring-0";
-  const commonSelectClass = "w-full text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 text-zinc-900 dark:text-zinc-100 transition-colors appearance-none focus:ring-0 pr-10 cursor-pointer";
 
   return (
     <div className="h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-950/50 relative overflow-hidden">
@@ -275,7 +350,6 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
         <div className="h-full max-w-[1920px] mx-auto lg:grid lg:grid-cols-12 lg:divide-x lg:divide-zinc-200 dark:lg:divide-zinc-800">
         
             {/* LEFT COLUMN (60%): Settings (Title, Desc, Meta) */}
-            {/* UPDATED: Fixed Header + Scrollable Content Body */}
             <div className={`lg:col-span-7 h-full flex flex-col overflow-hidden ${mobileTab === 'prompt' ? 'hidden lg:flex' : 'flex'}`}>
                 
                  {/* Fixed Header: Toolbar & Title */}
@@ -340,47 +414,51 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                     </div>
                  </div>
 
-                {/* Scrollable Content: Properties, Tags, Desc */}
+                {/* Scrollable Content */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-8 pb-32 lg:pb-10 space-y-8 scrollbar-hide">
                     {/* Properties Card */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
                         <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Properties</h3>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1 relative">
+                            
+                            {/* Author Input with Unified Dropdown */}
+                            <div className="space-y-1 relative" ref={authorRef}>
                                 <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Author</label>
-                                <input 
-                                    type="text" 
-                                    value={author}
-                                    onChange={(e) => {
-                                        setAuthor(e.target.value);
-                                        setShowAuthorSuggestions(true);
-                                    }}
-                                    onFocus={() => setShowAuthorSuggestions(true)}
-                                    onBlur={() => setTimeout(() => setShowAuthorSuggestions(false), 200)}
-                                    placeholder="Creator Name (Optional)"
-                                    className={commonInputClass}
-                                />
+                                <div className="relative flex items-center">
+                                    <div className="absolute left-3 text-zinc-400 pointer-events-none"><RiUser3Line size={14} /></div>
+                                    <input 
+                                        type="text" 
+                                        value={author}
+                                        onChange={(e) => {
+                                            setAuthor(e.target.value);
+                                            setShowAuthorSuggestions(true);
+                                        }}
+                                        onFocus={() => setShowAuthorSuggestions(true)}
+                                        placeholder="Creator Name"
+                                        className={`pl-9 ${commonInputClass}`}
+                                    />
+                                </div>
                                 {showAuthorSuggestions && filteredAuthors.length > 0 && (
-                                    <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700 animate-in fade-in zoom-in-95 duration-100 flex flex-col p-1">
                                         {filteredAuthors.map((auth) => (
-                                            <li 
+                                            <div 
                                                 key={auth}
-                                                onMouseDown={(e) => {
-                                                    e.preventDefault(); // Prevent blur
+                                                onClick={() => {
                                                     setAuthor(auth);
                                                     setShowAuthorSuggestions(false);
                                                 }}
-                                                className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
+                                                className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md cursor-pointer transition-colors"
                                             >
                                                 {auth}
-                                            </li>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="space-y-1 relative">
+                            {/* Topic Input with Unified Dropdown */}
+                            <div className="space-y-1 relative" ref={topicRef}>
                                 <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Topic (Optional)</label>
                                 <div className="relative flex items-center">
                                     <div className="absolute left-3 text-zinc-400 pointer-events-none"><RiHashtag size={14} /></div>
@@ -392,95 +470,60 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                             setShowTopicSuggestions(true);
                                         }}
                                         onFocus={() => setShowTopicSuggestions(true)}
-                                        onBlur={() => setTimeout(() => setShowTopicSuggestions(false), 200)}
                                         placeholder="e.g. Portrait, Landscape"
-                                        className={`pl-9 ${commonInputClass.replace('px-3', 'pr-3')}`}
+                                        className={`pl-9 ${commonInputClass}`}
                                     />
                                 </div>
                                 {showTopicSuggestions && filteredTopics.length > 0 && (
-                                    <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700 animate-in fade-in zoom-in-95 duration-100 flex flex-col p-1">
                                         {filteredTopics.map((t) => (
-                                            <li 
+                                            <div 
                                                 key={t}
-                                                onMouseDown={(e) => {
-                                                    e.preventDefault();
+                                                onClick={() => {
                                                     setTopic(t);
                                                     setShowTopicSuggestions(false);
                                                 }}
-                                                className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
+                                                className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md cursor-pointer transition-colors"
                                             >
                                                 {t}
-                                            </li>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Category</label>
-                            <div className="relative">
-                                <select 
-                                    value={category} 
-                                    onChange={(e) => setCategory(e.target.value as Category)}
-                                    className={commonSelectClass}
-                                >
-                                    {Object.values(Category).map(c => (
-                                        <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                            {c}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                    <RiArrowDownSLine size={16} />
-                                </div>
-                            </div>
-                        </div>
+                        {/* Category Select */}
+                        <CustomSelect 
+                            label="Category"
+                            value={category}
+                            options={Object.values(Category).map(c => ({ label: c, value: c }))}
+                            onChange={(val) => setCategory(val as Category)}
+                            icon={RiPriceTag3Line}
+                        />
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">Status</label>
-                                <div className="relative">
-                                    <select 
-                                        value={status} 
-                                        onChange={(e) => setStatus(e.target.value as PromptStatus)}
-                                        className={commonSelectClass}
-                                    >
-                                        {Object.values(PromptStatus).map(s => (
-                                            <option key={s} value={s} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                                {s}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                        <RiArrowDownSLine size={16} />
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Status Select */}
+                            <CustomSelect 
+                                label="Status"
+                                value={status}
+                                options={Object.values(PromptStatus).map(s => ({ label: s, value: s }))}
+                                onChange={(val) => setStatus(val as PromptStatus)}
+                                icon={RiToggleLine}
+                            />
 
-                            <div className="space-y-1">
-                                <label className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold">License</label>
-                                <div className="relative">
-                                    <select 
-                                        value={copyright} 
-                                        onChange={(e) => setCopyright(e.target.value as Copyright)}
-                                        className={commonSelectClass}
-                                    >
-                                        {Object.values(Copyright).map(c => (
-                                            <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                                {c}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
-                                        <RiArrowDownSLine size={16} />
-                                    </div>
-                                </div>
-                            </div>
+                            {/* License Select */}
+                            <CustomSelect 
+                                label="License"
+                                value={copyright}
+                                options={Object.values(Copyright).map(c => ({ label: c, value: c }))}
+                                onChange={(val) => setCopyright(val as Copyright)}
+                                icon={RiShieldCheckLine}
+                            />
                         </div>
                     </div>
                     
-                    {/* Case / Example Image Input & Preview */}
+                    {/* Case / Example Image Input */}
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl p-2 px-4 shadow-sm">
                             <RiImage2Line size={16} className="text-zinc-400" />
@@ -529,7 +572,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                         </p>
                     </div>
 
-                    {/* Tags Card - Moved Below Description */}
+                    {/* Tags Card */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
                         <div className="flex justify-between items-center">
                             <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Tags</h3>
@@ -551,7 +594,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                             ))}
                         </div>
                         
-                        <div className="relative">
+                        <div className="relative" ref={tagsRef}>
                             <input 
                                 value={tagInput}
                                 onChange={(e) => {
@@ -564,29 +607,27 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                         handleAddTag(tagInput);
                                     }
                                 }}
-                                onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
                                 onFocus={() => setShowTagSuggestions(true)}
                                 placeholder="Type tag & hit Enter..."
                                 className={commonInputClass}
                             />
                             
-                            {/* Tags Suggestion Dropdown */}
+                            {/* Unified Dropdown for Tags */}
                             {showTagSuggestions && tagInput && filteredTagSuggestions.length > 0 && (
-                                <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                                <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-700 animate-in fade-in zoom-in-95 duration-100 flex flex-col p-1">
                                     {filteredTagSuggestions.map((suggestion) => (
-                                        <li 
+                                        <div 
                                             key={suggestion}
-                                            onMouseDown={(e) => {
-                                                e.preventDefault(); // Prevent blur before click
+                                            onClick={() => {
                                                 handleAddTag(suggestion);
                                             }}
-                                            className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer flex items-center justify-between"
+                                            className="px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md cursor-pointer flex items-center justify-between transition-colors"
                                         >
                                             <span>{suggestion}</span>
                                             <span className="text-xs text-zinc-400">Add</span>
-                                        </li>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -595,7 +636,6 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
             </div>
 
             {/* RIGHT COLUMN (40%): Prompt Editor */}
-            {/* Scrolls independently */}
             <div className={`lg:col-span-5 h-full bg-zinc-50 dark:bg-zinc-950/50 px-4 md:px-8 py-6 md:py-8 flex flex-col overflow-hidden ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex flex-col h-full">
                      <div className="flex justify-between items-center mb-3 shrink-0">
@@ -615,7 +655,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                      
                      {/* Editor Container */}
                      <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors rounded-xl overflow-hidden shadow-sm flex flex-col">
-                         {/* Editor Header - Stays fixed inside the column */}
+                         {/* Editor Header */}
                         <div className="h-10 bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-100 dark:border-zinc-800 flex items-center px-4 justify-between shrink-0">
                              
                              {/* Version Control */}
@@ -641,7 +681,6 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                                     </div>
                                 </div>
 
-                                {/* Delete Version Button */}
                                 {versions.length > 1 && (
                                     <button 
                                         type="button"
