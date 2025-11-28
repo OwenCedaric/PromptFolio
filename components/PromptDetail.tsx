@@ -20,7 +20,8 @@ import {
     RiToggleLine,
     RiLockLine,
     RiEyeLine,
-    RiLoginCircleLine
+    RiLoginCircleLine,
+    RiBookOpenLine
 } from '@remixicon/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -36,9 +37,10 @@ interface PromptDetailProps {
   onLogin?: () => void;
   onTagClick?: (tag: string) => void;
   onAuthorClick?: (author: string) => void;
+  onTopicClick?: (topic: string) => void;
 }
 
-const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated, onLogin, onTagClick, onAuthorClick }) => {
+const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onDelete, onToggleFavorite, isAuthenticated, onLogin, onTagClick, onAuthorClick, onTopicClick }) => {
   // Sort versions newest first for the dropdown
   const sortedVersions = [...prompt.versions].sort((a, b) => b.createdAt - a.createdAt);
   
@@ -274,8 +276,20 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                  </div>
              </div>
              <h1 className="text-xl font-bold text-zinc-900 dark:text-white mt-2 line-clamp-2">{prompt.title}</h1>
-             <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
+             <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-zinc-500">
                  <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 uppercase text-xs font-bold tracking-wider">{prompt.category}</span>
+                 {prompt.topic && (
+                    <>
+                        <span>•</span>
+                        <button
+                            onClick={() => onTopicClick && onTopicClick(prompt.topic!)}
+                            className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline decoration-indigo-300 underline-offset-2 transition-colors flex items-center gap-1"
+                        >
+                           <RiBookOpenLine size={12} />
+                           {prompt.topic}
+                        </button>
+                    </>
+                 )}
                  <span>•</span>
                  {prompt.author && (
                      <>
@@ -347,6 +361,16 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 {prompt.category}
                             </span>
                             
+                            {prompt.topic && (
+                                <button
+                                    onClick={() => onTopicClick && onTopicClick(prompt.topic!)}
+                                    className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/30 hover:opacity-80 transition-opacity flex items-center gap-1"
+                                >
+                                     <RiBookOpenLine size={12} />
+                                     {prompt.topic}
+                                </button>
+                            )}
+
                             {renderStatusBadge(prompt.status)}
 
                             <span className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">

@@ -967,6 +967,7 @@ const App: React.FC = () => {
                     onLogin={() => setIsLoginModalOpen(true)}
                     onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
                     onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
+                    onTopicClick={(t) => { setActiveTopic(t); setView('topic-detail'); setTopicScrollPos(0); }}
                 />
             )}
 

@@ -11,8 +11,14 @@ interface TopicDetailProps {
   initialScrollPos?: number;
 }
 
+interface MagazineItemProps {
+  prompt: PromptData;
+  index: number;
+  onViewDetail: (p: PromptData) => void;
+}
+
 // Magazine Item Component
-const MagazineItem = ({ prompt, index, onViewDetail }: { prompt: PromptData, index: number, onViewDetail: (p: PromptData) => void }) => {
+const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail }) => {
     const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
     const isEven = index % 2 === 0;
     const [copied, setCopied] = useState(false);
