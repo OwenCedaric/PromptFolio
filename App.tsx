@@ -20,7 +20,9 @@ import {
     RiLayoutGridLine,
     RiListCheck2,
     RiArrowUpDownLine,
-    RiUser3Line
+    RiUser3Line,
+    RiDownloadLine,
+    RiFileTextLine
 } from '@remixicon/react';
 
 // Internal Confirmation Modal Component
@@ -60,6 +62,118 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, title, message, onC
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+// Internal Export Modal Component
+interface ExportModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onExport: (scope: 'all' | 'author' | 'category' | 'topic' | 'tag', value: string) => void;
+  authors: string[];
+  topics: string[];
+  tags: string[];
+  categories: string[];
+}
+
+const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport, authors, topics, tags, categories }) => {
+    const [scope, setScope] = useState<'all' | 'author' | 'category' | 'topic' | 'tag'>('all');
+    const [selection, setSelection] = useState('');
+    
+    // Reset selection when scope changes
+    useEffect(() => { setSelection(''); }, [scope]);
+
+    if (!isOpen) return null;
+
+    const renderSelect = (options: string[], placeholder: string) => (
+        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+            <select 
+                value={selection}
+                onChange={(e) => setSelection(e.target.value)}
+                className="w-full px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-shadow appearance-none text-zinc-900 dark:text-zinc-100"
+            >
+                <option value="">{placeholder}</option>
+                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+        </div>
+    );
+
+    const scopeOptions = [
+        { id: 'all', label: 'All Prompts' },
+        { id: 'category', label: 'By Category' },
+        { id: 'topic', label: 'By Topic' },
+        { id: 'tag', label: 'By Tag' },
+        { id: 'author', label: 'By Author' },
+    ] as const;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden ring-1 ring-zinc-200 dark:ring-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                 <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <RiDownloadLine size={20} /> Export Backup
+                    </h3>
+                    <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                        <RiCloseLine size={20}/>
+                    </button>
+                 </div>
+                 
+                 <div className="p-6 overflow-y-auto">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-3 block">Export Scope</label>
+                    <div className="grid grid-cols-2 gap-2 mb-6">
+                        {scopeOptions.map((opt) => (
+                            <button
+                                key={opt.id}
+                                onClick={() => setScope(opt.id)}
+                                className={`px-3 py-2.5 text-sm font-medium rounded-lg border transition-all ${
+                                    scope === opt.id
+                                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-sm'
+                                    : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+                                }`}
+                            >
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {scope !== 'all' && (
+                        <div className="mb-6 min-h-[70px]">
+                             <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 block">
+                                Select {scope.charAt(0).toUpperCase() + scope.slice(1)}
+                             </label>
+                             {scope === 'author' && renderSelect(authors, "Select an Author...")}
+                             {scope === 'category' && renderSelect(categories, "Select a Category...")}
+                             {scope === 'topic' && renderSelect(topics, "Select a Topic...")}
+                             {scope === 'tag' && renderSelect(tags, "Select a Tag...")}
+                        </div>
+                    )}
+
+                    <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-100 dark:border-zinc-800 flex gap-3">
+                        <div className="p-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md h-fit">
+                            <RiFileTextLine size={18} className="text-zinc-500 dark:text-zinc-400" />
+                        </div>
+                        <div>
+                            <h4 className="text-xs font-bold text-zinc-900 dark:text-white mb-1">Markdown Format (.md)</h4>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                Generates a portable document containing Titles and the latest Version content of your selected prompts.
+                            </p>
+                        </div>
+                    </div>
+                 </div>
+
+                 <div className="p-5 border-t border-zinc-100 dark:border-zinc-800 flex gap-3 bg-zinc-50/50 dark:bg-zinc-900/50">
+                     <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                     <button 
+                        onClick={() => onExport(scope, selection)}
+                        disabled={scope !== 'all' && !selection}
+                        className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center justify-center gap-2"
+                     >
+                        <RiDownloadLine size={16} />
+                        Download
+                     </button>
+                 </div>
             </div>
         </div>
     );
@@ -206,6 +320,7 @@ const App: React.FC = () => {
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // --- Theme State ---
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -630,14 +745,49 @@ const App: React.FC = () => {
       handleSavePrompt(updated);
   };
 
-  const handleExport = () => {
-      const blob = new Blob([JSON.stringify(prompts, null, 2)], { type: 'application/json' });
+  const performExport = (scope: 'all' | 'author' | 'category' | 'topic' | 'tag', value: string) => {
+      // 1. Filter Prompts
+      let filtered = prompts;
+      let filenamePart = 'all';
+
+      if (scope === 'author') {
+          filtered = prompts.filter(p => p.author === value);
+          filenamePart = `author-${value.replace(/\s+/g, '_')}`;
+      } else if (scope === 'category') {
+          filtered = prompts.filter(p => p.category === value);
+          filenamePart = `category-${value.replace(/\s+/g, '_')}`;
+      } else if (scope === 'topic') {
+          filtered = prompts.filter(p => p.topic === value);
+          filenamePart = `topic-${value.replace(/\s+/g, '_')}`;
+      } else if (scope === 'tag') {
+          filtered = prompts.filter(p => p.tags.includes(value));
+          filenamePart = `tag-${value.replace(/\s+/g, '_')}`;
+      }
+
+      if (filtered.length === 0) {
+          alert("No prompts found matching your criteria.");
+          return;
+      }
+
+      // 2. Generate Markdown
+      const markdownContent = filtered.map(p => {
+          // Get content of current version or fallback to last
+          const version = p.versions.find(v => v.id === p.currentVersionId) || p.versions[p.versions.length - 1];
+          const content = version?.content || '(No Content)';
+          
+          return `# ${p.title}\n\n${content}`;
+      }).join('\n\n---\n\n');
+
+      // 3. Download
+      const blob = new Blob([markdownContent], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `promptfolio_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `promptfolio_export_${filenamePart}_${new Date().toISOString().slice(0,10)}.md`;
       a.click();
       URL.revokeObjectURL(url);
+      
+      setIsExportModalOpen(false);
   };
 
   // --- Filtering & Sorting ---
@@ -699,6 +849,16 @@ const App: React.FC = () => {
             onConfirm={confirmState.action}
         />
 
+        <ExportModal 
+            isOpen={isExportModalOpen}
+            onClose={() => setIsExportModalOpen(false)}
+            onExport={performExport}
+            authors={allAuthors}
+            tags={allTags}
+            topics={allTopics.map(t => t.name)}
+            categories={Object.values(Category)}
+        />
+
         {/* Login Modal */}
         {isLoginModalOpen && createPortal(
              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
@@ -746,7 +906,7 @@ const App: React.FC = () => {
             onToggleTheme={toggleTheme}
             isCollapsed={isSidebarCollapsed}
             toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            onExport={handleExport}
+            onExport={() => setIsExportModalOpen(true)}
             onLogoClick={handleResetHome}
             currentView={view}
             onNavigate={(v) => { setView(v); setSidebarOpen(false); }}
