@@ -147,6 +147,10 @@ const App: React.FC = () => {
     return 'library';
   }); 
 
+  // Navigation History tracking
+  const [lastView, setLastView] = useState<string | null>(null);
+  const [lastActiveTopic, setLastActiveTopic] = useState<string | null>(null);
+
   const [prompts, setPrompts] = useState<PromptData[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [activePrompt, setActivePrompt] = useState<PromptData | null>(null);
@@ -269,6 +273,8 @@ const App: React.FC = () => {
       setActiveTopic(null);
       setTopicScrollPos(0);
       setSidebarOpen(false);
+      setLastView(null);
+      setLastActiveTopic(null);
   };
 
   // --- Data Fetching ---
@@ -967,14 +973,26 @@ const App: React.FC = () => {
                     onLogin={() => setIsLoginModalOpen(true)}
                     onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
                     onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
-                    onTopicClick={(t) => { setActiveTopic(t); setView('topic-detail'); setTopicScrollPos(0); }}
+                    onTopicClick={(t) => { 
+                        setLastView('detail');
+                        setLastActiveTopic(activeTopic);
+                        setActiveTopic(t); 
+                        setView('topic-detail'); 
+                        setTopicScrollPos(0); 
+                    }}
                 />
             )}
 
             {view === 'topics' && (
                 <TopicList 
                     topics={allTopics}
-                    onSelectTopic={(t) => { setActiveTopic(t); setView('topic-detail'); setTopicScrollPos(0); }}
+                    onSelectTopic={(t) => { 
+                        setLastView('topics');
+                        setLastActiveTopic(activeTopic);
+                        setActiveTopic(t); 
+                        setView('topic-detail'); 
+                        setTopicScrollPos(0); 
+                    }}
                     onOpenSidebar={() => setSidebarOpen(true)}
                 />
             )}
@@ -983,7 +1001,18 @@ const App: React.FC = () => {
                 <TopicDetail 
                     topic={activeTopic}
                     prompts={activeTopicPrompts}
-                    onBack={() => { setView('topics'); setActiveTopic(null); setTopicScrollPos(0); }}
+                    onBack={() => { 
+                        if (lastView === 'detail') {
+                            setView('detail');
+                            setActiveTopic(lastActiveTopic);
+                        } else {
+                            setView('topics'); 
+                            setActiveTopic(null); 
+                        }
+                        setLastView(null);
+                        setLastActiveTopic(null);
+                        setTopicScrollPos(0); 
+                    }}
                     onViewDetail={(p, scrollPos) => { 
                         setTopicScrollPos(scrollPos);
                         setActivePrompt(p); 

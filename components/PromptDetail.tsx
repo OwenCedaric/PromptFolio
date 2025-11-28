@@ -283,7 +283,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         <span>•</span>
                         <button
                             onClick={() => onTopicClick && onTopicClick(prompt.topic!)}
-                            className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline decoration-indigo-300 underline-offset-2 transition-colors flex items-center gap-1"
+                            className="font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:underline decoration-zinc-300 underline-offset-2 transition-colors flex items-center gap-1"
                         >
                            <RiBookOpenLine size={12} />
                            {prompt.topic}
@@ -364,7 +364,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             {prompt.topic && (
                                 <button
                                     onClick={() => onTopicClick && onTopicClick(prompt.topic!)}
-                                    className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/30 hover:opacity-80 transition-opacity flex items-center gap-1"
+                                    className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 hover:opacity-80 transition-opacity flex items-center gap-1"
                                 >
                                      <RiBookOpenLine size={12} />
                                      {prompt.topic}
@@ -471,7 +471,22 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <RiGlobalLine size={14} /> Metadata & Rights
                         </h3>
-                        <div className="grid grid-cols-2 lg:grid-cols-[auto_auto_1fr] gap-y-6 gap-x-8 items-start">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8 items-start">
+                             {/* Topic */}
+                            {prompt.topic && (
+                                <div className="flex flex-col gap-1.5">
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
+                                        <RiBookOpenLine size={12}/> Topic
+                                    </span>
+                                    <button 
+                                        onClick={() => onTopicClick && onTopicClick(prompt.topic!)}
+                                        className="text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-400 hover:underline decoration-zinc-300 underline-offset-2 transition-colors text-left"
+                                    >
+                                        {prompt.topic}
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Status */}
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
@@ -493,7 +508,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                             </div>
 
                             {/* License & Copyright - Full Width on last row */}
-                            <div className="col-span-2 flex flex-col gap-1.5">
+                            <div className="col-span-2 lg:col-span-3 flex flex-col gap-1.5">
                                  <span className="text-xs text-zinc-500 dark:text-zinc-500 uppercase font-semibold flex items-center gap-1.5">
                                     {prompt.copyright && prompt.copyright !== Copyright.NONE ? <RiShieldCheckLine size={12} /> : <RiCopyrightLine size={12} />}
                                     License

@@ -646,7 +646,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
                          <button 
                             onClick={() => handleAI('optimize')} 
                             disabled={isProcessing || !content}
-                            className="flex items-center gap-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-3 py-1.5 rounded-lg transition-colors"
+                            className="flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 px-3 py-1.5 rounded-lg transition-colors"
                         >
                             {activeAiTask === 'optimize' ? <RiLoader4Line className="animate-spin" size={14} /> : <RiMagicLine size={14} />}
                             AI Refine
