@@ -403,6 +403,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 alt={`${prompt.title} Case Example`} 
                                 className="w-full h-auto block" 
                                 loading="lazy"
+                                decoding="async"
                             />
                         </div>
                     )}
@@ -426,7 +427,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     components={{
                                         img: ({node, ...props}) => (
                                             <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4 shadow-sm">
-                                                <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} />
+                                                <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} loading="lazy" decoding="async" />
                                             </div>
                                         ),
                                         a: ({node, ...props}) => (

@@ -84,6 +84,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
                         loading="lazy"
+                        decoding="async"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
                     {/* Subtle inner shadow for depth */}
@@ -158,6 +159,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading="lazy"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
                 {/* List View Gradient Overlay for better integration */}

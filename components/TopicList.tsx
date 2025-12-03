@@ -110,6 +110,8 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
                                                 src={topic.previewImage} 
                                                 alt={topic.name} 
                                                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105"
+                                                loading="lazy"
+                                                decoding="async"
                                             />
                                         ) : (
                                             <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900 opacity-50"></div>

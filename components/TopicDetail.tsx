@@ -85,6 +85,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                                 // Mobile: Width full, Height auto. Desktop: Max height constrained, Width auto (preserve aspect ratio)
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
+                                decoding="async"
                             />
                         </div>
                     ) : (
