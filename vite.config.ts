@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
         threshold: 10240,
         algorithm: 'gzip',
         ext: '.gz',
+        deleteOriginFile: false,
       })
     ],
     build: {
