@@ -796,10 +796,22 @@ const App: React.FC = () => {
       let result = prompts.filter(p => {
           const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory || (selectedCategory === 'Favorites' && p.isFavorite);
           
-          const matchesSearch = searchQuery === '' || 
-              p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+          // Enhanced Search Logic
+          const matchesSearch = searchQuery === '' || (() => {
+              const query = searchQuery.toLowerCase();
+              return (
+                  p.title.toLowerCase().includes(query) ||
+                  (p.description && p.description.toLowerCase().includes(query)) ||
+                  p.tags.some(t => t.toLowerCase().includes(query)) ||
+                  (p.author && p.author.toLowerCase().includes(query)) ||
+                  (p.topic && p.topic.toLowerCase().includes(query)) ||
+                  (p.category && p.category.toLowerCase().includes(query)) ||
+                  p.versions.some(v => 
+                      (v.content && v.content.toLowerCase().includes(query)) || 
+                      (v.note && v.note.toLowerCase().includes(query))
+                  )
+              );
+          })();
               
           const matchesTag = selectedTag === null || p.tags.includes(selectedTag);
 
