@@ -33,32 +33,14 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
     };
 
     // Advanced Asymmetric Border Radius Logic (4-step cycle)
-    // Ensures the "flat" or "connected" side always faces the content text
     const getShapeClass = (idx: number) => {
         const mod = idx % 4;
         switch (mod) {
-            case 0: 
-                // Cycle 1 (Even, Image Left): Diagonal A
-                // Rounded: Top-Left (Outer), Bottom-Right (Inner-Bottom). 
-                // Flat: Top-Right (Inner-Top) facing content header.
-                return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
-            case 1:
-                // Cycle 2 (Odd, Image Right): Diagonal B
-                // Rounded: Top-Right (Outer), Bottom-Left (Inner-Bottom).
-                // Flat: Top-Left (Inner-Top) facing content header.
-                return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
-            case 2:
-                // Cycle 3 (Even, Image Left): Left Side Rounded (C-shape)
-                // Rounded: Left side (Outer).
-                // Flat: Right side (Inner) facing content.
-                return 'rounded-l-[4rem] rounded-r-none';
-            case 3:
-                // Cycle 4 (Odd, Image Right): Right Side Rounded (D-shape)
-                // Rounded: Right side (Outer).
-                // Flat: Left side (Inner) facing content.
-                return 'rounded-r-[4rem] rounded-l-none';
-            default:
-                return 'rounded-none';
+            case 0: return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
+            case 1: return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
+            case 2: return 'rounded-l-[4rem] rounded-r-none';
+            case 3: return 'rounded-r-[4rem] rounded-l-none';
+            default: return 'rounded-none';
         }
     };
 
@@ -72,17 +54,14 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                 relative w-full md:min-h-full flex items-center justify-center p-6 md:p-12
                 ${isEven ? 'md:w-[55%] md:order-1' : 'md:w-[60%] md:order-2'}
             `}>
-                 {/* Visual decoration: background line */}
                  <div className={`hidden md:block absolute top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-800 ${isEven ? 'right-0' : 'left-0'}`}></div>
 
-                 {/* Image Container - Adaptive Size with Asymmetric Shape */}
                  <div className="relative z-10 w-full flex justify-center">
                     {prompt.imageUrl ? (
                         <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.15)] ${shapeClass}`}>
                             <img 
                                 src={prompt.imageUrl} 
                                 alt={prompt.title} 
-                                // Mobile: Width full, Height auto. Desktop: Max height constrained, Width auto (preserve aspect ratio)
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
                                 decoding="async"
@@ -95,7 +74,6 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                     )}
                  </div>
 
-                {/* Index / Number Watermark - Positioned creatively */}
                 <div className={`
                     absolute text-[6rem] md:text-[12rem] leading-none font-serif font-black text-transparent stroke-text opacity-10 md:opacity-10 select-none pointer-events-none z-0
                     ${isEven ? '-left-2 md:-left-4 bottom-0' : '-right-2 md:-right-4 top-0'}
@@ -110,7 +88,6 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                 ${isEven ? 'md:w-[45%] md:order-2' : 'md:w-[40%] md:order-1'}
             `}>
                 <div className="flex flex-col gap-6 md:gap-10 max-w-lg mx-auto md:mx-0">
-                    
                     <div>
                         <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2 block">
                             {prompt.category}
@@ -126,7 +103,6 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                         {currentVersion?.content}
                     </div>
 
-                    {/* Action Bar: Copy (Utility) Left, Explore (Nav) Right -> */}
                     <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between gap-4">
                          <button 
                             onClick={handleCopy}
@@ -160,13 +136,12 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onViewDetail, isAuthenticated, initialScrollPos = 0 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Determine Cover Image: Use the last prompt's image to create a "bookend" feel, or fallback to first found.
-    // The prompt requested "intro the last picture", which implies the last one in the list.
+    // Get Cover Image (Last available)
     const coverImage = useMemo(() => {
         return [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
     }, [prompts]);
 
-    // Restore scroll position on mount
+    // Restore scroll position
     useLayoutEffect(() => {
         if (containerRef.current && initialScrollPos > 0) {
             containerRef.current.scrollTop = initialScrollPos;
@@ -174,7 +149,6 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     }, [initialScrollPos]);
 
     const handleViewDetail = (prompt: PromptData) => {
-        // Capture current scroll position before navigating away
         const currentPos = containerRef.current?.scrollTop || 0;
         onViewDetail(prompt, currentPos);
     };
@@ -182,7 +156,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     return (
         <div className="fixed inset-0 z-50 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden font-sans">
             
-            {/* Header / Navigation - Minimal */}
+            {/* Header / Navigation */}
             <div className="absolute top-0 left-0 right-0 z-50 p-6 md:p-10 flex justify-between items-start pointer-events-none mix-blend-difference text-white dark:text-zinc-200">
                 <button 
                     onClick={onBack}
@@ -195,56 +169,76 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 </button>
             </div>
 
-            {/* Scrollable Feed - No Snapping for better flow */}
             <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 
-                {/* Intro / Title Card - Cinematic Cover Design */}
+                {/* 
+                    HERO SECTION: Atmospheric Blur + Floating Poster
+                    This layout solves aspect ratio issues by using the blurry background for filling space
+                    and a "Poster" card for the actual image.
+                */}
                 <div className={`
-                    w-full flex flex-col items-center justify-center relative pb-10 md:pb-20 overflow-hidden transition-all duration-700
-                    ${coverImage ? 'min-h-[70vh] md:min-h-[85vh] bg-zinc-900' : 'min-h-[50vh] md:min-h-[60vh] bg-zinc-50 dark:bg-zinc-950'}
+                    w-full relative flex flex-col items-center justify-center overflow-hidden transition-all duration-700
+                    ${coverImage ? 'min-h-[85vh] bg-zinc-900 text-white' : 'min-h-[50vh] bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white'}
                 `}>
-                     {/* Dynamic Background Cover */}
+                     {/* 1. Atmospheric Background Layer */}
                      {coverImage && (
-                        <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                        <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
+                            {/* The blur scales up to remove edges */}
                             <img 
                                 src={coverImage} 
-                                alt="Collection Cover" 
-                                className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
+                                alt="" 
+                                className="w-full h-full object-cover blur-[80px] scale-125 opacity-50 dark:opacity-40"
                             />
-                            {/* Cinematic Overlays */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>
-                            <div className="absolute inset-0 bg-black/10 mix-blend-multiply"></div>
+                            {/* Gradient to blend smoothly into the content list */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-white dark:to-zinc-950"></div>
                         </div>
                      )}
 
-                     <div className="relative z-10 text-center px-4 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+                     {/* 2. Content Layer */}
+                     <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 flex flex-col items-center">
+                        
                         <span className={`
-                            inline-block py-1 px-3 border rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 md:mb-8 backdrop-blur-sm transition-colors
-                            ${coverImage 
-                                ? 'border-white/30 text-white/90 bg-white/10' 
-                                : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}
+                            inline-block py-1 px-3 border rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-8 backdrop-blur-md
+                            ${coverImage ? 'border-white/30 text-white bg-white/10' : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}
                         `}>
                             Curated Collection
                         </span>
-                        
+
                         <h1 className={`
-                            text-6xl md:text-8xl lg:text-[9rem] font-serif font-medium tracking-tight mb-6 md:mb-8 leading-[0.9] transition-colors
-                            ${coverImage ? 'text-white drop-shadow-2xl' : 'text-zinc-900 dark:text-white'}
+                            text-5xl md:text-7xl lg:text-9xl font-serif font-medium tracking-tight mb-12 text-center leading-[0.9] drop-shadow-sm
                         `}>
                             {topic}
                         </h1>
+
+                        {/* 3. The Floating Poster (The Image) */}
+                        {coverImage && (
+                            <div className="relative group perspective-1000 mb-12">
+                                <div className="relative z-10 rounded-lg shadow-2xl overflow-hidden ring-1 ring-white/20 dark:ring-white/10 rotate-1 group-hover:rotate-0 transition-transform duration-700 ease-out bg-zinc-800">
+                                    {/* object-contain ensures the FULL image is seen, regardless of ratio (long, tall, square) */}
+                                    <img 
+                                        src={coverImage} 
+                                        alt="Cover"
+                                        className="w-auto h-auto max-w-[90vw] md:max-w-2xl max-h-[50vh] object-contain block"
+                                    />
+                                    {/* Glass sheen */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
+                                </div>
+                                {/* Decorative shadow behind */}
+                                <div className="absolute inset-4 bg-black/50 blur-xl -z-10 translate-y-4 rounded-full opacity-60"></div>
+                            </div>
+                        )}
                         
                         <p className={`
-                            text-base md:text-xl max-w-lg mx-auto leading-relaxed font-light transition-colors
-                            ${coverImage ? 'text-zinc-200 drop-shadow-md' : 'text-zinc-500 dark:text-zinc-400'}
+                            text-base md:text-xl max-w-lg mx-auto leading-relaxed font-light text-center
+                            ${coverImage ? 'text-white/80 drop-shadow-md' : 'text-zinc-500 dark:text-zinc-400'}
                         `}>
                             A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
                         </p>
                      </div>
                 </div>
 
-                {/* Prompts List with Breathing Room */}
-                <div className="flex flex-col gap-24 md:gap-40 pb-32">
+                {/* Prompts List */}
+                <div className="flex flex-col gap-24 md:gap-40 pb-32 pt-24 bg-white dark:bg-zinc-950 relative z-20">
                     {prompts.map((p, idx) => (
                         <MagazineItem 
                             key={p.id}
@@ -255,30 +249,23 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                     ))}
                 </div>
                 
-                {/* Footer / End Mark - Asymmetric Design */}
-                <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden">
+                {/* Footer */}
+                <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden bg-white dark:bg-zinc-950 z-20">
                     <div className="w-full border-t border-zinc-200 dark:border-zinc-800 mb-12"></div>
-                    
                     <div className="flex flex-col md:flex-row items-end md:items-start justify-between gap-10">
-                        
-                        {/* Left: Huge Geometric Watermark */}
                         <div className="hidden md:block">
                             <span className="font-serif text-9xl text-zinc-100 dark:text-zinc-900 leading-none select-none">
                                 Fin.
                             </span>
                         </div>
-
-                        {/* Right: Functional End */}
                         <div className="flex flex-col items-end text-right">
                              <div className="flex items-center gap-4 mb-4">
                                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Collection Complete</span>
                                  <div className="w-12 h-px bg-zinc-400"></div>
                              </div>
-                             
                              <p className="text-lg md:text-xl font-serif text-zinc-900 dark:text-zinc-100 max-w-md mb-8 leading-snug">
                                 You have viewed all {prompts.length} prompts in <span className="italic">{topic}</span>.
                              </p>
-
                              <button 
                                 onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
                                 className="group flex items-center gap-3 px-6 py-3 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
@@ -291,11 +278,13 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 </div>
 
             </div>
-            
             <style>{`
                 .stroke-text {
                     -webkit-text-stroke: 1px currentColor;
                     color: transparent;
+                }
+                .perspective-1000 {
+                    perspective: 1000px;
                 }
             `}</style>
         </div>
