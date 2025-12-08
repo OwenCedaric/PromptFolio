@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect, useState } from 'react';
+import React, { useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { PromptData } from '../types';
 import { RiArrowLeftLine, RiArrowRightLine, RiEyeLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
 
@@ -160,6 +160,12 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onViewDetail, isAuthenticated, initialScrollPos = 0 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
+    // Determine Cover Image: Use the last prompt's image to create a "bookend" feel, or fallback to first found.
+    // The prompt requested "intro the last picture", which implies the last one in the list.
+    const coverImage = useMemo(() => {
+        return [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
+    }, [prompts]);
+
     // Restore scroll position on mount
     useLayoutEffect(() => {
         if (containerRef.current && initialScrollPos > 0) {
@@ -192,16 +198,46 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
             {/* Scrollable Feed - No Snapping for better flow */}
             <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 
-                {/* Intro / Title Card */}
-                <div className="w-full min-h-[50vh] md:min-h-[60vh] flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 relative pb-10 md:pb-20">
-                     <div className="text-center px-4 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
-                        <span className="inline-block py-1 px-3 border border-zinc-300 dark:border-zinc-700 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-8">
+                {/* Intro / Title Card - Cinematic Cover Design */}
+                <div className={`
+                    w-full flex flex-col items-center justify-center relative pb-10 md:pb-20 overflow-hidden transition-all duration-700
+                    ${coverImage ? 'min-h-[70vh] md:min-h-[85vh] bg-zinc-900' : 'min-h-[50vh] md:min-h-[60vh] bg-zinc-50 dark:bg-zinc-950'}
+                `}>
+                     {/* Dynamic Background Cover */}
+                     {coverImage && (
+                        <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                            <img 
+                                src={coverImage} 
+                                alt="Collection Cover" 
+                                className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
+                            />
+                            {/* Cinematic Overlays */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>
+                            <div className="absolute inset-0 bg-black/10 mix-blend-multiply"></div>
+                        </div>
+                     )}
+
+                     <div className="relative z-10 text-center px-4 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <span className={`
+                            inline-block py-1 px-3 border rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 md:mb-8 backdrop-blur-sm transition-colors
+                            ${coverImage 
+                                ? 'border-white/30 text-white/90 bg-white/10' 
+                                : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}
+                        `}>
                             Curated Collection
                         </span>
-                        <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-medium text-zinc-900 dark:text-white tracking-tight mb-8 leading-none">
+                        
+                        <h1 className={`
+                            text-6xl md:text-8xl lg:text-[9rem] font-serif font-medium tracking-tight mb-6 md:mb-8 leading-[0.9] transition-colors
+                            ${coverImage ? 'text-white drop-shadow-2xl' : 'text-zinc-900 dark:text-white'}
+                        `}>
                             {topic}
                         </h1>
-                        <p className="text-base md:text-lg text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed">
+                        
+                        <p className={`
+                            text-base md:text-xl max-w-lg mx-auto leading-relaxed font-light transition-colors
+                            ${coverImage ? 'text-zinc-200 drop-shadow-md' : 'text-zinc-500 dark:text-zinc-400'}
+                        `}>
                             A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
                         </p>
                      </div>
@@ -219,11 +255,39 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                     ))}
                 </div>
                 
-                {/* Footer / End Mark */}
-                <div className="h-40 flex items-center justify-center text-zinc-300 dark:text-zinc-800">
-                    <div className="w-2 h-2 rounded-full bg-current mx-1"></div>
-                    <div className="w-2 h-2 rounded-full bg-current mx-1"></div>
-                    <div className="w-2 h-2 rounded-full bg-current mx-1"></div>
+                {/* Footer / End Mark - Asymmetric Design */}
+                <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden">
+                    <div className="w-full border-t border-zinc-200 dark:border-zinc-800 mb-12"></div>
+                    
+                    <div className="flex flex-col md:flex-row items-end md:items-start justify-between gap-10">
+                        
+                        {/* Left: Huge Geometric Watermark */}
+                        <div className="hidden md:block">
+                            <span className="font-serif text-9xl text-zinc-100 dark:text-zinc-900 leading-none select-none">
+                                Fin.
+                            </span>
+                        </div>
+
+                        {/* Right: Functional End */}
+                        <div className="flex flex-col items-end text-right">
+                             <div className="flex items-center gap-4 mb-4">
+                                 <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Collection Complete</span>
+                                 <div className="w-12 h-px bg-zinc-400"></div>
+                             </div>
+                             
+                             <p className="text-lg md:text-xl font-serif text-zinc-900 dark:text-zinc-100 max-w-md mb-8 leading-snug">
+                                You have viewed all {prompts.length} prompts in <span className="italic">{topic}</span>.
+                             </p>
+
+                             <button 
+                                onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+                                className="group flex items-center gap-3 px-6 py-3 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
+                            >
+                                Back to Top
+                                <RiArrowRightLine size={14} className="-rotate-90 group-hover:-translate-y-1 transition-transform" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
             </div>
