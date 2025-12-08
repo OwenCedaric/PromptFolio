@@ -32,15 +32,33 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
         }
     };
 
-    // Advanced Asymmetric Border Radius Logic
+    // Advanced Asymmetric Border Radius Logic (4-step cycle)
+    // Ensures the "flat" or "connected" side always faces the content text
     const getShapeClass = (idx: number) => {
         const mod = idx % 4;
         switch (mod) {
-            case 0: return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
-            case 1: return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
-            case 2: return 'rounded-l-[4rem] rounded-r-none';
-            case 3: return 'rounded-r-[4rem] rounded-l-none';
-            default: return 'rounded-none';
+            case 0: 
+                // Cycle 1 (Even, Image Left): Diagonal A
+                // Rounded: Top-Left (Outer), Bottom-Right (Inner-Bottom). 
+                // Flat: Top-Right (Inner-Top) facing content header.
+                return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
+            case 1:
+                // Cycle 2 (Odd, Image Right): Diagonal B
+                // Rounded: Top-Right (Outer), Bottom-Left (Inner-Bottom).
+                // Flat: Top-Left (Inner-Top) facing content header.
+                return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
+            case 2:
+                // Cycle 3 (Even, Image Left): Left Side Rounded (C-shape)
+                // Rounded: Left side (Outer).
+                // Flat: Right side (Inner) facing content.
+                return 'rounded-l-[4rem] rounded-r-none';
+            case 3:
+                // Cycle 4 (Odd, Image Right): Right Side Rounded (D-shape)
+                // Rounded: Right side (Outer).
+                // Flat: Left side (Inner) facing content.
+                return 'rounded-r-[4rem] rounded-l-none';
+            default:
+                return 'rounded-none';
         }
     };
 
@@ -54,14 +72,17 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                 relative w-full md:min-h-full flex items-center justify-center p-6 md:p-12
                 ${isEven ? 'md:w-[55%] md:order-1' : 'md:w-[60%] md:order-2'}
             `}>
+                 {/* Visual decoration: background line */}
                  <div className={`hidden md:block absolute top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-800 ${isEven ? 'right-0' : 'left-0'}`}></div>
 
+                 {/* Image Container - Adaptive Size with Asymmetric Shape */}
                  <div className="relative z-10 w-full flex justify-center">
                     {prompt.imageUrl ? (
                         <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.15)] ${shapeClass}`}>
                             <img 
                                 src={prompt.imageUrl} 
                                 alt={prompt.title} 
+                                // Mobile: Width full, Height auto. Desktop: Max height constrained, Width auto (preserve aspect ratio)
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
                                 decoding="async"
@@ -74,6 +95,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                     )}
                  </div>
 
+                {/* Index / Number Watermark - Positioned creatively */}
                 <div className={`
                     absolute text-[6rem] md:text-[12rem] leading-none font-serif font-black text-transparent stroke-text opacity-10 md:opacity-10 select-none pointer-events-none z-0
                     ${isEven ? '-left-2 md:-left-4 bottom-0' : '-right-2 md:-right-4 top-0'}
@@ -88,6 +110,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                 ${isEven ? 'md:w-[45%] md:order-2' : 'md:w-[40%] md:order-1'}
             `}>
                 <div className="flex flex-col gap-6 md:gap-10 max-w-lg mx-auto md:mx-0">
+                    
                     <div>
                         <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2 block">
                             {prompt.category}
@@ -103,6 +126,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                         {currentVersion?.content}
                     </div>
 
+                    {/* Action Bar: Copy (Utility) Left, Explore (Nav) Right -> */}
                     <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between gap-4">
                          <button 
                             onClick={handleCopy}
@@ -136,11 +160,13 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onViewDetail, isAuthenticated, initialScrollPos = 0 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Get Cover Image (Last available)
+    // Determine Cover Image: Use the last prompt's image to create a "bookend" feel, or fallback to first found.
+    // The prompt requested "intro the last picture", which implies the last one in the list.
     const coverImage = useMemo(() => {
         return [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
     }, [prompts]);
 
+    // Restore scroll position on mount
     useLayoutEffect(() => {
         if (containerRef.current && initialScrollPos > 0) {
             containerRef.current.scrollTop = initialScrollPos;
@@ -148,6 +174,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     }, [initialScrollPos]);
 
     const handleViewDetail = (prompt: PromptData) => {
+        // Capture current scroll position before navigating away
         const currentPos = containerRef.current?.scrollTop || 0;
         onViewDetail(prompt, currentPos);
     };
@@ -155,7 +182,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     return (
         <div className="fixed inset-0 z-50 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden font-sans">
             
-            {/* Sticky Navigation Area (Transparent) */}
+            {/* Header / Navigation - Minimal */}
             <div className="absolute top-0 left-0 right-0 z-50 p-6 md:p-10 flex justify-between items-start pointer-events-none mix-blend-difference text-white dark:text-zinc-200">
                 <button 
                     onClick={onBack}
@@ -168,81 +195,56 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 </button>
             </div>
 
+            {/* Scrollable Feed - No Snapping for better flow */}
             <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 
-                {/* 
-                    HERO: Swiss Design / Editorial Split Cover
-                    Design:
-                    - Full viewport height
-                    - Right side: A large architectural container (Arch/Panel) that crops the image consistently
-                    - Left side: Heavy typography that layers slightly over the image
-                    - Texture: Noise overlay for print quality
-                */}
-                <div className="relative w-full min-h-[90vh] lg:h-dvh flex flex-col lg:flex-row bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
-                    
-                    {/* Texture Overlay (Grain) */}
-                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-20 mix-blend-overlay" 
-                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
-                    </div>
-
-                    {/* 1. Typography Column (Left) */}
-                    <div className="w-full lg:w-1/2 flex flex-col justify-end p-6 md:p-12 lg:p-20 relative z-10 order-2 lg:order-1 pb-20 lg:pb-24">
-                        <div className="animate-in slide-in-from-left-4 duration-700 fade-in">
-                            <span className="inline-block py-1 px-3 border border-zinc-900 dark:border-zinc-100 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 text-zinc-900 dark:text-zinc-100">
-                                Issue No. {prompts.length}
-                            </span>
-                            
-                            {/* Title with mix-blend-difference to ensure visibility if it overlaps */}
-                            <h1 className="text-6xl md:text-8xl lg:text-[7rem] xl:text-[9rem] font-serif font-medium leading-[0.85] tracking-tighter text-zinc-900 dark:text-zinc-100 mb-6 break-words lg:-mr-32 relative z-20">
-                                {topic}
-                            </h1>
-                            
-                            <p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 max-w-md leading-relaxed">
-                                A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
-                                Explore the nuances of prompt engineering.
-                            </p>
+                {/* Intro / Title Card - Cinematic Cover Design */}
+                <div className={`
+                    w-full flex flex-col items-center justify-center relative pb-10 md:pb-20 overflow-hidden transition-all duration-700
+                    ${coverImage ? 'min-h-[70vh] md:min-h-[85vh] bg-zinc-900' : 'min-h-[50vh] md:min-h-[60vh] bg-zinc-50 dark:bg-zinc-950'}
+                `}>
+                     {/* Dynamic Background Cover */}
+                     {coverImage && (
+                        <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                            <img 
+                                src={coverImage} 
+                                alt="Collection Cover" 
+                                className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
+                            />
+                            {/* Cinematic Overlays */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>
+                            <div className="absolute inset-0 bg-black/10 mix-blend-multiply"></div>
                         </div>
-                    </div>
+                     )}
 
-                    {/* 2. Visual Column (Right) - Architectural Crop */}
-                    <div className="w-full lg:w-1/2 h-[50vh] lg:h-full relative order-1 lg:order-2 p-4 lg:p-6 flex items-end justify-center lg:justify-end">
+                     <div className="relative z-10 text-center px-4 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <span className={`
+                            inline-block py-1 px-3 border rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 md:mb-8 backdrop-blur-sm transition-colors
+                            ${coverImage 
+                                ? 'border-white/30 text-white/90 bg-white/10' 
+                                : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}
+                        `}>
+                            Curated Collection
+                        </span>
                         
-                        {/* The Container - Arch Shape or Rounded Panel */}
-                        {/* This forces any image ratio into a consistent vertical design element */}
-                        <div className="relative w-full lg:w-[90%] h-full lg:h-[95%] bg-zinc-200 dark:bg-zinc-800 rounded-t-[4rem] lg:rounded-t-full rounded-b-[2rem] lg:rounded-b-none overflow-hidden shadow-2xl shadow-zinc-900/10 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/5">
-                            
-                            {coverImage ? (
-                                <>
-                                    <img 
-                                        src={coverImage} 
-                                        alt="Cover"
-                                        // object-cover ensures it fills the arch. object-center focuses on the middle.
-                                        className="w-full h-full object-cover object-center scale-105 hover:scale-100 transition-transform duration-[2s] ease-out"
-                                    />
-                                    {/* Cinematic Gradient Overlay inside the arch */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/40 via-transparent to-transparent mix-blend-multiply"></div>
-                                </>
-                            ) : (
-                                /* Fallback Geometric Pattern if no image */
-                                <div className="w-full h-full bg-zinc-900 flex items-center justify-center overflow-hidden relative">
-                                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-zinc-950"></div>
-                                    <span className="font-serif text-[20rem] text-zinc-800 leading-none select-none opacity-50 italic">
-                                        {topic.charAt(0)}
-                                    </span>
-                                </div>
-                            )}
-
-                            {/* Floating Metadata Tag inside the image */}
-                            <div className="absolute bottom-8 right-8 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hidden lg:block">
-                                Visual Collection
-                            </div>
-                        </div>
-
-                    </div>
+                        <h1 className={`
+                            text-6xl md:text-8xl lg:text-[9rem] font-serif font-medium tracking-tight mb-6 md:mb-8 leading-[0.9] transition-colors
+                            ${coverImage ? 'text-white drop-shadow-2xl' : 'text-zinc-900 dark:text-white'}
+                        `}>
+                            {topic}
+                        </h1>
+                        
+                        <p className={`
+                            text-base md:text-xl max-w-lg mx-auto leading-relaxed font-light transition-colors
+                            ${coverImage ? 'text-zinc-200 drop-shadow-md' : 'text-zinc-500 dark:text-zinc-400'}
+                        `}>
+                            A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
+                        </p>
+                     </div>
                 </div>
 
-                {/* Prompts List */}
-                <div className="flex flex-col gap-24 md:gap-40 pb-32 pt-24 bg-white dark:bg-zinc-950 relative z-10">
+                {/* Prompts List with Breathing Room */}
+                <div className="flex flex-col gap-24 md:gap-40 pb-32">
                     {prompts.map((p, idx) => (
                         <MagazineItem 
                             key={p.id}
@@ -253,23 +255,30 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                     ))}
                 </div>
                 
-                {/* Footer */}
-                <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden bg-white dark:bg-zinc-950 z-10">
+                {/* Footer / End Mark - Asymmetric Design */}
+                <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden">
                     <div className="w-full border-t border-zinc-200 dark:border-zinc-800 mb-12"></div>
+                    
                     <div className="flex flex-col md:flex-row items-end md:items-start justify-between gap-10">
+                        
+                        {/* Left: Huge Geometric Watermark */}
                         <div className="hidden md:block">
                             <span className="font-serif text-9xl text-zinc-100 dark:text-zinc-900 leading-none select-none">
                                 Fin.
                             </span>
                         </div>
+
+                        {/* Right: Functional End */}
                         <div className="flex flex-col items-end text-right">
                              <div className="flex items-center gap-4 mb-4">
                                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Collection Complete</span>
                                  <div className="w-12 h-px bg-zinc-400"></div>
                              </div>
+                             
                              <p className="text-lg md:text-xl font-serif text-zinc-900 dark:text-zinc-100 max-w-md mb-8 leading-snug">
                                 You have viewed all {prompts.length} prompts in <span className="italic">{topic}</span>.
                              </p>
+
                              <button 
                                 onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
                                 className="group flex items-center gap-3 px-6 py-3 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
@@ -282,6 +291,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 </div>
 
             </div>
+            
             <style>{`
                 .stroke-text {
                     -webkit-text-stroke: 1px currentColor;
