@@ -32,7 +32,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
         }
     };
 
-    // Advanced Asymmetric Border Radius Logic (4-step cycle)
+    // Advanced Asymmetric Border Radius Logic
     const getShapeClass = (idx: number) => {
         const mod = idx % 4;
         switch (mod) {
@@ -141,7 +141,6 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
         return [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
     }, [prompts]);
 
-    // Restore scroll position
     useLayoutEffect(() => {
         if (containerRef.current && initialScrollPos > 0) {
             containerRef.current.scrollTop = initialScrollPos;
@@ -156,7 +155,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     return (
         <div className="fixed inset-0 z-50 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden font-sans">
             
-            {/* Header / Navigation */}
+            {/* Sticky Navigation Area (Transparent) */}
             <div className="absolute top-0 left-0 right-0 z-50 p-6 md:p-10 flex justify-between items-start pointer-events-none mix-blend-difference text-white dark:text-zinc-200">
                 <button 
                     onClick={onBack}
@@ -172,73 +171,78 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
             <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 
                 {/* 
-                    HERO SECTION: Atmospheric Blur + Floating Poster
-                    This layout solves aspect ratio issues by using the blurry background for filling space
-                    and a "Poster" card for the actual image.
+                    HERO: Swiss Design / Editorial Split Cover
+                    Design:
+                    - Full viewport height
+                    - Right side: A large architectural container (Arch/Panel) that crops the image consistently
+                    - Left side: Heavy typography that layers slightly over the image
+                    - Texture: Noise overlay for print quality
                 */}
-                <div className={`
-                    w-full relative flex flex-col items-center justify-center overflow-hidden transition-all duration-700
-                    ${coverImage ? 'min-h-[85vh] bg-zinc-900 text-white' : 'min-h-[50vh] bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white'}
-                `}>
-                     {/* 1. Atmospheric Background Layer */}
-                     {coverImage && (
-                        <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
-                            {/* The blur scales up to remove edges */}
-                            <img 
-                                src={coverImage} 
-                                alt="" 
-                                className="w-full h-full object-cover blur-[80px] scale-125 opacity-50 dark:opacity-40"
-                            />
-                            {/* Gradient to blend smoothly into the content list */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-white dark:to-zinc-950"></div>
+                <div className="relative w-full min-h-[90vh] lg:h-dvh flex flex-col lg:flex-row bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
+                    
+                    {/* Texture Overlay (Grain) */}
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-20 mix-blend-overlay" 
+                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
+                    </div>
+
+                    {/* 1. Typography Column (Left) */}
+                    <div className="w-full lg:w-1/2 flex flex-col justify-end p-6 md:p-12 lg:p-20 relative z-10 order-2 lg:order-1 pb-20 lg:pb-24">
+                        <div className="animate-in slide-in-from-left-4 duration-700 fade-in">
+                            <span className="inline-block py-1 px-3 border border-zinc-900 dark:border-zinc-100 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 text-zinc-900 dark:text-zinc-100">
+                                Issue No. {prompts.length}
+                            </span>
+                            
+                            {/* Title with mix-blend-difference to ensure visibility if it overlaps */}
+                            <h1 className="text-6xl md:text-8xl lg:text-[7rem] xl:text-[9rem] font-serif font-medium leading-[0.85] tracking-tighter text-zinc-900 dark:text-zinc-100 mb-6 break-words lg:-mr-32 relative z-20">
+                                {topic}
+                            </h1>
+                            
+                            <p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 max-w-md leading-relaxed">
+                                A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
+                                Explore the nuances of prompt engineering.
+                            </p>
                         </div>
-                     )}
+                    </div>
 
-                     {/* 2. Content Layer */}
-                     <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 flex flex-col items-center">
+                    {/* 2. Visual Column (Right) - Architectural Crop */}
+                    <div className="w-full lg:w-1/2 h-[50vh] lg:h-full relative order-1 lg:order-2 p-4 lg:p-6 flex items-end justify-center lg:justify-end">
                         
-                        <span className={`
-                            inline-block py-1 px-3 border rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-8 backdrop-blur-md
-                            ${coverImage ? 'border-white/30 text-white bg-white/10' : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}
-                        `}>
-                            Curated Collection
-                        </span>
-
-                        <h1 className={`
-                            text-5xl md:text-7xl lg:text-9xl font-serif font-medium tracking-tight mb-12 text-center leading-[0.9] drop-shadow-sm
-                        `}>
-                            {topic}
-                        </h1>
-
-                        {/* 3. The Floating Poster (The Image) */}
-                        {coverImage && (
-                            <div className="relative group perspective-1000 mb-12">
-                                <div className="relative z-10 rounded-lg shadow-2xl overflow-hidden ring-1 ring-white/20 dark:ring-white/10 rotate-1 group-hover:rotate-0 transition-transform duration-700 ease-out bg-zinc-800">
-                                    {/* object-contain ensures the FULL image is seen, regardless of ratio (long, tall, square) */}
+                        {/* The Container - Arch Shape or Rounded Panel */}
+                        {/* This forces any image ratio into a consistent vertical design element */}
+                        <div className="relative w-full lg:w-[90%] h-full lg:h-[95%] bg-zinc-200 dark:bg-zinc-800 rounded-t-[4rem] lg:rounded-t-full rounded-b-[2rem] lg:rounded-b-none overflow-hidden shadow-2xl shadow-zinc-900/10 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/5">
+                            
+                            {coverImage ? (
+                                <>
                                     <img 
                                         src={coverImage} 
                                         alt="Cover"
-                                        className="w-auto h-auto max-w-[90vw] md:max-w-2xl max-h-[50vh] object-contain block"
+                                        // object-cover ensures it fills the arch. object-center focuses on the middle.
+                                        className="w-full h-full object-cover object-center scale-105 hover:scale-100 transition-transform duration-[2s] ease-out"
                                     />
-                                    {/* Glass sheen */}
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
+                                    {/* Cinematic Gradient Overlay inside the arch */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/40 via-transparent to-transparent mix-blend-multiply"></div>
+                                </>
+                            ) : (
+                                /* Fallback Geometric Pattern if no image */
+                                <div className="w-full h-full bg-zinc-900 flex items-center justify-center overflow-hidden relative">
+                                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-zinc-950"></div>
+                                    <span className="font-serif text-[20rem] text-zinc-800 leading-none select-none opacity-50 italic">
+                                        {topic.charAt(0)}
+                                    </span>
                                 </div>
-                                {/* Decorative shadow behind */}
-                                <div className="absolute inset-4 bg-black/50 blur-xl -z-10 translate-y-4 rounded-full opacity-60"></div>
+                            )}
+
+                            {/* Floating Metadata Tag inside the image */}
+                            <div className="absolute bottom-8 right-8 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hidden lg:block">
+                                Visual Collection
                             </div>
-                        )}
-                        
-                        <p className={`
-                            text-base md:text-xl max-w-lg mx-auto leading-relaxed font-light text-center
-                            ${coverImage ? 'text-white/80 drop-shadow-md' : 'text-zinc-500 dark:text-zinc-400'}
-                        `}>
-                            A curated collection of {prompts.length} high-quality prompt{prompts.length !== 1 ? 's' : ''}.
-                        </p>
-                     </div>
+                        </div>
+
+                    </div>
                 </div>
 
                 {/* Prompts List */}
-                <div className="flex flex-col gap-24 md:gap-40 pb-32 pt-24 bg-white dark:bg-zinc-950 relative z-20">
+                <div className="flex flex-col gap-24 md:gap-40 pb-32 pt-24 bg-white dark:bg-zinc-950 relative z-10">
                     {prompts.map((p, idx) => (
                         <MagazineItem 
                             key={p.id}
@@ -250,7 +254,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 </div>
                 
                 {/* Footer */}
-                <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden bg-white dark:bg-zinc-950 z-20">
+                <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden bg-white dark:bg-zinc-950 z-10">
                     <div className="w-full border-t border-zinc-200 dark:border-zinc-800 mb-12"></div>
                     <div className="flex flex-col md:flex-row items-end md:items-start justify-between gap-10">
                         <div className="hidden md:block">
@@ -282,9 +286,6 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 .stroke-text {
                     -webkit-text-stroke: 1px currentColor;
                     color: transparent;
-                }
-                .perspective-1000 {
-                    perspective: 1000px;
                 }
             `}</style>
         </div>
