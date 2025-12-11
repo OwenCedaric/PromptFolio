@@ -270,7 +270,13 @@ const App: React.FC = () => {
   const [activePrompt, setActivePrompt] = useState<PromptData | null>(null);
   
   // Filter & Search State
-  const [searchQuery, setSearchQuery] = useState('');
+  // Initialize Search Query from URL
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== 'undefined') {
+        return new URLSearchParams(window.location.search).get('search') || '';
+    }
+    return '';
+  });
   
   // Lazy initialize filters from URL to prevent race conditions causing redirects
   const [selectedCategory, setSelectedCategory] = useState<string>(() => {
@@ -529,6 +535,8 @@ const App: React.FC = () => {
           title = `${selectedCategory} Prompts | ${SITE_NAME}`;
       } else if (view === 'editor') {
           title = `Editor | ${SITE_NAME}`;
+      } else if (searchQuery) {
+          title = `Search: ${searchQuery} | ${SITE_NAME}`;
       } else if (currentPage > 1) {
           title = `${SITE_NAME} (Page ${currentPage})`;
       }
@@ -562,6 +570,7 @@ const App: React.FC = () => {
       params.delete('topic');
       params.delete('view');
       params.delete('page');
+      params.delete('search');
 
       if (view === 'detail' && activePrompt) {
           params.set('id', activePrompt.id);
@@ -582,6 +591,9 @@ const App: React.FC = () => {
           if (selectedAuthor) {
               params.set('author', selectedAuthor);
           }
+          if (searchQuery) {
+              params.set('search', searchQuery);
+          }
           if (currentPage > 1) {
               params.set('page', currentPage.toString());
           }
@@ -595,7 +607,7 @@ const App: React.FC = () => {
            window.history.pushState({}, '', newSearch || window.location.pathname);
       }
 
-  }, [view, activePrompt, activeTopic, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME, isLoading, currentPage]);
+  }, [view, activePrompt, activeTopic, selectedCategory, selectedTag, selectedAuthor, searchQuery, isAuthenticated, SITE_NAME, isLoading, currentPage]);
 
   // --- Handle Browser Back/Forward Buttons ---
   useEffect(() => {
@@ -608,6 +620,7 @@ const App: React.FC = () => {
           const tag = params.get('tag');
           const author = params.get('author');
           const page = params.get('page');
+          const search = params.get('search');
           
           // Restore Page Number
           if (page) setCurrentPage(parseInt(page));
@@ -626,7 +639,6 @@ const App: React.FC = () => {
           } else if (topic) {
               setActiveTopic(topic);
               setView('topic-detail');
-              // Note: Browser back won't restore exact scroll position automatically for our virtualized-like views without complex handling
           } else if (viewParam === 'topics') {
               setView('topics');
           } else {
@@ -641,6 +653,9 @@ const App: React.FC = () => {
 
               if (author) setSelectedAuthor(author);
               else setSelectedAuthor(null);
+
+              if (search) setSearchQuery(search);
+              else setSearchQuery('');
           }
       };
 
