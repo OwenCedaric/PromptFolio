@@ -408,7 +408,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                         </div>
                     )}
 
-                    {/* Description Content - LOCKED IF PRIVATE */}
+                    {/* Description Content - LOCKED IF PRIVATE, HIDDEN IF EMPTY */}
                     {isLocked ? (
                         <LockedPlaceholder 
                             title="Private Description" 
@@ -439,11 +439,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 </ReactMarkdown>
                             </div>
                         </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 text-sm italic border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl min-h-[200px]">
-                            No description provided.
-                        </div>
-                    )}
+                    ) : null}
 
                     {/* Tags Card */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
