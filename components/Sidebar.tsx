@@ -117,21 +117,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </button>
 
                 <button
-                    onClick={() => { onNavigate('library'); onSelectCategory('Favorites'); }}
-                    title={isCollapsed ? "Favorites" : undefined}
-                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
-                    currentView === 'library' && selectedCategory === 'Favorites'
-                        ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
-                    }`}
-                >
-                    <div className="flex items-center gap-3">
-                        <RiStarLine size={20} className={currentView === 'library' && selectedCategory === 'Favorites' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
-                        {!isCollapsed && <span>Favorites</span>}
-                    </div>
-                </button>
-
-                <button
                     onClick={() => onNavigate('topics')}
                     title={isCollapsed ? "Topics" : undefined}
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
@@ -143,6 +128,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex items-center gap-3">
                         <RiBookOpenLine size={20} className={currentView === 'topics' || currentView === 'topic-detail' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
                         {!isCollapsed && <span>Topics</span>}
+                    </div>
+                </button>
+
+                <button
+                    onClick={() => { onNavigate('library'); onSelectCategory('Favorites'); }}
+                    title={isCollapsed ? "Favorites" : undefined}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
+                    currentView === 'library' && selectedCategory === 'Favorites'
+                        ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
+                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    }`}
+                >
+                    <div className="flex items-center gap-3">
+                        <RiStarLine size={20} className={currentView === 'library' && selectedCategory === 'Favorites' ? 'text-zinc-900 dark:text-zinc-100' : 'opacity-70'} />
+                        {!isCollapsed && <span>Favorites</span>}
                     </div>
                 </button>
             </nav>
