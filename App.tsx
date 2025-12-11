@@ -318,7 +318,17 @@ const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Pagination State - Initialized from URL for SEO
+  // Shared by both Library and TopicList views
+  const [currentPage, setCurrentPage] = useState(() => {
+      if (typeof window !== 'undefined') {
+          const p = new URLSearchParams(window.location.search).get('page');
+          return p ? parseInt(p) : 1;
+      }
+      return 1;
+  });
+
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
@@ -507,7 +517,7 @@ const App: React.FC = () => {
       } else if (view === 'topic-detail' && activeTopic) {
           title = `${activeTopic} | ${SITE_NAME}`;
       } else if (view === 'topics') {
-          title = `Topics | ${SITE_NAME}`;
+          title = currentPage > 1 ? `Topics (Page ${currentPage}) | ${SITE_NAME}` : `Topics | ${SITE_NAME}`;
       } else if (selectedAuthor) {
           title = `Prompts by ${selectedAuthor} | ${SITE_NAME}`;
       } else if (selectedTag) {
@@ -516,6 +526,8 @@ const App: React.FC = () => {
           title = `${selectedCategory} Prompts | ${SITE_NAME}`;
       } else if (view === 'editor') {
           title = `Editor | ${SITE_NAME}`;
+      } else if (currentPage > 1) {
+          title = `${SITE_NAME} (Page ${currentPage})`;
       }
       document.title = title;
 
@@ -546,6 +558,7 @@ const App: React.FC = () => {
       params.delete('author');
       params.delete('topic');
       params.delete('view');
+      params.delete('page');
 
       if (view === 'detail' && activePrompt) {
           params.set('id', activePrompt.id);
@@ -553,6 +566,9 @@ const App: React.FC = () => {
           params.set('topic', activeTopic);
       } else if (view === 'topics') {
           params.set('view', 'topics');
+          if (currentPage > 1) {
+              params.set('page', currentPage.toString());
+          }
       } else if (view === 'library') {
           if (selectedCategory && selectedCategory !== 'All') {
               params.set('category', selectedCategory);
@@ -562,6 +578,9 @@ const App: React.FC = () => {
           }
           if (selectedAuthor) {
               params.set('author', selectedAuthor);
+          }
+          if (currentPage > 1) {
+              params.set('page', currentPage.toString());
           }
       }
       
@@ -573,7 +592,7 @@ const App: React.FC = () => {
            window.history.pushState({}, '', newSearch || window.location.pathname);
       }
 
-  }, [view, activePrompt, activeTopic, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME, isLoading]);
+  }, [view, activePrompt, activeTopic, selectedCategory, selectedTag, selectedAuthor, isAuthenticated, SITE_NAME, isLoading, currentPage]);
 
   // --- Handle Browser Back/Forward Buttons ---
   useEffect(() => {
@@ -585,6 +604,11 @@ const App: React.FC = () => {
           const category = params.get('category');
           const tag = params.get('tag');
           const author = params.get('author');
+          const page = params.get('page');
+          
+          // Restore Page Number
+          if (page) setCurrentPage(parseInt(page));
+          else setCurrentPage(1);
 
           if (id) {
               const p = prompts.find(x => x.id === id);
@@ -839,10 +863,13 @@ const App: React.FC = () => {
   const totalPages = Math.ceil(processedPrompts.length / ITEMS_PER_PAGE);
   const paginatedPrompts = processedPrompts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  // Reset pagination on filter change
+  // Reset pagination on filter change (Only for Library view, managed internally by effect)
   useEffect(() => {
-      setCurrentPage(1);
-  }, [selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder]);
+      // Logic: If in library view, filters change, reset page.
+      if (view === 'library') {
+          setCurrentPage(1);
+      }
+  }, [selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder, view]);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -907,7 +934,7 @@ const App: React.FC = () => {
         <Sidebar 
             siteName={SITE_NAME}
             selectedCategory={selectedCategory}
-            onSelectCategory={(cat) => { setSelectedCategory(cat); setSelectedTag(null); setSelectedAuthor(null); setView('library'); setSidebarOpen(false); }}
+            onSelectCategory={(cat) => { setSelectedCategory(cat); setSelectedTag(null); setSelectedAuthor(null); setView('library'); setCurrentPage(1); setSidebarOpen(false); }}
             onCreateNew={handleCreateNew}
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
@@ -921,7 +948,7 @@ const App: React.FC = () => {
             onExport={() => setIsExportModalOpen(true)}
             onLogoClick={handleResetHome}
             currentView={view}
-            onNavigate={(v) => { setView(v); setSidebarOpen(false); }}
+            onNavigate={(v) => { setView(v); setCurrentPage(1); setSidebarOpen(false); }}
         />
 
         {/* Main Content */}
@@ -1158,6 +1185,8 @@ const App: React.FC = () => {
             {view === 'topics' && (
                 <TopicList 
                     topics={allTopics}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
                     onSelectTopic={(t) => { 
                         setLastView('topics');
                         setLastActiveTopic(activeTopic);

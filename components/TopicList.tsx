@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { PromptData } from '../types';
+import React, { useRef, useEffect } from 'react';
 import { RiArrowRightLine, RiPriceTag3Line, RiMenuLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
 
 interface TopicListProps {
   topics: { name: string; count: number; previewImage?: string }[];
+  currentPage: number;
+  onPageChange: (page: number) => void;
   onSelectTopic: (topic: string) => void;
   onOpenSidebar?: () => void;
 }
@@ -47,8 +48,7 @@ const getPaginationRange = (currentPage: number, totalPages: number) => {
     return [];
 };
 
-const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSidebar }) => {
-    const [currentPage, setCurrentPage] = useState(1);
+const TopicList: React.FC<TopicListProps> = ({ topics, currentPage, onPageChange, onSelectTopic, onOpenSidebar }) => {
     const contentRef = useRef<HTMLDivElement>(null);
     const ITEMS_PER_PAGE = 12;
 
@@ -58,7 +58,7 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
     // Reset pagination if topics count changes significantly (optional safety)
     useEffect(() => {
         if (currentPage > totalPages && totalPages > 0) {
-            setCurrentPage(1);
+            onPageChange(1);
         }
     }, [topics.length, totalPages]);
 
@@ -139,7 +139,7 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
                             {totalPages > 1 && (
                                 <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 py-6 mt-auto select-none w-full shrink-0">
                                     <button 
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                                         disabled={currentPage === 1}
                                         className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                         title="Previous Page"
@@ -154,7 +154,7 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
                                             ) : (
                                                 <button
                                                     key={`page-${page}`}
-                                                    onClick={() => setCurrentPage(Number(page))}
+                                                    onClick={() => onPageChange(Number(page))}
                                                     className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all ${
                                                         currentPage === page 
                                                         ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm' 
@@ -168,7 +168,7 @@ const TopicList: React.FC<TopicListProps> = ({ topics, onSelectTopic, onOpenSide
                                     </div>
 
                                     <button 
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                                         disabled={currentPage === totalPages}
                                         className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                         title="Next Page"
