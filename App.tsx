@@ -329,6 +329,9 @@ const App: React.FC = () => {
       return 1;
   });
 
+  // Ref to track first render to prevent overwriting URL pagination on mount
+  const isFirstRender = useRef(true);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
@@ -865,11 +868,16 @@ const App: React.FC = () => {
 
   // Reset pagination on filter change (Only for Library view, managed internally by effect)
   useEffect(() => {
+      if (isFirstRender.current) {
+          isFirstRender.current = false;
+          return;
+      }
+
       // Logic: If in library view, filters change, reset page.
       if (view === 'library') {
           setCurrentPage(1);
       }
-  }, [selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder, view]);
+  }, [selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder]); // Removed 'view' to preserve page number on back navigation
 
   // Scroll to top when page changes
   useEffect(() => {
