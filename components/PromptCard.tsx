@@ -50,10 +50,10 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
         <a 
         href={`/?id=${prompt.id}`}
         onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-500 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-500 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden content-visibility-auto"
         >
         {/* Watermarks */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
             {isDraft ? (
                 <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 transform -rotate-12">
                     <RiDraftLine size={140} />
@@ -83,15 +83,17 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             </h3>
             
             {hasImage && !isLocked && (
-                <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate aspect-video">
+                <div className="w-full mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate aspect-video">
                     <img 
                         src={prompt.imageUrl} 
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
                         loading={priority ? "eager" : "lazy"}
                         decoding="async"
+                        width="320"
+                        height="180"
                         // @ts-ignore
-                        fetchPriority={priority ? "high" : "auto"}
+                        fetchpriority={priority ? "high" : "auto"}
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
                     {/* Subtle inner shadow for depth */}
@@ -156,20 +158,22 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:block relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:block relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden content-visibility-auto"
     >
       {/* Side Cover Image */}
       {/* Mobile: Top Block (h-40). Desktop: Absolute Left Panel (w-48, h-full) */}
       {showImage && (
-           <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
+           <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0 aspect-[16/9] md:aspect-auto">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading={priority ? "eager" : "lazy"}
                     decoding="async"
+                    width="192"
+                    height="160"
                     // @ts-ignore
-                    fetchPriority={priority ? "high" : "auto"}
+                    fetchpriority={priority ? "high" : "auto"}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
                 {/* List View Gradient Overlay for better integration */}
@@ -178,8 +182,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       )}
 
       {/* Content Container */}
-      {/* Added min-h-[160px] to ensure card height even with little text. */}
-      {/* Added md:ml-48 to reserve space for the absolute image on desktop. */}
       <div className={`p-5 flex flex-col min-w-0 relative z-10 min-h-[160px] ${showImage ? 'md:ml-48' : ''}`}>
          
          <div className="flex items-center justify-between mb-2">
@@ -231,7 +233,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          
          {/* List Mode Watermark - Subtler */}
          {!showImage && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-500 scale-75 group-hover:scale-90 origin-right">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-500 scale-75 group-hover:scale-90 origin-right" aria-hidden="true">
                 {isDraft ? <RiDraftLine size={120} /> : isPrivate ? <RiLockLine size={120} /> : <span className="text-8xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
             </div>
          )}

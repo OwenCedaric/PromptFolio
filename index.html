@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
     
@@ -18,10 +18,10 @@
     <link rel="manifest" href="/manifest.json" />
     
     <!-- Performance Optimization: Preconnect -->
-    <!-- Bunny Fonts (Faster Google Fonts Mirror) -->
     <link rel="preconnect" href="https://fonts.bunny.net">
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin="anonymous">
     
-    <!-- Fonts: Inter & JetBrains Mono (Hosted via Bunny Fonts) -->
+    <!-- Fonts: Added display=swap for performance -->
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700|jetbrains-mono:400,500&display=swap" rel="stylesheet" />
     
     <!-- Open Graph -->
@@ -30,7 +30,7 @@
     <meta property="og:description" content="Professional AI Prompt Management System for developers and prompt engineers." />
     <meta property="og:site_name" content="PromptFolio" />
     
-    <!-- Theme Initialization Script (Prevents FOUC & Fixes Native UI) -->
+    <!-- Theme Initialization Script -->
     <script>
       (function() {
         try {
@@ -50,7 +50,7 @@
     </script>
 </head>
   <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full fixed scrollbar-hide">
-    <div id="root" class="h-full w-full overflow-hidden flex flex-col"></div>
+    <div id="root" class="h-full w-full overflow-hidden flex flex-col contain-strict"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

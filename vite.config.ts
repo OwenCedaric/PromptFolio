@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
         threshold: 10240,
         algorithm: 'gzip',
         ext: '.gz',
-        deleteOriginFile: false, // Explicitly keep original files
+        deleteOriginFile: false,
       }),
       {
         name: 'ensure-assets',
@@ -23,7 +23,6 @@ export default defineConfig(({ mode }) => {
           const root = (process as any).cwd();
           const destDir = resolve(root, 'dist');
           
-          // Files to manually copy to root of dist
           const filesToCopy = ['favicon.svg', 'manifest.json'];
 
           filesToCopy.forEach(file => {
@@ -43,10 +42,10 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       rollupOptions: {
         output: {
-          // Manual chunks to optimize bundle size and caching
           manualChunks: {
             'vendor-react': ['react', 'react-dom'],
-            'vendor-ui': ['@remixicon/react', 'react-markdown', 'remark-gfm'],
+            'vendor-ui': ['@remixicon/react'],
+            'vendor-markdown': ['react-markdown', 'remark-gfm'],
             'vendor-ai': ['@google/genai'],
           }
         }

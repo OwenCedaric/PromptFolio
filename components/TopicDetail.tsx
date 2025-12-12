@@ -47,7 +47,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
     const shapeClass = getShapeClass(index);
 
     return (
-        <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group overflow-hidden">
+        <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group overflow-hidden content-visibility-auto">
             
             {/* Image Section */}
             <div className={`
@@ -67,6 +67,8 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
                                 decoding="async"
+                                width="800"
+                                height="600"
                             />
                         </div>
                     ) : (
@@ -80,7 +82,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                 <div className={`
                     absolute text-[6rem] md:text-[12rem] leading-none font-serif font-black text-transparent stroke-text opacity-10 md:opacity-10 select-none pointer-events-none z-0
                     ${isEven ? '-left-2 md:-left-4 bottom-0' : '-right-2 md:-right-4 top-0'}
-                `}>
+                `} aria-hidden="true">
                     {(index + 1).toString().padStart(2, '0')}
                 </div>
             </div>
@@ -93,7 +95,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                 <div className="flex flex-col gap-6 md:gap-10 max-w-lg mx-auto md:mx-0">
                     
                     <div>
-                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2 block">
+                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-2 block">
                             {prompt.category}
                         </span>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-medium leading-[1.1] text-zinc-900 dark:text-white">
@@ -116,6 +118,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' 
                                 : 'bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-900 dark:hover:border-zinc-100 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
+                            aria-label={copied ? "Copied to clipboard" : "Copy prompt content"}
                          >
                             {copied ? <RiCheckLine size={14} /> : <RiFileCopyLine size={14} />}
                             <span>{copied ? 'Copied' : 'Copy'}</span>
@@ -124,6 +127,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                          <button 
                             onClick={() => onViewDetail(prompt)}
                             className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors text-right"
+                            aria-label={`Explore detail for ${prompt.title}`}
                          >
                             Explore Detail
                             <span className="bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full p-1 transition-transform duration-300 group-hover/btn:translate-x-2">
@@ -194,7 +198,8 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                                 alt="Collection Cover" 
                                 className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
                                 // @ts-ignore
-                                fetchPriority="high"
+                                fetchpriority="high"
+                                decoding="async"
                             />
                             {/* Cinematic Overlays */}
                             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>
@@ -248,7 +253,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                         
                         {/* Left: Huge Geometric Watermark */}
                         <div className="hidden md:block">
-                            <span className="font-serif text-9xl text-zinc-100 dark:text-zinc-900 leading-none select-none">
+                            <span className="font-serif text-9xl text-zinc-100 dark:text-zinc-900 leading-none select-none" aria-hidden="true">
                                 Fin.
                             </span>
                         </div>
@@ -267,6 +272,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                              <button 
                                 onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
                                 className="group flex items-center gap-3 px-6 py-3 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
+                                aria-label="Scroll back to top"
                             >
                                 Back to Top
                                 <RiArrowRightLine size={14} className="-rotate-90 group-hover:-translate-y-1 transition-transform" />

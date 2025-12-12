@@ -24,7 +24,7 @@ interface SidebarProps {
 
 // Inline Logo Component: Standalone Cedar "C" (No Background)
 export const Logo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
     <g transform="translate(2, 2)">
         {/* The Serif 'C' Shape - Standalone with thicker strokes for visibility without background */}
         <path 
@@ -53,11 +53,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   
   return (
     <>
-        <div className={`
+        <aside className={`
             fixed md:relative z-50 flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800
             transform transition-all duration-300 ease-in-out
             ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-            ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64 pb-[env(safe-area-inset-bottom)]
+            ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64 pb-[env(safe-area-inset-bottom)] contain-strict
         `}>
         
         {/* Brand */}
@@ -156,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 {!isCollapsed && (
                     <div className="pt-4 pb-2 px-3">
-                        <p className="text-xs font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-wider">Categories</p>
+                        <p className="text-xs font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">Categories</p>
                     </div>
                 )}
 
@@ -189,6 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                  <button
                     onClick={toggleCollapse}
                     title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-start px-3'} py-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors`}
                 >
                     {isCollapsed ? <RiSidebarUnfoldLine size={20} /> : <RiSidebarFoldLine size={20} />}
@@ -200,6 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button
                 onClick={onToggleTheme}
                 title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-start px-3'} py-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors`}
             >
                 {isDarkMode ? <RiSunLine size={20} /> : <RiMoonLine size={20} />}
@@ -211,6 +213,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button
                     onClick={onExport}
                     title="Export Backup"
+                    aria-label="Export Backup"
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-start px-3'} py-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors`}
                 >
                     <RiDownloadLine size={20} />
@@ -222,6 +225,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button
                 onClick={isAuthenticated ? onLogout : onLogin}
                 title={isAuthenticated ? "Logout" : "Admin Login"}
+                aria-label={isAuthenticated ? "Logout" : "Admin Login"}
                 className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-start px-3'} py-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors`}
             >
                 {isAuthenticated ? <RiLogoutBoxRLine size={20} /> : <RiLoginBoxLine size={20} />}
@@ -229,7 +233,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
         </div>
 
-        </div>
+        </aside>
     </>
   );
 };
