@@ -1104,7 +1104,7 @@ const App: React.FC = () => {
                                     ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' 
                                     : 'grid-cols-1 max-w-5xl mx-auto'
                                 }`}>
-                                    {paginatedPrompts.map(prompt => (
+                                    {paginatedPrompts.map((prompt, index) => (
                                         <PromptCard 
                                             key={prompt.id} 
                                             prompt={prompt} 
@@ -1112,6 +1112,7 @@ const App: React.FC = () => {
                                             onTagClick={(t) => setSelectedTag(t)}
                                             isAuthenticated={isAuthenticated}
                                             viewMode={viewMode}
+                                            priority={index < 6} // LCP Optimization: Load first 6 images eagerly
                                         />
                                     ))}
                                 </div>

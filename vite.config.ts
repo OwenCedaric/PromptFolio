@@ -38,6 +38,16 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       minify: 'esbuild',
       sourcemap: false,
+      rollupOptions: {
+        output: {
+          // Manual chunks to optimize bundle size and caching
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-ui': ['@remixicon/react', 'react-markdown', 'remark-gfm'],
+            'vendor-ai': ['@google/genai'],
+          }
+        }
+      }
     },
     define: {
       'process.env': JSON.stringify(env)
