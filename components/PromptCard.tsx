@@ -41,17 +41,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       }
   };
 
-  // Helper to optimize image URLs using Weserv Proxy with multiple sizes
-  const getOptimizedUrl = (url: string | undefined, width: number) => {
-      if (!url) return undefined;
-      try {
-          const encodedUrl = encodeURIComponent(url);
-          return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&output=webp&q=80`;
-      } catch (e) {
-          return url;
-      }
-  };
-
   // Basic image check
   const hasImage = !!prompt.imageUrl;
 
@@ -96,17 +85,13 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             {hasImage && !isLocked && (
                 <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate aspect-video">
                     <img 
-                        src={getOptimizedUrl(prompt.imageUrl, 600)} 
-                        srcSet={`${getOptimizedUrl(prompt.imageUrl, 350)} 350w, ${getOptimizedUrl(prompt.imageUrl, 600)} 600w`}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                        src={prompt.imageUrl} 
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
                         loading={priority ? "eager" : "lazy"}
                         decoding="async"
                         // @ts-ignore
                         fetchPriority={priority ? "high" : "auto"}
-                        width="600"
-                        height="338"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
                     {/* Subtle inner shadow for depth */}
@@ -178,9 +163,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       {showImage && (
            <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
-                    src={getOptimizedUrl(prompt.imageUrl, 300)} 
-                    srcSet={`${getOptimizedUrl(prompt.imageUrl, 300)} 300w, ${getOptimizedUrl(prompt.imageUrl, 600)} 600w`}
-                    sizes="(max-width: 768px) 100vw, 192px"
+                    src={prompt.imageUrl} 
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading={priority ? "eager" : "lazy"}

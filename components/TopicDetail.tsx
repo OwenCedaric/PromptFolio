@@ -17,15 +17,6 @@ interface MagazineItemProps {
   onViewDetail: (p: PromptData) => void;
 }
 
-// Helper to optimize image URLs using Weserv Proxy with sizing
-const getOptimizedUrl = (url: string | undefined, width: number) => {
-    if (!url) return undefined;
-    try {
-        const encodedUrl = encodeURIComponent(url);
-        return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&output=webp&q=80`;
-    } catch (e) { return url; }
-};
-
 // Magazine Item Component
 const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail }) => {
     const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
@@ -71,9 +62,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                     {prompt.imageUrl ? (
                         <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.15)] ${shapeClass}`}>
                             <img 
-                                src={getOptimizedUrl(prompt.imageUrl, 800)} 
-                                srcSet={`${getOptimizedUrl(prompt.imageUrl, 400)} 400w, ${getOptimizedUrl(prompt.imageUrl, 800)} 800w, ${getOptimizedUrl(prompt.imageUrl, 1200)} 1200w`}
-                                sizes="(max-width: 768px) 100vw, 60vw"
+                                src={prompt.imageUrl} 
                                 alt={prompt.title} 
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
@@ -200,8 +189,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                      {coverImage && (
                         <div className="absolute inset-0 z-0 select-none pointer-events-none">
                             <img 
-                                src={getOptimizedUrl(coverImage, 1200)}
-                                srcSet={`${getOptimizedUrl(coverImage, 600)} 600w, ${getOptimizedUrl(coverImage, 1200)} 1200w, ${getOptimizedUrl(coverImage, 1600)} 1600w`}
+                                src={coverImage}
                                 sizes="100vw"
                                 alt="Collection Cover" 
                                 className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
