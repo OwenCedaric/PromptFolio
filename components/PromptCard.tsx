@@ -40,6 +40,23 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       }
   };
 
+  // Helper to optimize image URLs (especially Twitter)
+  const getOptimizedImageUrl = (url: string | undefined) => {
+      if (!url) return undefined;
+      // Twitter/X Image Optimization
+      // Convert name=large/4096x4096 to name=small (680px max) for cards
+      if (url.includes('pbs.twimg.com/media/')) {
+          try {
+              const urlObj = new URL(url);
+              urlObj.searchParams.set('name', 'small');
+              return urlObj.toString();
+          } catch (e) { return url; }
+      }
+      return url;
+  };
+
+  const optimizedImage = getOptimizedImageUrl(prompt.imageUrl);
+
   // --- Grid View Layout ---
   if (viewMode === 'grid') {
     return (
@@ -69,7 +86,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             <div className="flex justify-between items-start mb-3 shrink-0">
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
                 <div className="flex gap-2">
-                    {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
+                    {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" aria-label="Favorite" />}
                 </div>
             </div>
 
@@ -77,14 +94,16 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 {prompt.title}
             </h3>
             
-            {prompt.imageUrl && !isLocked && (
-                <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate">
+            {optimizedImage && !isLocked && (
+                <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate aspect-video">
                     <img 
-                        src={prompt.imageUrl} 
+                        src={optimizedImage} 
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
                         loading="lazy"
                         decoding="async"
+                        width="300"
+                        height="169"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
                     {/* Subtle inner shadow for depth */}
@@ -118,6 +137,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                                 : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                             title="Copy Content"
+                            aria-label="Copy Content"
                         >
                             {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                         </button>
@@ -142,7 +162,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
   }
 
   // --- List View Layout ---
-  const showImage = prompt.imageUrl && !isLocked;
+  const showImage = optimizedImage && !isLocked;
 
   return (
     <a 
@@ -155,7 +175,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       {showImage && (
            <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
-                    src={prompt.imageUrl} 
+                    src={optimizedImage} 
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading="lazy"
@@ -175,7 +195,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
-                {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
+                {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" aria-label="Favorite" />}
              </div>
              
              {/* Minimalist Date for List View */}
@@ -212,6 +232,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 hover:border-zinc-200'
                     }`}
                     title="Copy"
+                    aria-label="Copy"
                 >
                     {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                 </button>

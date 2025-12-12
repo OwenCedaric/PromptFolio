@@ -32,6 +32,22 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
         }
     };
 
+    // Helper to optimize image URLs (especially Twitter)
+    const getOptimizedImageUrl = (url: string | undefined) => {
+        if (!url) return undefined;
+        // Twitter/X Image Optimization
+        if (url.includes('pbs.twimg.com/media/')) {
+            try {
+                const urlObj = new URL(url);
+                urlObj.searchParams.set('name', 'medium'); // Use medium (~1200px) for magazine view
+                return urlObj.toString();
+            } catch (e) { return url; }
+        }
+        return url;
+    };
+
+    const optimizedImage = getOptimizedImageUrl(prompt.imageUrl);
+
     // Advanced Asymmetric Border Radius Logic (4-step cycle)
     // Ensures the "flat" or "connected" side always faces the content text
     const getShapeClass = (idx: number) => {
@@ -77,10 +93,10 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 
                  {/* Image Container - Adaptive Size with Asymmetric Shape */}
                  <div className="relative z-10 w-full flex justify-center">
-                    {prompt.imageUrl ? (
+                    {optimizedImage ? (
                         <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.15)] ${shapeClass}`}>
                             <img 
-                                src={prompt.imageUrl} 
+                                src={optimizedImage} 
                                 alt={prompt.title} 
                                 // Mobile: Width full, Height auto. Desktop: Max height constrained, Width auto (preserve aspect ratio)
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
@@ -163,7 +179,17 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     // Determine Cover Image: Use the last prompt's image to create a "bookend" feel, or fallback to first found.
     // The prompt requested "intro the last picture", which implies the last one in the list.
     const coverImage = useMemo(() => {
-        return [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
+        const img = [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
+        if (!img) return undefined;
+        // Optimization for cover image
+        if (img.includes('pbs.twimg.com/media/')) {
+            try {
+                const urlObj = new URL(img);
+                urlObj.searchParams.set('name', 'large'); // Keep large for hero
+                return urlObj.toString();
+            } catch (e) { return img; }
+        }
+        return img;
     }, [prompts]);
 
     // Restore scroll position on mount
@@ -187,6 +213,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 <button 
                     onClick={onBack}
                     className="pointer-events-auto flex items-center gap-2 group hover:opacity-70 transition-opacity"
+                    aria-label="Back to Topics"
                 >
                     <div className="p-2 border border-current rounded-full transition-transform group-hover:-translate-x-1">
                         <RiArrowLeftLine size={20} />
@@ -210,6 +237,8 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                                 src={coverImage} 
                                 alt="Collection Cover" 
                                 className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
+                                // @ts-ignore
+                                fetchPriority="high"
                             />
                             {/* Cinematic Overlays */}
                             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>
