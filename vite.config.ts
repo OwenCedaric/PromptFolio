@@ -55,12 +55,11 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             // Split core React dependencies
             'vendor-react': ['react', 'react-dom'],
-            // Split icons (large SVG paths)
-            'vendor-icons': ['@remixicon/react'],
             // Heavy markdown libraries - loaded lazily via React.lazy in PromptDetail
             'vendor-markdown': ['react-markdown', 'remark-gfm'],
             // AI SDK
             'vendor-genai': ['@google/genai']
+            // Removed vendor-icons to allow finer grained tree-shaking by Vite
           }
         }
       }
