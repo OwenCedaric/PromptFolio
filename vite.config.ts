@@ -1,6 +1,5 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import viteCompression from 'vite-plugin-compression';
 import { copyFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
@@ -9,14 +8,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
-      viteCompression({
-        verbose: true,
-        disable: false,
-        threshold: 10240,
-        algorithm: 'gzip',
-        ext: '.gz',
-        deleteOriginFile: false, 
-      }),
+      // Removed vite-plugin-compression: 
+      // Cloudflare Pages automatically handles Gzip and Brotli compression at the edge.
+      // This ensures we upload only the necessary artifacts and rely on standard content-hashing for caching.
       {
         name: 'ensure-favicon',
         closeBundle() {
@@ -38,12 +32,32 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       rollupOptions: {
         output: {
+          // Explicitly organize output into folders for cleaner structure and easier cache debugging
+          chunkFileNames: 'assets/js/[name]-[hash].js',
+          entryFileNames: 'assets/js/[name]-[hash].js',
+          
+          assetFileNames: ({name}) => {
+            if (/\.(gif|jpe?g|png|svg)$/.test(name ?? '')) {
+                return 'assets/images/[name]-[hash][extname]';
+            }
+            if (/\.css$/.test(name ?? '')) {
+                return 'assets/css/[name]-[hash][extname]';
+            }
+            // Fonts: Keep hash to ensure cache busting if you upgrade @fontsource packages,
+            // but keep them organized in a specific folder. 
+            // Since hashing is content-based, these filenames WILL be stable across builds if dependencies don't change.
+            if (/\.(woff|woff2|eot|ttf|otf)$/.test(name ?? '')) {
+                return 'assets/fonts/[name]-[hash][extname]';
+            }
+            return 'assets/[name]-[hash][extname]';
+          },
+          
           manualChunks: {
-            // Split core React vendor to cache it longer
+            // Split core React dependencies
             'vendor-react': ['react', 'react-dom'],
-            // Split icons as they are large svg paths
+            // Split icons (large SVG paths)
             'vendor-icons': ['@remixicon/react'],
-            // Heavy markdown parsing logic loaded lazily
+            // Heavy markdown libraries - loaded lazily via React.lazy in PromptDetail
             'vendor-markdown': ['react-markdown', 'remark-gfm'],
             // AI SDK
             'vendor-genai': ['@google/genai']
