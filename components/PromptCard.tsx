@@ -41,27 +41,19 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       }
   };
 
-  // Helper to optimize image URLs using Weserv Proxy
-  // This handles Twitter images (pbs.twimg.com) and others by:
-  // 1. Serving via global CDN (faster than Twitter in some regions)
-  // 2. Converting to WebP (smaller size)
-  // 3. Resizing to appropriate card dimensions (saves bandwidth)
-  const getOptimizedImageUrl = (url: string | undefined) => {
+  // Helper to optimize image URLs using Weserv Proxy with multiple sizes
+  const getOptimizedUrl = (url: string | undefined, width: number) => {
       if (!url) return undefined;
-      
       try {
-          // Use wsrv.nl (Weserv) for on-the-fly optimization
-          // w=600: Sufficient for card width (retina ready)
-          // q=80: Good balance of quality and size
-          // output=webp: Modern format
           const encodedUrl = encodeURIComponent(url);
-          return `https://wsrv.nl/?url=${encodedUrl}&w=600&output=webp&q=80`;
+          return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&output=webp&q=80`;
       } catch (e) {
           return url;
       }
   };
 
-  const optimizedImage = getOptimizedImageUrl(prompt.imageUrl);
+  // Basic image check
+  const hasImage = !!prompt.imageUrl;
 
   // --- Grid View Layout ---
   if (viewMode === 'grid') {
@@ -90,7 +82,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="flex justify-between items-start mb-3 shrink-0">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
+                {/* Contrast fix: text-zinc-600 instead of 500 for better a11y on light bg */}
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
                 <div className="flex gap-2">
                     {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" aria-label="Favorite" />}
                 </div>
@@ -100,18 +93,20 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 {prompt.title}
             </h3>
             
-            {optimizedImage && !isLocked && (
+            {hasImage && !isLocked && (
                 <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate aspect-video">
                     <img 
-                        src={optimizedImage} 
+                        src={getOptimizedUrl(prompt.imageUrl, 600)} 
+                        srcSet={`${getOptimizedUrl(prompt.imageUrl, 350)} 350w, ${getOptimizedUrl(prompt.imageUrl, 600)} 600w`}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
                         loading={priority ? "eager" : "lazy"}
                         decoding="async"
-                        // @ts-ignore - React TS definition might strictly require camelCase but browsers want fetchpriority
+                        // @ts-ignore
                         fetchPriority={priority ? "high" : "auto"}
-                        width="300"
-                        height="169"
+                        width="600"
+                        height="338"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
                     {/* Subtle inner shadow for depth */}
@@ -142,7 +137,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                             className={`p-2 rounded-lg shadow-sm border backdrop-blur-md transition-all transform active:scale-95 ${
                                 copied 
                                 ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400' 
-                                : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                             title="Copy Content"
                             aria-label="Copy Content"
@@ -158,7 +153,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     <span 
                         key={tag} 
                         onClick={(e) => handleTagClick(e, tag)}
-                        className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
+                        className="text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
                     >
                         #{tag}
                     </span>
@@ -170,7 +165,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
   }
 
   // --- List View Layout ---
-  const showImage = optimizedImage && !isLocked;
+  const showImage = hasImage && !isLocked;
 
   return (
     <a 
@@ -183,7 +178,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       {showImage && (
            <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
-                    src={optimizedImage} 
+                    src={getOptimizedUrl(prompt.imageUrl, 300)} 
+                    srcSet={`${getOptimizedUrl(prompt.imageUrl, 300)} 300w, ${getOptimizedUrl(prompt.imageUrl, 600)} 600w`}
+                    sizes="(max-width: 768px) 100vw, 192px"
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading={priority ? "eager" : "lazy"}
@@ -204,7 +201,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          
          <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
                 {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" aria-label="Favorite" />}
              </div>
              
@@ -227,7 +224,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          <div className="flex items-center justify-between mt-auto">
              <div className="flex flex-wrap gap-2 h-6 overflow-hidden">
                 {prompt.tags.slice(0, 4).map(tag => (
-                    <span key={tag} className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">#{tag}</span>
+                    <span key={tag} className="text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">#{tag}</span>
                 ))}
                 {prompt.tags.length > 4 && <span className="text-xs text-zinc-400 self-center">+{prompt.tags.length - 4}</span>}
              </div>

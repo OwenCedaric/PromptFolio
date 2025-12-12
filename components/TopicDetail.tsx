@@ -17,6 +17,15 @@ interface MagazineItemProps {
   onViewDetail: (p: PromptData) => void;
 }
 
+// Helper to optimize image URLs using Weserv Proxy with sizing
+const getOptimizedUrl = (url: string | undefined, width: number) => {
+    if (!url) return undefined;
+    try {
+        const encodedUrl = encodeURIComponent(url);
+        return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&output=webp&q=80`;
+    } catch (e) { return url; }
+};
+
 // Magazine Item Component
 const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail }) => {
     const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
@@ -32,46 +41,15 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
         }
     };
 
-    // Helper to optimize image URLs using Weserv Proxy
-    const getOptimizedImageUrl = (url: string | undefined) => {
-        if (!url) return undefined;
-        try {
-            // Optimize for Magazine View
-            // w=800: Larger than card view but optimized for split layout
-            const encodedUrl = encodeURIComponent(url);
-            return `https://wsrv.nl/?url=${encodedUrl}&w=800&output=webp&q=80`;
-        } catch (e) { return url; }
-    };
-
-    const optimizedImage = getOptimizedImageUrl(prompt.imageUrl);
-
     // Advanced Asymmetric Border Radius Logic (4-step cycle)
-    // Ensures the "flat" or "connected" side always faces the content text
     const getShapeClass = (idx: number) => {
         const mod = idx % 4;
         switch (mod) {
-            case 0: 
-                // Cycle 1 (Even, Image Left): Diagonal A
-                // Rounded: Top-Left (Outer), Bottom-Right (Inner-Bottom). 
-                // Flat: Top-Right (Inner-Top) facing content header.
-                return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
-            case 1:
-                // Cycle 2 (Odd, Image Right): Diagonal B
-                // Rounded: Top-Right (Outer), Bottom-Left (Inner-Bottom).
-                // Flat: Top-Left (Inner-Top) facing content header.
-                return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
-            case 2:
-                // Cycle 3 (Even, Image Left): Left Side Rounded (C-shape)
-                // Rounded: Left side (Outer).
-                // Flat: Right side (Inner) facing content.
-                return 'rounded-l-[4rem] rounded-r-none';
-            case 3:
-                // Cycle 4 (Odd, Image Right): Right Side Rounded (D-shape)
-                // Rounded: Right side (Outer).
-                // Flat: Left side (Inner) facing content.
-                return 'rounded-r-[4rem] rounded-l-none';
-            default:
-                return 'rounded-none';
+            case 0: return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
+            case 1: return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
+            case 2: return 'rounded-l-[4rem] rounded-r-none';
+            case 3: return 'rounded-r-[4rem] rounded-l-none';
+            default: return 'rounded-none';
         }
     };
 
@@ -90,12 +68,13 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 
                  {/* Image Container - Adaptive Size with Asymmetric Shape */}
                  <div className="relative z-10 w-full flex justify-center">
-                    {optimizedImage ? (
+                    {prompt.imageUrl ? (
                         <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.15)] ${shapeClass}`}>
                             <img 
-                                src={optimizedImage} 
+                                src={getOptimizedUrl(prompt.imageUrl, 800)} 
+                                srcSet={`${getOptimizedUrl(prompt.imageUrl, 400)} 400w, ${getOptimizedUrl(prompt.imageUrl, 800)} 800w, ${getOptimizedUrl(prompt.imageUrl, 1200)} 1200w`}
+                                sizes="(max-width: 768px) 100vw, 60vw"
                                 alt={prompt.title} 
-                                // Mobile: Width full, Height auto. Desktop: Max height constrained, Width auto (preserve aspect ratio)
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
                                 decoding="async"
@@ -176,12 +155,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     // Determine Cover Image: Use the last prompt's image to create a "bookend" feel, or fallback to first found.
     const coverImage = useMemo(() => {
         const img = [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
-        if (!img) return undefined;
-        try {
-            // High Quality for Hero Cover (w=1600)
-            const encodedUrl = encodeURIComponent(img);
-            return `https://wsrv.nl/?url=${encodedUrl}&w=1600&output=webp&q=85`;
-        } catch (e) { return img; }
+        return img;
     }, [prompts]);
 
     // Restore scroll position on mount
@@ -226,7 +200,9 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                      {coverImage && (
                         <div className="absolute inset-0 z-0 select-none pointer-events-none">
                             <img 
-                                src={coverImage} 
+                                src={getOptimizedUrl(coverImage, 1200)}
+                                srcSet={`${getOptimizedUrl(coverImage, 600)} 600w, ${getOptimizedUrl(coverImage, 1200)} 1200w, ${getOptimizedUrl(coverImage, 1600)} 1600w`}
+                                sizes="100vw"
                                 alt="Collection Cover" 
                                 className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
                                 // @ts-ignore

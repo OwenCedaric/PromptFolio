@@ -18,19 +18,22 @@ export default defineConfig(({ mode }) => {
         deleteOriginFile: false, // Explicitly keep original files
       }),
       {
-        name: 'ensure-favicon',
+        name: 'ensure-assets',
         closeBundle() {
-          // Manually copy favicon.svg to dist to guarantee the raw file exists
-          // This ensures external links always have access to the uncompressed original
           const root = (process as any).cwd();
-          const src = resolve(root, 'favicon.svg');
           const destDir = resolve(root, 'dist');
-          const dest = resolve(destDir, 'favicon.svg');
           
-          if (existsSync(src) && existsSync(destDir)) {
-             copyFileSync(src, dest);
-             console.log('✓ Copied raw favicon.svg to dist');
-          }
+          // Files to manually copy to root of dist
+          const filesToCopy = ['favicon.svg', 'manifest.json'];
+
+          filesToCopy.forEach(file => {
+             const src = resolve(root, file);
+             const dest = resolve(destDir, file);
+             if (existsSync(src) && existsSync(destDir)) {
+                copyFileSync(src, dest);
+                console.log(`✓ Copied raw ${file} to dist`);
+             }
+          });
         }
       }
     ],
