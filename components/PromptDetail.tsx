@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { 
     RiArrowLeftLine, 
@@ -21,12 +21,16 @@ import {
     RiLockLine,
     RiEyeLine,
     RiLoginCircleLine,
-    RiBookOpenLine
+    RiBookOpenLine,
+    RiLoader4Line
 } from '@remixicon/react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { PromptData, PromptStatus, Category, Copyright } from '../types';
 import { getOptimizedImageUrl } from '../utils/image';
+
+// Lazy load the heavy Markdown renderer
+// This ensures react-markdown and remark-gfm are split into a separate chunk
+// and don't block the initial rendering of the Detail Page shell.
+const MarkdownRenderer = React.lazy(() => import('./MarkdownRenderer'));
 
 interface PromptDetailProps {
   prompt: PromptData;
@@ -422,30 +426,15 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     <RiInformationLine size={14} /> Description
                                 </h3>
                             </div>
-                            <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
-                                <ReactMarkdown 
-                                    remarkPlugins={[remarkGfm]}
-                                    components={{
-                                        img: ({node, ...props}) => (
-                                            <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4 shadow-sm">
-                                                <img 
-                                                    {...props} 
-                                                    src={getOptimizedImageUrl(props.src as string, 1200)}
-                                                    className="w-full h-auto m-0" 
-                                                    alt={props.alt || 'content'} 
-                                                    loading="lazy" 
-                                                    decoding="async" 
-                                                />
-                                            </div>
-                                        ),
-                                        a: ({node, ...props}) => (
-                                            <a {...props} className="text-zinc-900 dark:text-zinc-100 font-medium underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-2 hover:decoration-zinc-500 dark:hover:decoration-zinc-400 transition-colors" target="_blank" rel="noopener noreferrer" />
-                                        )
-                                    }}
-                                >
-                                    {prompt.description}
-                                </ReactMarkdown>
-                            </div>
+                            <Suspense fallback={
+                                <div className="space-y-3 animate-pulse">
+                                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-3/4"></div>
+                                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-full"></div>
+                                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-5/6"></div>
+                                </div>
+                            }>
+                                <MarkdownRenderer content={prompt.description} />
+                            </Suspense>
                         </div>
                     ) : null}
 
