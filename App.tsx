@@ -1,11 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import Sidebar, { Logo } from './components/Sidebar';
-import PromptCard from './components/PromptCard';
-import PromptEditor from './components/PromptEditor';
-import PromptDetail from './components/PromptDetail';
-import TopicDetail from './components/TopicDetail';
-import TopicList from './components/TopicList';
+import PromptCard, { PromptCardSkeleton } from './components/PromptCard';
 import { PromptData, Category, PromptStatus, Copyright } from './types';
 import { 
     RiMenuLine, 
@@ -24,6 +20,19 @@ import {
     RiDownloadLine,
     RiFileTextLine
 } from '@remixicon/react';
+
+// Lazy Loaded Components to split bundle size
+const PromptEditor = React.lazy(() => import('./components/PromptEditor'));
+const PromptDetail = React.lazy(() => import('./components/PromptDetail'));
+const TopicDetail = React.lazy(() => import('./components/TopicDetail'));
+const TopicList = React.lazy(() => import('./components/TopicList'));
+
+// Loading Fallback Overlay
+const LoadingOverlay = () => (
+    <div className="h-full w-full flex items-center justify-center text-zinc-400">
+        <RiLoader4Line className="animate-spin" size={32} />
+    </div>
+);
 
 // Internal Confirmation Modal Component
 interface ConfirmModalProps {
@@ -988,6 +997,7 @@ const App: React.FC = () => {
                                 <button 
                                     className="md:hidden p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                                     onClick={() => setSidebarOpen(true)}
+                                    aria-label="Open Sidebar"
                                 >
                                     <RiMenuLine size={24} />
                                 </button>
@@ -1005,10 +1015,11 @@ const App: React.FC = () => {
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder="Search..."
+                                        aria-label="Search prompts"
                                         className="w-full pl-9 pr-8 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:ring-2 focus:ring-zinc-100 dark:focus:ring-zinc-800 transition-all shadow-sm"
                                     />
                                     {searchQuery && (
-                                        <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900">
+                                        <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900" aria-label="Clear Search">
                                             <RiCloseCircleLine size={14} />
                                         </button>
                                     )}
@@ -1029,6 +1040,7 @@ const App: React.FC = () => {
                                         <select 
                                             value={sortOrder}
                                             onChange={(e) => setSortOrder(e.target.value as any)}
+                                            aria-label="Sort Order"
                                             className="appearance-none pl-8 pr-8 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 focus:outline-none transition-colors cursor-pointer min-w-[130px]"
                                         >
                                             <option value="newest">Newest First</option>
@@ -1043,6 +1055,7 @@ const App: React.FC = () => {
                                         onClick={() => setViewMode('grid')}
                                         className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
                                         title="Grid View"
+                                        aria-label="Grid View"
                                     >
                                         <RiLayoutGridLine size={16} />
                                     </button>
@@ -1050,6 +1063,7 @@ const App: React.FC = () => {
                                         onClick={() => setViewMode('list')}
                                         className={`p-1.5 rounded transition-all ${viewMode === 'list' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
                                         title="List View"
+                                        aria-label="List View"
                                     >
                                         <RiListCheck2 size={16} />
                                     </button>
@@ -1063,7 +1077,7 @@ const App: React.FC = () => {
                                  {selectedTag && (
                                     <div className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200">
                                         <span className="text-xs font-bold">#{selectedTag}</span>
-                                        <button onClick={() => setSelectedTag(null)} className="hover:opacity-70 transition-opacity">
+                                        <button onClick={() => setSelectedTag(null)} className="hover:opacity-70 transition-opacity" aria-label="Remove Tag Filter">
                                             <RiCloseLine size={14} />
                                         </button>
                                     </div>
@@ -1072,7 +1086,7 @@ const App: React.FC = () => {
                                      <div className="flex items-center gap-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-1 rounded-full shadow-sm animate-in slide-in-from-top-1 fade-in duration-200 border border-zinc-300 dark:border-zinc-700">
                                          <RiUser3Line size={12} />
                                          <span className="text-xs font-bold">{selectedAuthor}</span>
-                                         <button onClick={() => setSelectedAuthor(null)} className="hover:opacity-70 transition-opacity">
+                                         <button onClick={() => setSelectedAuthor(null)} className="hover:opacity-70 transition-opacity" aria-label="Remove Author Filter">
                                              <RiCloseLine size={14} />
                                          </button>
                                      </div>
@@ -1084,9 +1098,14 @@ const App: React.FC = () => {
                     {/* Content Area */}
                     <div ref={contentRef} className="flex-1 overflow-y-auto px-6 md:px-10 pb-[calc(6rem+env(safe-area-inset-bottom))] scrollbar-hide pt-6">
                         {isLoading ? (
-                            <div className="h-64 flex flex-col items-center justify-center text-zinc-400 animate-pulse gap-4">
-                                <RiLoader4Line className="animate-spin" size={32} />
-                                <span className="text-sm font-medium">Loading Library...</span>
+                            <div className={`grid gap-6 mb-8 ${
+                                viewMode === 'grid' 
+                                ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' 
+                                : 'grid-cols-1 max-w-5xl mx-auto'
+                            }`}>
+                                {Array.from({ length: 8 }).map((_, i) => (
+                                    <PromptCardSkeleton key={i} viewMode={viewMode} />
+                                ))}
                             </div>
                         ) : processedPrompts.length > 0 ? (
                             <>
@@ -1116,6 +1135,7 @@ const App: React.FC = () => {
                                             disabled={currentPage === 1}
                                             className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                             title="Previous Page"
+                                            aria-label="Previous Page"
                                         >
                                             <RiArrowLeftSLine size={20} />
                                         </button>
@@ -1145,6 +1165,7 @@ const App: React.FC = () => {
                                             disabled={currentPage === totalPages}
                                             className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                             title="Next Page"
+                                            aria-label="Next Page"
                                         >
                                             <RiArrowRightSLine size={20} />
                                         </button>
@@ -1176,96 +1197,98 @@ const App: React.FC = () => {
                 </div>
             )}
 
-            {view === 'detail' && activePrompt && (
-                <PromptDetail 
-                    prompt={activePrompt}
-                    onBack={() => { 
-                        if (activeTopic) {
-                            setView('topic-detail');
-                            setActivePrompt(null);
-                        } else {
-                            setView('library'); 
-                            setActivePrompt(null); 
-                        }
-                    }}
-                    onEdit={(p) => { setView('editor'); }}
-                    onDelete={handleDeletePrompt}
-                    onToggleFavorite={handleToggleFavorite}
-                    isAuthenticated={isAuthenticated}
-                    onLogin={() => setIsLoginModalOpen(true)}
-                    onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
-                    onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
-                    onTopicClick={(t) => { 
-                        setLastView('detail');
-                        setLastActiveTopic(activeTopic);
-                        setActiveTopic(t); 
-                        setView('topic-detail'); 
-                        setTopicScrollPos(0); 
-                    }}
-                />
-            )}
+            <Suspense fallback={<LoadingOverlay />}>
+                {view === 'detail' && activePrompt && (
+                    <PromptDetail 
+                        prompt={activePrompt}
+                        onBack={() => { 
+                            if (activeTopic) {
+                                setView('topic-detail');
+                                setActivePrompt(null);
+                            } else {
+                                setView('library'); 
+                                setActivePrompt(null); 
+                            }
+                        }}
+                        onEdit={(p) => { setView('editor'); }}
+                        onDelete={handleDeletePrompt}
+                        onToggleFavorite={handleToggleFavorite}
+                        isAuthenticated={isAuthenticated}
+                        onLogin={() => setIsLoginModalOpen(true)}
+                        onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
+                        onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
+                        onTopicClick={(t) => { 
+                            setLastView('detail');
+                            setLastActiveTopic(activeTopic);
+                            setActiveTopic(t); 
+                            setView('topic-detail'); 
+                            setTopicScrollPos(0); 
+                        }}
+                    />
+                )}
 
-            {view === 'topics' && (
-                <TopicList 
-                    topics={allTopics}
-                    currentPage={currentPage}
-                    onPageChange={setCurrentPage}
-                    onSelectTopic={(t) => { 
-                        setLastView('topics');
-                        setLastActiveTopic(activeTopic);
-                        setActiveTopic(t); 
-                        setView('topic-detail'); 
-                        setTopicScrollPos(0); 
-                    }}
-                    onOpenSidebar={() => setSidebarOpen(true)}
-                />
-            )}
+                {view === 'topics' && (
+                    <TopicList 
+                        topics={allTopics}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                        onSelectTopic={(t) => { 
+                            setLastView('topics');
+                            setLastActiveTopic(activeTopic);
+                            setActiveTopic(t); 
+                            setView('topic-detail'); 
+                            setTopicScrollPos(0); 
+                        }}
+                        onOpenSidebar={() => setSidebarOpen(true)}
+                    />
+                )}
 
-            {view === 'topic-detail' && activeTopic && (
-                <TopicDetail 
-                    topic={activeTopic}
-                    prompts={activeTopicPrompts}
-                    onBack={() => { 
-                        if (lastView === 'detail') {
-                            setView('detail');
-                            setActiveTopic(lastActiveTopic);
-                        } else {
-                            setView('topics'); 
-                            setActiveTopic(null); 
-                        }
-                        setLastView(null);
-                        setLastActiveTopic(null);
-                        setTopicScrollPos(0); 
-                    }}
-                    onViewDetail={(p, scrollPos) => { 
-                        setTopicScrollPos(scrollPos);
-                        setActivePrompt(p); 
-                        setView('detail'); 
-                    }}
-                    isAuthenticated={isAuthenticated}
-                    initialScrollPos={topicScrollPos}
-                />
-            )}
+                {view === 'topic-detail' && activeTopic && (
+                    <TopicDetail 
+                        topic={activeTopic}
+                        prompts={activeTopicPrompts}
+                        onBack={() => { 
+                            if (lastView === 'detail') {
+                                setView('detail');
+                                setActiveTopic(lastActiveTopic);
+                            } else {
+                                setView('topics'); 
+                                setActiveTopic(null); 
+                            }
+                            setLastView(null);
+                            setLastActiveTopic(null);
+                            setTopicScrollPos(0); 
+                        }}
+                        onViewDetail={(p, scrollPos) => { 
+                            setTopicScrollPos(scrollPos);
+                            setActivePrompt(p); 
+                            setView('detail'); 
+                        }}
+                        isAuthenticated={isAuthenticated}
+                        initialScrollPos={topicScrollPos}
+                    />
+                )}
 
-            {view === 'editor' && (
-                <PromptEditor 
-                    initialData={activePrompt}
-                    onSave={handleSavePrompt}
-                    onDelete={handleDeletePrompt}
-                    onCancel={() => {
-                        if (activePrompt) {
-                            if (activeTopic) setView('topic-detail');
-                            else setView('detail');
-                        } else {
-                            if (activeTopic) setView('topic-detail');
-                            else setView('library');
-                        }
-                    }}
-                    existingAuthors={allAuthors}
-                    existingTags={allTags}
-                    existingTopics={allTopics.map(t => t.name)}
-                />
-            )}
+                {view === 'editor' && (
+                    <PromptEditor 
+                        initialData={activePrompt}
+                        onSave={handleSavePrompt}
+                        onDelete={handleDeletePrompt}
+                        onCancel={() => {
+                            if (activePrompt) {
+                                if (activeTopic) setView('topic-detail');
+                                else setView('detail');
+                            } else {
+                                if (activeTopic) setView('topic-detail');
+                                else setView('library');
+                            }
+                        }}
+                        existingAuthors={allAuthors}
+                        existingTags={allTags}
+                        existingTopics={allTopics.map(t => t.name)}
+                    />
+                )}
+            </Suspense>
 
         </main>
     </div>

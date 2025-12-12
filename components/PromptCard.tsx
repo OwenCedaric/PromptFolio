@@ -10,6 +10,51 @@ interface PromptCardProps {
   viewMode?: 'grid' | 'list';
 }
 
+// Skeleton Component for Loading State (Preserves Layout Stability)
+export const PromptCardSkeleton: React.FC<{ viewMode?: 'grid' | 'list' }> = ({ viewMode = 'grid' }) => {
+    if (viewMode === 'list') {
+        return (
+            <div className="flex flex-col md:flex-row bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden h-[200px] animate-pulse">
+                <div className="w-full h-40 md:w-48 md:h-full bg-zinc-200 dark:bg-zinc-800 shrink-0"></div>
+                <div className="p-5 flex flex-col flex-1 gap-3">
+                    <div className="flex justify-between">
+                        <div className="h-4 w-24 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                        <div className="h-4 w-16 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                    </div>
+                    <div className="h-6 w-3/4 bg-zinc-200 dark:bg-zinc-800 rounded mb-2"></div>
+                    <div className="space-y-2 flex-1">
+                        <div className="h-3 w-full bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                        <div className="h-3 w-5/6 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                    </div>
+                    <div className="flex gap-2 mt-auto">
+                        <div className="h-5 w-16 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                        <div className="h-5 w-16 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col h-[280px] p-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden animate-pulse">
+             <div className="flex justify-between items-center mb-4">
+                <div className="h-4 w-20 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                <div className="h-4 w-4 bg-zinc-200 dark:bg-zinc-800 rounded-full"></div>
+             </div>
+             <div className="h-6 w-3/4 bg-zinc-200 dark:bg-zinc-800 rounded mb-3"></div>
+             <div className="flex-1 space-y-2 mb-3">
+                <div className="h-3 w-full bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                <div className="h-3 w-full bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                <div className="h-3 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+             </div>
+             <div className="flex gap-2 mt-auto">
+                <div className="h-5 w-12 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                <div className="h-5 w-16 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+             </div>
+        </div>
+    );
+};
+
 const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, isAuthenticated = false, viewMode = 'grid' }) => {
   const [copied, setCopied] = useState(false);
   const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
@@ -47,6 +92,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
         href={`/?id=${prompt.id}`}
         onClick={(e) => { e.preventDefault(); onClick(prompt); }}
         className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-500 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+        aria-label={`View prompt: ${prompt.title}`}
         >
         {/* Watermarks */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
@@ -118,6 +164,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                                 : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                             title="Copy Content"
+                            aria-label="Copy prompt content"
                         >
                             {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                         </button>
@@ -149,6 +196,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
       className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:block relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+      aria-label={`View prompt: ${prompt.title}`}
     >
       {/* Side Cover Image */}
       {/* Mobile: Top Block (h-40). Desktop: Absolute Left Panel (w-48, h-full) */}
@@ -212,6 +260,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 hover:border-zinc-200'
                     }`}
                     title="Copy"
+                    aria-label="Copy prompt content"
                 >
                     {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                 </button>
