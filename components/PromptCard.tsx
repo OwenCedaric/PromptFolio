@@ -126,6 +126,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             </h3>
             
             {prompt.imageUrl && !isLocked && (
+                // Added aspect-ratio to container to prevent CLS
                 <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate">
                     <img 
                         src={getOptimizedImageUrl(prompt.imageUrl, 400)} 
@@ -134,9 +135,10 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         loading={priority ? "eager" : "lazy"}
                         fetchPriority={priority ? "high" : "auto"}
                         decoding="async"
+                        width="400"
+                        height="128"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
-                    {/* Subtle inner shadow for depth */}
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-lg pointer-events-none"></div>
                 </div>
             )}
@@ -202,7 +204,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       aria-label={`View prompt: ${prompt.title}`}
     >
       {/* Side Cover Image */}
-      {/* Mobile: Top Block (h-40). Desktop: Absolute Left Panel (w-48, h-full) */}
       {showImage && (
            <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
@@ -214,14 +215,11 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
-                {/* List View Gradient Overlay for better integration */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent pointer-events-none md:bg-gradient-to-r md:from-transparent md:to-black/5"></div>
            </div>
       )}
 
       {/* Content Container */}
-      {/* Added min-h-[160px] to ensure card height even with little text. */}
-      {/* Added md:ml-48 to reserve space for the absolute image on desktop. */}
       <div className={`p-5 flex flex-col min-w-0 relative z-10 min-h-[160px] ${showImage ? 'md:ml-48' : ''}`}>
          
          <div className="flex items-center justify-between mb-2">
@@ -230,7 +228,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
              </div>
              
-             {/* Minimalist Date for List View */}
              <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden md:block">
                 {new Date(prompt.updatedAt).toLocaleDateString()}
              </span>
@@ -254,7 +251,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 {prompt.tags.length > 4 && <span className="text-xs text-zinc-400 self-center">+{prompt.tags.length - 4}</span>}
              </div>
 
-             {/* Quick Action for List View */}
              {!isLocked && (
                 <button 
                     onClick={handleQuickCopy}
@@ -271,7 +267,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
              )}
          </div>
          
-         {/* List Mode Watermark - Subtler */}
          {!showImage && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-500 scale-75 group-hover:scale-90 origin-right">
                 {isDraft ? <RiDraftLine size={120} /> : isPrivate ? <RiLockLine size={120} /> : <span className="text-8xl font-bold tracking-tighter select-none">v{versionNumber}</span>}

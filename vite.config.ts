@@ -15,13 +15,11 @@ export default defineConfig(({ mode }) => {
         threshold: 10240,
         algorithm: 'gzip',
         ext: '.gz',
-        deleteOriginFile: false, // Explicitly keep original files
+        deleteOriginFile: false, 
       }),
       {
         name: 'ensure-favicon',
         closeBundle() {
-          // Manually copy favicon.svg to dist to guarantee the raw file exists
-          // This ensures external links always have access to the uncompressed original
           const root = (process as any).cwd();
           const src = resolve(root, 'favicon.svg');
           const destDir = resolve(root, 'dist');
@@ -38,6 +36,20 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       minify: 'esbuild',
       sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Split core React vendor to cache it longer
+            'vendor-react': ['react', 'react-dom'],
+            // Split icons as they are large svg paths
+            'vendor-icons': ['@remixicon/react'],
+            // Heavy markdown parsing logic loaded lazily
+            'vendor-markdown': ['react-markdown', 'remark-gfm'],
+            // AI SDK
+            'vendor-genai': ['@google/genai']
+          }
+        }
+      }
     },
     define: {
       'process.env': JSON.stringify(env)

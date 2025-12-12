@@ -10,6 +10,12 @@
     <meta name="keywords" content="prompt engineering, AI prompts, Gemini API, prompt manager, prompt versioning, LLM tools" />
     <meta name="author" content="PromptFolio" />
     <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
+    
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://wsrv.nl" crossorigin />
+    <link rel="dns-prefetch" href="https://wsrv.nl" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -20,7 +26,7 @@
     <meta property="og:description" content="Professional AI Prompt Management System for developers and prompt engineers." />
     <meta property="og:site_name" content="PromptFolio" />
 
-    <!-- Theme Initialization Script (Prevents FOUC & Fixes Native UI) -->
+    <!-- Theme Initialization Script (Prevents FOUC) -->
     <script>
       (function() {
         try {
@@ -38,9 +44,41 @@
         } catch (e) {}
       })();
     </script>
+    <style>
+      /* Critical CSS for App Shell Loader */
+      #root:empty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100dvh;
+        width: 100%;
+        background-color: #fafafa;
+      }
+      html.dark #root:empty {
+        background-color: #09090b;
+      }
+      .app-shell-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(161, 161, 170, 0.3);
+        border-radius: 50%;
+        border-top-color: #18181b;
+        animation: spin 1s ease-in-out infinite;
+      }
+      html.dark .app-shell-spinner {
+        border-color: rgba(63, 63, 70, 0.3);
+        border-top-color: #fafafa;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
 </head>
   <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full fixed scrollbar-hide">
-    <div id="root" class="h-full w-full overflow-hidden flex flex-col"></div>
+    <!-- App Shell: Content shown immediately before React hydrates -->
+    <div id="root" class="h-full w-full overflow-hidden flex flex-col">
+      <div class="app-shell-spinner"></div>
+    </div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
