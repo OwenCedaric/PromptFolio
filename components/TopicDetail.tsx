@@ -34,32 +34,14 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
     };
 
     // Advanced Asymmetric Border Radius Logic (4-step cycle)
-    // Ensures the "flat" or "connected" side always faces the content text
     const getShapeClass = (idx: number) => {
         const mod = idx % 4;
         switch (mod) {
-            case 0: 
-                // Cycle 1 (Even, Image Left): Diagonal A
-                // Rounded: Top-Left (Outer), Bottom-Right (Inner-Bottom). 
-                // Flat: Top-Right (Inner-Top) facing content header.
-                return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
-            case 1:
-                // Cycle 2 (Odd, Image Right): Diagonal B
-                // Rounded: Top-Right (Outer), Bottom-Left (Inner-Bottom).
-                // Flat: Top-Left (Inner-Top) facing content header.
-                return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
-            case 2:
-                // Cycle 3 (Even, Image Left): Left Side Rounded (C-shape)
-                // Rounded: Left side (Outer).
-                // Flat: Right side (Inner) facing content.
-                return 'rounded-l-[4rem] rounded-r-none';
-            case 3:
-                // Cycle 4 (Odd, Image Right): Right Side Rounded (D-shape)
-                // Rounded: Right side (Outer).
-                // Flat: Left side (Inner) facing content.
-                return 'rounded-r-[4rem] rounded-l-none';
-            default:
-                return 'rounded-none';
+            case 0: return 'rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-none rounded-bl-none';
+            case 1: return 'rounded-tr-[4rem] rounded-bl-[4rem] rounded-tl-none rounded-br-none';
+            case 2: return 'rounded-l-[4rem] rounded-r-none';
+            case 3: return 'rounded-r-[4rem] rounded-l-none';
+            default: return 'rounded-none';
         }
     };
 
@@ -87,6 +69,8 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
                                 loading="lazy"
                                 decoding="async"
+                                width="800"
+                                height="600" // Approximate aspect ratio placeholder
                             />
                         </div>
                     ) : (
@@ -96,7 +80,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                     )}
                  </div>
 
-                {/* Index / Number Watermark - Positioned creatively */}
+                {/* Index / Number Watermark */}
                 <div className={`
                     absolute text-[6rem] md:text-[12rem] leading-none font-serif font-black text-transparent stroke-text opacity-10 md:opacity-10 select-none pointer-events-none z-0
                     ${isEven ? '-left-2 md:-left-4 bottom-0' : '-right-2 md:-right-4 top-0'}
@@ -127,11 +111,12 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                         {currentVersion?.content}
                     </div>
 
-                    {/* Action Bar: Copy (Utility) Left, Explore (Nav) Right -> */}
+                    {/* Action Bar */}
                     <div className="mt-4 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between gap-4">
                          <button 
                             onClick={handleCopy}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                            aria-label="Copy prompt content"
+                            className={`flex items-center gap-2 px-4 py-3 md:py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                                 copied 
                                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' 
                                 : 'bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-900 dark:hover:border-zinc-100 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -143,7 +128,8 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 
                          <button 
                             onClick={() => onViewDetail(prompt)}
-                            className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors text-right"
+                            aria-label="View details"
+                            className="group/btn flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors text-right p-2"
                          >
                             Explore Detail
                             <span className="bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full p-1 transition-transform duration-300 group-hover/btn:translate-x-2">
@@ -161,8 +147,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onViewDetail, isAuthenticated, initialScrollPos = 0 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Determine Cover Image: Use the last prompt's image to create a "bookend" feel, or fallback to first found.
-    // The prompt requested "intro the last picture", which implies the last one in the list.
+    // Determine Cover Image
     const coverImage = useMemo(() => {
         return [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
     }, [prompts]);
@@ -175,7 +160,6 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     }, [initialScrollPos]);
 
     const handleViewDetail = (prompt: PromptData) => {
-        // Capture current scroll position before navigating away
         const currentPos = containerRef.current?.scrollTop || 0;
         onViewDetail(prompt, currentPos);
     };
@@ -187,7 +171,8 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
             <div className="absolute top-0 left-0 right-0 z-50 p-6 md:p-10 flex justify-between items-start pointer-events-none mix-blend-difference text-white dark:text-zinc-200">
                 <button 
                     onClick={onBack}
-                    className="pointer-events-auto flex items-center gap-2 group hover:opacity-70 transition-opacity"
+                    aria-label="Go Back"
+                    className="pointer-events-auto flex items-center gap-2 group hover:opacity-70 transition-opacity p-2"
                 >
                     <div className="p-2 border border-current rounded-full transition-transform group-hover:-translate-x-1">
                         <RiArrowLeftLine size={20} />
@@ -196,7 +181,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                 </button>
             </div>
 
-            {/* Scrollable Feed - No Snapping for better flow */}
+            {/* Scrollable Feed */}
             <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 
                 {/* Intro / Title Card - Cinematic Cover Design */}
@@ -209,10 +194,11 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                         <div className="absolute inset-0 z-0 select-none pointer-events-none">
                             <img 
                                 src={getOptimizedImageUrl(coverImage, 1200)} 
-                                alt="Collection Cover" 
+                                alt={`${topic} Collection Cover`} 
                                 className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
                                 loading="eager"
                                 fetchPriority="high"
+                                decoding="async"
                             />
                             {/* Cinematic Overlays */}
                             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>
@@ -258,20 +244,18 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                     ))}
                 </div>
                 
-                {/* Footer / End Mark - Asymmetric Design */}
+                {/* Footer / End Mark */}
                 <div className="min-h-[30vh] flex flex-col justify-center px-8 md:px-24 pb-20 pt-20 relative overflow-hidden">
                     <div className="w-full border-t border-zinc-200 dark:border-zinc-800 mb-12"></div>
                     
                     <div className="flex flex-col md:flex-row items-end md:items-start justify-between gap-10">
                         
-                        {/* Left: Huge Geometric Watermark */}
                         <div className="hidden md:block">
                             <span className="font-serif text-9xl text-zinc-100 dark:text-zinc-900 leading-none select-none">
                                 Fin.
                             </span>
                         </div>
 
-                        {/* Right: Functional End */}
                         <div className="flex flex-col items-end text-right">
                              <div className="flex items-center gap-4 mb-4">
                                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Collection Complete</span>
@@ -284,6 +268,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
 
                              <button 
                                 onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+                                aria-label="Back to top"
                                 className="group flex items-center gap-3 px-6 py-3 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity"
                             >
                                 Back to Top

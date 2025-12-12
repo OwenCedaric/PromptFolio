@@ -24,7 +24,7 @@ interface SidebarProps {
 
 // Inline Logo Component: Standalone Cedar "C" (No Background)
 export const Logo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true" width="64" height="64">
     <g transform="translate(2, 2)">
         {/* The Serif 'C' Shape - Standalone with thicker strokes for visibility without background */}
         <path 
@@ -65,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed ? (
                 <button 
                     onClick={onLogoClick}
-                    className="flex items-center gap-3 overflow-hidden whitespace-nowrap group cursor-pointer hover:opacity-70 transition-opacity focus:outline-none"
+                    className="flex items-center gap-3 overflow-hidden whitespace-nowrap group cursor-pointer hover:opacity-70 transition-opacity focus:outline-none min-h-[44px]"
                     title="Reset to Home"
                     aria-label="Reset to Home"
                 >
@@ -73,13 +73,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white font-sans">{siteName || 'CedarPrompt'}</span>
                 </button>
             ) : (
-                 <button className="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer hover:opacity-70 transition-opacity" onClick={toggleCollapse} title="Expand" aria-label="Expand Sidebar">
-                    <Logo className="w-full h-full text-zinc-900 dark:text-zinc-100" />
+                 <button className="w-12 h-12 flex items-center justify-center shrink-0 cursor-pointer hover:opacity-70 transition-opacity" onClick={toggleCollapse} title="Expand" aria-label="Expand Sidebar">
+                    <Logo className="w-8 h-8 text-zinc-900 dark:text-zinc-100" />
                 </button>
             )}
 
             {/* Mobile Close */}
-            <button onClick={onClose} className="md:hidden ml-auto text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100" aria-label="Close Sidebar">
+            <button onClick={onClose} className="md:hidden ml-auto text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Close Sidebar">
                 <RiCloseLine size={24} />
             </button>
         </div>
@@ -91,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onClick={onCreateNew}
                     title="New Prompt"
                     aria-label="Create New Prompt"
-                    className={`flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl transition-all shadow-sm hover:shadow-md ${isCollapsed ? 'w-10 h-10 p-0' : 'w-full py-3 px-4'}`}
+                    className={`flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl transition-all shadow-sm hover:shadow-md ${isCollapsed ? 'w-12 h-12 p-0' : 'w-full py-3 px-4 min-h-[44px]'}`}
                 >
                     <RiAddLine size={20} />
                     {!isCollapsed && <span className="text-sm font-semibold">New Prompt</span>}
@@ -107,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => { onNavigate('library'); onSelectCategory('All'); }}
                     title={isCollapsed ? "All Prompts" : undefined}
                     aria-label="View All Prompts"
-                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-3 text-sm rounded-lg transition-colors min-h-[44px] ${
                     currentView === 'library' && selectedCategory === 'All'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -123,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => onNavigate('topics')}
                     title={isCollapsed ? "Topics" : undefined}
                     aria-label="View Topics"
-                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-3 text-sm rounded-lg transition-colors min-h-[44px] ${
                     currentView === 'topics' || currentView === 'topic-detail'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -139,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => { onNavigate('library'); onSelectCategory('Favorites'); }}
                     title={isCollapsed ? "Favorites" : undefined}
                     aria-label="View Favorites"
-                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-2.5 text-sm rounded-lg transition-colors ${
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-3 text-sm rounded-lg transition-colors min-h-[44px] ${
                     currentView === 'library' && selectedCategory === 'Favorites'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -163,7 +163,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 key={cat}
                                 onClick={() => { onNavigate('library'); onSelectCategory(cat); }}
                                 aria-label={`View category ${cat}`}
-                                className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors min-h-[44px] ${
                                 currentView === 'library' && selectedCategory === cat
                                     ? 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-medium'
                                     : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -183,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({
              {/* Collapse Toggle */}
              <button 
                 onClick={toggleCollapse}
-                className={`hidden md:flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
+                className={`hidden md:flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                 title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
@@ -193,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <button 
                 onClick={onToggleTheme}
-                className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
+                className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                 title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
@@ -205,7 +205,7 @@ const Sidebar: React.FC<SidebarProps> = ({
              {isAuthenticated && onExport && (
                 <button 
                     onClick={onExport}
-                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
+                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                     title="Export Data JSON"
                     aria-label="Export Data"
                 >
@@ -217,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {isAuthenticated ? (
                 <button 
                     onClick={onLogout}
-                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
+                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                     title="Sign out"
                     aria-label="Sign out"
                 >
@@ -227,7 +227,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             ) : (
                 <button 
                     onClick={onLogin}
-                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${isCollapsed ? 'justify-center w-10 h-10' : 'w-full'}`}
+                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                     title="Admin Login"
                     aria-label="Admin Login"
                 >

@@ -16,7 +16,7 @@ interface PromptCardProps {
 export const PromptCardSkeleton: React.FC<{ viewMode?: 'grid' | 'list' }> = ({ viewMode = 'grid' }) => {
     if (viewMode === 'list') {
         return (
-            <div className="flex flex-col md:flex-row bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden h-[200px] animate-pulse">
+            <div className="flex flex-col md:flex-row bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden h-auto md:h-[200px] animate-pulse">
                 <div className="w-full h-40 md:w-48 md:h-full bg-zinc-200 dark:bg-zinc-800 shrink-0"></div>
                 <div className="p-5 flex flex-col flex-1 gap-3">
                     <div className="flex justify-between">
@@ -130,13 +130,14 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate">
                     <img 
                         src={getOptimizedImageUrl(prompt.imageUrl, 400)} 
-                        alt={prompt.title} 
+                        alt={prompt.title || 'Prompt Preview'} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
                         loading={priority ? "eager" : "lazy"}
                         fetchPriority={priority ? "high" : "auto"}
                         decoding="async"
                         width="400"
                         height="128"
+                        style={{ aspectRatio: '400/128' }}
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-lg pointer-events-none"></div>
@@ -200,19 +201,21 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:block relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden min-h-[160px]"
       aria-label={`View prompt: ${prompt.title}`}
     >
       {/* Side Cover Image */}
       {showImage && (
-           <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
+           <div className="w-full h-40 md:w-48 md:h-auto shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
                     src={getOptimizedImageUrl(prompt.imageUrl, 200)} 
-                    alt={prompt.title} 
+                    alt={prompt.title || 'Prompt Preview'} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading={priority ? "eager" : "lazy"}
                     fetchPriority={priority ? "high" : "auto"}
                     decoding="async"
+                    width="200"
+                    height="200"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent pointer-events-none md:bg-gradient-to-r md:from-transparent md:to-black/5"></div>
@@ -220,7 +223,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       )}
 
       {/* Content Container */}
-      <div className={`p-5 flex flex-col min-w-0 relative z-10 min-h-[160px] ${showImage ? 'md:ml-48' : ''}`}>
+      <div className="p-5 flex flex-col flex-1 min-w-0 relative z-10">
          
          <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
@@ -238,7 +241,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          </h3>
 
          <div className="flex-1 relative mb-3 min-h-0">
-             <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
+             <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 md:line-clamp-3 leading-relaxed opacity-90 break-words whitespace-pre-wrap">
                 {isLocked ? "Content is private." : (currentVersion?.content || 'No content')}
              </p>
          </div>
