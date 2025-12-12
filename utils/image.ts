@@ -25,7 +25,7 @@ export const getOptimizedImageUrl = (url: string | undefined, width: number, hei
             url: cleanUrl,
             w: width.toString(),
             q: quality.toString(),
-            output: 'webp', // Force WebP for better compression
+            output: 'avif', // Force AVIF for superior compression and quality
             il: '' // Incremental loading (Progressive)
         });
 

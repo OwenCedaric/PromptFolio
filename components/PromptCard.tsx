@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { RiStarFill, RiDraftLine, RiLockLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
 import { PromptData, PromptStatus } from '../types';
@@ -207,15 +208,20 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       {/* Side Cover Image */}
       {showImage && (
            <div className="w-full h-40 md:w-48 md:h-auto shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
+                {/* 
+                   Increased width from 200 to 600 for mobile list view.
+                   On mobile, the card is usually full width, so image spans ~350-450px.
+                   200px was causing blurriness on mobile.
+                */}
                 <img 
-                    src={getOptimizedImageUrl(prompt.imageUrl, 200)} 
+                    src={getOptimizedImageUrl(prompt.imageUrl, 600)} 
                     alt={prompt.title || 'Prompt Preview'} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading={priority ? "eager" : "lazy"}
                     fetchPriority={priority ? "high" : "auto"}
                     decoding="async"
-                    width="200"
-                    height="200"
+                    width="600"
+                    height="600"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent pointer-events-none md:bg-gradient-to-r md:from-transparent md:to-black/5"></div>
