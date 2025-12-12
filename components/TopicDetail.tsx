@@ -210,6 +210,8 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                                 src={coverImage} 
                                 alt="Collection Cover" 
                                 className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
+                                loading="eager"
+                                fetchPriority="high"
                             />
                             {/* Cinematic Overlays */}
                             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>

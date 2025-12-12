@@ -8,6 +8,7 @@ interface PromptCardProps {
   onTagClick?: (tag: string) => void;
   isAuthenticated?: boolean;
   viewMode?: 'grid' | 'list';
+  priority?: boolean;
 }
 
 // Skeleton Component for Loading State (Preserves Layout Stability)
@@ -55,7 +56,7 @@ export const PromptCardSkeleton: React.FC<{ viewMode?: 'grid' | 'list' }> = ({ v
     );
 };
 
-const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, isAuthenticated = false, viewMode = 'grid' }) => {
+const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, isAuthenticated = false, viewMode = 'grid', priority = false }) => {
   const [copied, setCopied] = useState(false);
   const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
   
@@ -129,7 +130,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         src={prompt.imageUrl} 
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
-                        loading="lazy"
+                        loading={priority ? "eager" : "lazy"}
+                        fetchPriority={priority ? "high" : "auto"}
                         decoding="async"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
@@ -206,7 +208,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
-                    loading="lazy"
+                    loading={priority ? "eager" : "lazy"}
+                    fetchPriority={priority ? "high" : "auto"}
                     decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />

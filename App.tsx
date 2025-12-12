@@ -316,12 +316,17 @@ const App: React.FC = () => {
   
   // Layout & Sort State
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  
+  // Enhanced View Mode: Detects Mobile/Desktop default preference
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
       if (typeof window !== 'undefined') {
           const saved = localStorage.getItem('pf_view_mode');
-          return (saved === 'list' || saved === 'grid') ? saved : 'grid';
+          if (saved === 'list' || saved === 'grid') return saved;
+          
+          // Default: List on Mobile (< 768px), Grid on Desktop
+          return window.matchMedia('(max-width: 768px)').matches ? 'list' : 'grid';
       }
-      return 'grid';
+      return 'grid'; // Default fallback for SSR/Initial
   });
 
   // Persist viewMode changes
@@ -1115,7 +1120,7 @@ const App: React.FC = () => {
                                     ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' 
                                     : 'grid-cols-1 max-w-5xl mx-auto'
                                 }`}>
-                                    {paginatedPrompts.map(prompt => (
+                                    {paginatedPrompts.map((prompt, index) => (
                                         <PromptCard 
                                             key={prompt.id} 
                                             prompt={prompt} 
@@ -1123,6 +1128,7 @@ const App: React.FC = () => {
                                             onTagClick={(t) => setSelectedTag(t)}
                                             isAuthenticated={isAuthenticated}
                                             viewMode={viewMode}
+                                            priority={index < 4} // Optimization: Eager load images above fold
                                         />
                                     ))}
                                 </div>
