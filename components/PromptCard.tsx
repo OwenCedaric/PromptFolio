@@ -88,6 +88,16 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       }
   };
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+      const img = e.currentTarget;
+      // Fallback: If wsrv.nl fails, try original URL. If that fails, hide image.
+      if (img.src.includes('wsrv.nl') && prompt.imageUrl) {
+          img.src = prompt.imageUrl;
+      } else {
+          img.style.display = 'none';
+      }
+  };
+
   // --- Grid View Layout ---
   if (viewMode === 'grid') {
     return (
@@ -139,7 +149,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         width="400"
                         height="128"
                         style={{ aspectRatio: '400/128' }}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
+                        onError={handleImageError} 
                     />
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-lg pointer-events-none"></div>
                 </div>
@@ -222,7 +232,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     decoding="async"
                     width="600"
                     height="600"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    onError={handleImageError}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent pointer-events-none md:bg-gradient-to-r md:from-transparent md:to-black/5"></div>
            </div>

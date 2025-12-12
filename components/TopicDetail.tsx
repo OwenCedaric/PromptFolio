@@ -1,3 +1,4 @@
+
 import React, { useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { PromptData } from '../types';
 import { RiArrowLeftLine, RiArrowRightLine, RiEyeLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
@@ -47,6 +48,15 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
 
     const shapeClass = getShapeClass(index);
 
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const img = e.currentTarget;
+        if (img.src.includes('wsrv.nl') && prompt.imageUrl) {
+            img.src = prompt.imageUrl;
+        } else {
+            img.style.display = 'none';
+        }
+    };
+
     return (
         <div className="w-full min-h-[80vh] flex flex-col md:flex-row relative group overflow-hidden">
             
@@ -71,6 +81,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                                 decoding="async"
                                 width="800"
                                 height="600" // Approximate aspect ratio placeholder
+                                onError={handleImageError}
                             />
                         </div>
                     ) : (
@@ -164,6 +175,15 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
         onViewDetail(prompt, currentPos);
     };
 
+    const handleCoverError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const img = e.currentTarget;
+        if (img.src.includes('wsrv.nl') && coverImage) {
+            img.src = coverImage;
+        } else {
+            img.style.display = 'none';
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-50 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden font-sans">
             
@@ -199,6 +219,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                                 loading="eager"
                                 fetchPriority="high"
                                 decoding="async"
+                                onError={handleCoverError}
                             />
                             {/* Cinematic Overlays */}
                             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/50 to-transparent"></div>

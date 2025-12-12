@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -162,6 +163,15 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
 
   const handleDeletePrompt = () => {
     onDelete(prompt.id);
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+      const img = e.currentTarget;
+      if (img.src.includes('wsrv.nl') && prompt.imageUrl) {
+          img.src = prompt.imageUrl;
+      } else {
+          img.style.display = 'none';
+      }
   };
 
   // Helper to render status badge
@@ -409,6 +419,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                 className="w-full h-auto block" 
                                 loading="lazy"
                                 decoding="async"
+                                onError={handleImageError}
                             />
                         </div>
                     )}

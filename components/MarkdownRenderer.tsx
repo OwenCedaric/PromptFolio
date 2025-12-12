@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -21,7 +22,17 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
                           className="w-full h-auto m-0" 
                           alt={props.alt || 'content'} 
                           loading="lazy" 
-                          decoding="async" 
+                          decoding="async"
+                          onError={(e) => {
+                            const img = e.currentTarget;
+                            const originalSrc = props.src as string;
+                            if (img.src.includes('wsrv.nl') && originalSrc) {
+                                img.src = originalSrc;
+                            } else {
+                                img.style.display = 'none';
+                                img.parentElement?.style.setProperty('display', 'none');
+                            }
+                          }}
                       />
                   </div>
               ),
