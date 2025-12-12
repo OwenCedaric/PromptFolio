@@ -1,6 +1,7 @@
 import React from 'react';
 import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiDownloadLine, RiBookOpenLine } from '@remixicon/react';
 import { Category } from '../types';
+import { Logo } from './Logo';
 
 interface SidebarProps {
   siteName?: string;
@@ -21,31 +22,6 @@ interface SidebarProps {
   currentView: string;
   onNavigate: (view: string) => void;
 }
-
-// Inline Logo Component: Standalone Cedar "C" (No Background)
-export const Logo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true" width="64" height="64">
-    <g transform="translate(2, 2)">
-        {/* The Serif 'C' Shape - Standalone with thicker strokes for visibility without background */}
-        <path 
-            d="M48 16C44 12 38 10 32 10C19.85 10 10 19.85 10 32C10 44.15 19.85 54 32 54C38 54 44 52 48 48" 
-            stroke="currentColor" 
-            strokeWidth="5" 
-            strokeLinecap="square" 
-        />
-        
-        {/* The Cedar Tree Lines - Abstracted & Integrated */}
-        {/* Trunk */}
-        <path d="M32 54V22" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-        
-        {/* Branches - Slightly more organic spacing */}
-        <path d="M32 28L18 42" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-        <path d="M32 34L46 48" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-        <path d="M32 24L25 31" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-        <path d="M32 40L39 47" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-    </g>
-  </svg>
-);
 
 const Sidebar: React.FC<SidebarProps> = ({ 
     siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport, onLogoClick, currentView, onNavigate
@@ -79,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             {/* Mobile Close */}
-            <button onClick={onClose} className="md:hidden ml-auto text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Close Sidebar">
+            <button onClick={onClose} className="md:hidden ml-auto text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Close Sidebar">
                 <RiCloseLine size={24} />
             </button>
         </div>
@@ -110,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-3 text-sm rounded-lg transition-colors min-h-[44px] ${
                     currentView === 'library' && selectedCategory === 'All'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
                     }`}
                 >
                     <div className="flex items-center gap-3">
@@ -126,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-3 text-sm rounded-lg transition-colors min-h-[44px] ${
                     currentView === 'topics' || currentView === 'topic-detail'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
                     }`}
                 >
                     <div className="flex items-center gap-3">
@@ -142,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3'} py-3 text-sm rounded-lg transition-colors min-h-[44px] ${
                     currentView === 'library' && selectedCategory === 'Favorites'
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
                     }`}
                 >
                     <div className="flex items-center gap-3">
@@ -166,7 +142,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors min-h-[44px] ${
                                 currentView === 'library' && selectedCategory === cat
                                     ? 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-medium'
-                                    : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-200'
+                                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-200'
                                 }`}
                             >
                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 transition-all ${currentView === 'library' && selectedCategory === cat ? 'bg-zinc-900 dark:bg-zinc-100' : 'bg-zinc-300 dark:bg-zinc-700'}`}></span>
@@ -183,7 +159,7 @@ const Sidebar: React.FC<SidebarProps> = ({
              {/* Collapse Toggle */}
              <button 
                 onClick={toggleCollapse}
-                className={`hidden md:flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
+                className={`hidden md:flex items-center gap-3 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                 title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
@@ -193,7 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <button 
                 onClick={onToggleTheme}
-                className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
+                className={`flex items-center gap-3 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                 title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
@@ -205,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({
              {isAuthenticated && onExport && (
                 <button 
                     onClick={onExport}
-                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
+                    className={`flex items-center gap-3 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                     title="Export Data JSON"
                     aria-label="Export Data"
                 >
@@ -217,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {isAuthenticated ? (
                 <button 
                     onClick={onLogout}
-                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
+                    className={`flex items-center gap-3 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                     title="Sign out"
                     aria-label="Sign out"
                 >
@@ -227,7 +203,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             ) : (
                 <button 
                     onClick={onLogin}
-                    className={`flex items-center gap-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
+                    className={`flex items-center gap-3 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'}`}
                     title="Admin Login"
                     aria-label="Admin Login"
                 >

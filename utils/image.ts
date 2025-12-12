@@ -4,9 +4,9 @@
  * @param url The original image URL
  * @param width Target width
  * @param height Target height (optional)
- * @param quality Quality (1-100, default 80)
+ * @param quality Quality (1-100, default 75)
  */
-export const getOptimizedImageUrl = (url: string | undefined, width: number, height?: number, quality: number = 80): string => {
+export const getOptimizedImageUrl = (url: string | undefined, width: number, height?: number, quality: number = 75): string => {
     if (!url) return '';
     
     // Skip optimization for:

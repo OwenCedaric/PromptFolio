@@ -29,8 +29,12 @@ export const onRequestGet = async (context: any) => {
       isFavorite: row.isFavorite === 1,
     }));
 
+    // Cache for 60 seconds at edge and browser
     return new Response(JSON.stringify(prompts), {
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300"
+      },
     });
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });

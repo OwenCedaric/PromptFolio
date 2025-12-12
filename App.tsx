@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useRef, Suspense, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
-import Sidebar, { Logo } from './components/Sidebar';
+import Sidebar from './components/Sidebar';
+import { Logo } from './components/Logo';
 import PromptCard, { PromptCardSkeleton } from './components/PromptCard';
 import { PromptData, Category, PromptStatus, Copyright } from './types';
 import { 
@@ -286,6 +287,8 @@ const App: React.FC = () => {
     }
     return '';
   });
+  // Use deferred value for search to keep UI responsive (INP optimization)
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   
   // Lazy initialize filters from URL to prevent race conditions causing redirects
   const [selectedCategory, setSelectedCategory] = useState<string>(() => {
@@ -549,8 +552,8 @@ const App: React.FC = () => {
           title = `${selectedCategory} Prompts | ${SITE_NAME}`;
       } else if (view === 'editor') {
           title = `Editor | ${SITE_NAME}`;
-      } else if (searchQuery) {
-          title = `Search: ${searchQuery} | ${SITE_NAME}`;
+      } else if (deferredSearchQuery) {
+          title = `Search: ${deferredSearchQuery} | ${SITE_NAME}`;
       } else if (currentPage > 1) {
           title = `${SITE_NAME} (Page ${currentPage})`;
       }
@@ -605,8 +608,8 @@ const App: React.FC = () => {
           if (selectedAuthor) {
               params.set('author', selectedAuthor);
           }
-          if (searchQuery) {
-              params.set('search', searchQuery);
+          if (deferredSearchQuery) {
+              params.set('search', deferredSearchQuery);
           }
           if (currentPage > 1) {
               params.set('page', currentPage.toString());
@@ -621,7 +624,7 @@ const App: React.FC = () => {
            window.history.pushState({}, '', newSearch || window.location.pathname);
       }
 
-  }, [view, activePrompt, activeTopic, selectedCategory, selectedTag, selectedAuthor, searchQuery, isAuthenticated, SITE_NAME, isLoading, currentPage]);
+  }, [view, activePrompt, activeTopic, selectedCategory, selectedTag, selectedAuthor, deferredSearchQuery, isAuthenticated, SITE_NAME, isLoading, currentPage]);
 
   // --- Handle Browser Back/Forward Buttons ---
   useEffect(() => {
@@ -852,9 +855,9 @@ const App: React.FC = () => {
       let result = prompts.filter(p => {
           const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory || (selectedCategory === 'Favorites' && p.isFavorite);
           
-          // Enhanced Search Logic
-          const matchesSearch = searchQuery === '' || (() => {
-              const query = searchQuery.toLowerCase();
+          // Enhanced Search Logic - Use DEFERRED query for smoother typing (INP)
+          const matchesSearch = deferredSearchQuery === '' || (() => {
+              const query = deferredSearchQuery.toLowerCase();
               return (
                   p.title.toLowerCase().includes(query) ||
                   (p.description && p.description.toLowerCase().includes(query)) ||
@@ -889,7 +892,7 @@ const App: React.FC = () => {
       });
 
       return result;
-  }, [prompts, selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder]);
+  }, [prompts, selectedCategory, deferredSearchQuery, selectedTag, selectedAuthor, sortOrder]);
 
   // Pagination Logic
   const totalPages = Math.ceil(processedPrompts.length / ITEMS_PER_PAGE);
@@ -906,7 +909,7 @@ const App: React.FC = () => {
       if (view === 'library') {
           setCurrentPage(1);
       }
-  }, [selectedCategory, searchQuery, selectedTag, selectedAuthor, sortOrder]); // Removed 'view' to preserve page number on back navigation
+  }, [selectedCategory, deferredSearchQuery, selectedTag, selectedAuthor, sortOrder]); 
 
   // Scroll to top when page changes
   useEffect(() => {
