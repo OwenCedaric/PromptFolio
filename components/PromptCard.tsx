@@ -41,19 +41,24 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       }
   };
 
-  // Helper to optimize image URLs (especially Twitter)
+  // Helper to optimize image URLs using Weserv Proxy
+  // This handles Twitter images (pbs.twimg.com) and others by:
+  // 1. Serving via global CDN (faster than Twitter in some regions)
+  // 2. Converting to WebP (smaller size)
+  // 3. Resizing to appropriate card dimensions (saves bandwidth)
   const getOptimizedImageUrl = (url: string | undefined) => {
       if (!url) return undefined;
-      // Twitter/X Image Optimization
-      // Convert name=large/4096x4096 to name=small (680px max) for cards
-      if (url.includes('pbs.twimg.com/media/')) {
-          try {
-              const urlObj = new URL(url);
-              urlObj.searchParams.set('name', 'small');
-              return urlObj.toString();
-          } catch (e) { return url; }
+      
+      try {
+          // Use wsrv.nl (Weserv) for on-the-fly optimization
+          // w=600: Sufficient for card width (retina ready)
+          // q=80: Good balance of quality and size
+          // output=webp: Modern format
+          const encodedUrl = encodeURIComponent(url);
+          return `https://wsrv.nl/?url=${encodedUrl}&w=600&output=webp&q=80`;
+      } catch (e) {
+          return url;
       }
-      return url;
   };
 
   const optimizedImage = getOptimizedImageUrl(prompt.imageUrl);

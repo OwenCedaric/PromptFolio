@@ -32,18 +32,15 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
         }
     };
 
-    // Helper to optimize image URLs (especially Twitter)
+    // Helper to optimize image URLs using Weserv Proxy
     const getOptimizedImageUrl = (url: string | undefined) => {
         if (!url) return undefined;
-        // Twitter/X Image Optimization
-        if (url.includes('pbs.twimg.com/media/')) {
-            try {
-                const urlObj = new URL(url);
-                urlObj.searchParams.set('name', 'medium'); // Use medium (~1200px) for magazine view
-                return urlObj.toString();
-            } catch (e) { return url; }
-        }
-        return url;
+        try {
+            // Optimize for Magazine View
+            // w=800: Larger than card view but optimized for split layout
+            const encodedUrl = encodeURIComponent(url);
+            return `https://wsrv.nl/?url=${encodedUrl}&w=800&output=webp&q=80`;
+        } catch (e) { return url; }
     };
 
     const optimizedImage = getOptimizedImageUrl(prompt.imageUrl);
@@ -177,19 +174,14 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Determine Cover Image: Use the last prompt's image to create a "bookend" feel, or fallback to first found.
-    // The prompt requested "intro the last picture", which implies the last one in the list.
     const coverImage = useMemo(() => {
         const img = [...prompts].reverse().find(p => p.imageUrl)?.imageUrl;
         if (!img) return undefined;
-        // Optimization for cover image
-        if (img.includes('pbs.twimg.com/media/')) {
-            try {
-                const urlObj = new URL(img);
-                urlObj.searchParams.set('name', 'large'); // Keep large for hero
-                return urlObj.toString();
-            } catch (e) { return img; }
-        }
-        return img;
+        try {
+            // High Quality for Hero Cover (w=1600)
+            const encodedUrl = encodeURIComponent(img);
+            return `https://wsrv.nl/?url=${encodedUrl}&w=1600&output=webp&q=85`;
+        } catch (e) { return img; }
     }, [prompts]);
 
     // Restore scroll position on mount
