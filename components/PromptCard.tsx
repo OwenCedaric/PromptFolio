@@ -8,10 +8,9 @@ interface PromptCardProps {
   onTagClick?: (tag: string) => void;
   isAuthenticated?: boolean;
   viewMode?: 'grid' | 'list';
-  priority?: boolean; // LCP Optimization: If true, load image eagerly
 }
 
-const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, isAuthenticated = false, viewMode = 'grid', priority = false }) => {
+const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, isAuthenticated = false, viewMode = 'grid' }) => {
   const [copied, setCopied] = useState(false);
   const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
   
@@ -41,19 +40,16 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       }
   };
 
-  // Basic image check
-  const hasImage = !!prompt.imageUrl;
-
   // --- Grid View Layout ---
   if (viewMode === 'grid') {
     return (
         <a 
         href={`/?id=${prompt.id}`}
         onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-500 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden content-visibility-auto"
+        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-500 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
         >
         {/* Watermarks */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
             {isDraft ? (
                 <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 transform -rotate-12">
                     <RiDraftLine size={140} />
@@ -71,10 +67,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="flex justify-between items-start mb-3 shrink-0">
-                {/* Contrast fix: text-zinc-600 instead of 500 for better a11y on light bg */}
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
                 <div className="flex gap-2">
-                    {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" aria-label="Favorite" />}
+                    {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
                 </div>
             </div>
 
@@ -82,18 +77,14 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 {prompt.title}
             </h3>
             
-            {hasImage && !isLocked && (
-                <div className="w-full mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate aspect-video">
+            {prompt.imageUrl && !isLocked && (
+                <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate">
                     <img 
                         src={prompt.imageUrl} 
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
-                        loading={priority ? "eager" : "lazy"}
+                        loading="lazy"
                         decoding="async"
-                        width="320"
-                        height="180"
-                        // @ts-ignore
-                        fetchpriority={priority ? "high" : "auto"}
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
                     />
                     {/* Subtle inner shadow for depth */}
@@ -124,10 +115,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                             className={`p-2 rounded-lg shadow-sm border backdrop-blur-md transition-all transform active:scale-95 ${
                                 copied 
                                 ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400' 
-                                : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                             title="Copy Content"
-                            aria-label="Copy Content"
                         >
                             {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                         </button>
@@ -140,7 +130,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     <span 
                         key={tag} 
                         onClick={(e) => handleTagClick(e, tag)}
-                        className="text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
+                        className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
                     >
                         #{tag}
                     </span>
@@ -152,28 +142,24 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
   }
 
   // --- List View Layout ---
-  const showImage = hasImage && !isLocked;
+  const showImage = prompt.imageUrl && !isLocked;
 
   return (
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:block relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden content-visibility-auto"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:block relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
     >
       {/* Side Cover Image */}
       {/* Mobile: Top Block (h-40). Desktop: Absolute Left Panel (w-48, h-full) */}
       {showImage && (
-           <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0 aspect-[16/9] md:aspect-auto">
+           <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
                     src={prompt.imageUrl} 
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
-                    loading={priority ? "eager" : "lazy"}
+                    loading="lazy"
                     decoding="async"
-                    width="192"
-                    height="160"
-                    // @ts-ignore
-                    fetchpriority={priority ? "high" : "auto"}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
                 {/* List View Gradient Overlay for better integration */}
@@ -182,12 +168,14 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       )}
 
       {/* Content Container */}
+      {/* Added min-h-[160px] to ensure card height even with little text. */}
+      {/* Added md:ml-48 to reserve space for the absolute image on desktop. */}
       <div className={`p-5 flex flex-col min-w-0 relative z-10 min-h-[160px] ${showImage ? 'md:ml-48' : ''}`}>
          
          <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
-                {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" aria-label="Favorite" />}
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">{prompt.category}</span>
+                {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
              </div>
              
              {/* Minimalist Date for List View */}
@@ -209,7 +197,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          <div className="flex items-center justify-between mt-auto">
              <div className="flex flex-wrap gap-2 h-6 overflow-hidden">
                 {prompt.tags.slice(0, 4).map(tag => (
-                    <span key={tag} className="text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">#{tag}</span>
+                    <span key={tag} className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">#{tag}</span>
                 ))}
                 {prompt.tags.length > 4 && <span className="text-xs text-zinc-400 self-center">+{prompt.tags.length - 4}</span>}
              </div>
@@ -224,7 +212,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                         : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 hover:border-zinc-200'
                     }`}
                     title="Copy"
-                    aria-label="Copy"
                 >
                     {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
                 </button>
@@ -233,7 +220,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          
          {/* List Mode Watermark - Subtler */}
          {!showImage && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-500 scale-75 group-hover:scale-90 origin-right" aria-hidden="true">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-500 scale-75 group-hover:scale-90 origin-right">
                 {isDraft ? <RiDraftLine size={120} /> : isPrivate ? <RiLockLine size={120} /> : <span className="text-8xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
             </div>
          )}

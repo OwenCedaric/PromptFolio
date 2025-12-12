@@ -1,7 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Sidebar, { Logo } from './components/Sidebar';
 import PromptCard from './components/PromptCard';
+import PromptEditor from './components/PromptEditor';
+import PromptDetail from './components/PromptDetail';
+import TopicDetail from './components/TopicDetail';
+import TopicList from './components/TopicList';
 import { PromptData, Category, PromptStatus, Copyright } from './types';
 import { 
     RiMenuLine, 
@@ -12,20 +16,14 @@ import {
     RiWifiOffLine, 
     RiArrowLeftSLine, 
     RiArrowRightSLine, 
-    RiCloseCircleLine, 
-    RiLayoutGridLine, 
-    RiListCheck2, 
-    RiArrowUpDownLine, 
-    RiUser3Line, 
-    RiDownloadLine, 
+    RiCloseCircleLine,
+    RiLayoutGridLine,
+    RiListCheck2,
+    RiArrowUpDownLine,
+    RiUser3Line,
+    RiDownloadLine,
     RiFileTextLine
 } from '@remixicon/react';
-
-// Lazy Load Heavy Components
-const PromptEditor = React.lazy(() => import('./components/PromptEditor'));
-const PromptDetail = React.lazy(() => import('./components/PromptDetail'));
-const TopicDetail = React.lazy(() => import('./components/TopicDetail'));
-const TopicList = React.lazy(() => import('./components/TopicList'));
 
 // Internal Confirmation Modal Component
 interface ConfirmModalProps {
@@ -223,12 +221,6 @@ const getPaginationRange = (currentPage: number, totalPages: number) => {
     
     return [];
 };
-
-const LoadingFallback = () => (
-    <div className="flex-1 flex items-center justify-center">
-        <RiLoader4Line className="animate-spin text-zinc-400" size={32} />
-    </div>
-);
 
 const App: React.FC = () => {
   // --- Config ---
@@ -1104,7 +1096,7 @@ const App: React.FC = () => {
                                     ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' 
                                     : 'grid-cols-1 max-w-5xl mx-auto'
                                 }`}>
-                                    {paginatedPrompts.map((prompt, index) => (
+                                    {paginatedPrompts.map(prompt => (
                                         <PromptCard 
                                             key={prompt.id} 
                                             prompt={prompt} 
@@ -1112,7 +1104,6 @@ const App: React.FC = () => {
                                             onTagClick={(t) => setSelectedTag(t)}
                                             isAuthenticated={isAuthenticated}
                                             viewMode={viewMode}
-                                            priority={index < 6} // LCP Optimization: Load first 6 images eagerly
                                         />
                                     ))}
                                 </div>
@@ -1185,98 +1176,96 @@ const App: React.FC = () => {
                 </div>
             )}
 
-            <Suspense fallback={<LoadingFallback />}>
-                {view === 'detail' && activePrompt && (
-                    <PromptDetail 
-                        prompt={activePrompt}
-                        onBack={() => { 
-                            if (activeTopic) {
-                                setView('topic-detail');
-                                setActivePrompt(null);
-                            } else {
-                                setView('library'); 
-                                setActivePrompt(null); 
-                            }
-                        }}
-                        onEdit={(p) => { setView('editor'); }}
-                        onDelete={handleDeletePrompt}
-                        onToggleFavorite={handleToggleFavorite}
-                        isAuthenticated={isAuthenticated}
-                        onLogin={() => setIsLoginModalOpen(true)}
-                        onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
-                        onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
-                        onTopicClick={(t) => { 
-                            setLastView('detail');
-                            setLastActiveTopic(activeTopic);
-                            setActiveTopic(t); 
-                            setView('topic-detail'); 
-                            setTopicScrollPos(0); 
-                        }}
-                    />
-                )}
+            {view === 'detail' && activePrompt && (
+                <PromptDetail 
+                    prompt={activePrompt}
+                    onBack={() => { 
+                        if (activeTopic) {
+                            setView('topic-detail');
+                            setActivePrompt(null);
+                        } else {
+                            setView('library'); 
+                            setActivePrompt(null); 
+                        }
+                    }}
+                    onEdit={(p) => { setView('editor'); }}
+                    onDelete={handleDeletePrompt}
+                    onToggleFavorite={handleToggleFavorite}
+                    isAuthenticated={isAuthenticated}
+                    onLogin={() => setIsLoginModalOpen(true)}
+                    onTagClick={(t) => { setSelectedTag(t); setView('library'); }}
+                    onAuthorClick={(a) => { setSelectedAuthor(a); setView('library'); }}
+                    onTopicClick={(t) => { 
+                        setLastView('detail');
+                        setLastActiveTopic(activeTopic);
+                        setActiveTopic(t); 
+                        setView('topic-detail'); 
+                        setTopicScrollPos(0); 
+                    }}
+                />
+            )}
 
-                {view === 'topics' && (
-                    <TopicList 
-                        topics={allTopics}
-                        currentPage={currentPage}
-                        onPageChange={setCurrentPage}
-                        onSelectTopic={(t) => { 
-                            setLastView('topics');
-                            setLastActiveTopic(activeTopic);
-                            setActiveTopic(t); 
-                            setView('topic-detail'); 
-                            setTopicScrollPos(0); 
-                        }}
-                        onOpenSidebar={() => setSidebarOpen(true)}
-                    />
-                )}
+            {view === 'topics' && (
+                <TopicList 
+                    topics={allTopics}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
+                    onSelectTopic={(t) => { 
+                        setLastView('topics');
+                        setLastActiveTopic(activeTopic);
+                        setActiveTopic(t); 
+                        setView('topic-detail'); 
+                        setTopicScrollPos(0); 
+                    }}
+                    onOpenSidebar={() => setSidebarOpen(true)}
+                />
+            )}
 
-                {view === 'topic-detail' && activeTopic && (
-                    <TopicDetail 
-                        topic={activeTopic}
-                        prompts={activeTopicPrompts}
-                        onBack={() => { 
-                            if (lastView === 'detail') {
-                                setView('detail');
-                                setActiveTopic(lastActiveTopic);
-                            } else {
-                                setView('topics'); 
-                                setActiveTopic(null); 
-                            }
-                            setLastView(null);
-                            setLastActiveTopic(null);
-                            setTopicScrollPos(0); 
-                        }}
-                        onViewDetail={(p, scrollPos) => { 
-                            setTopicScrollPos(scrollPos);
-                            setActivePrompt(p); 
-                            setView('detail'); 
-                        }}
-                        isAuthenticated={isAuthenticated}
-                        initialScrollPos={topicScrollPos}
-                    />
-                )}
+            {view === 'topic-detail' && activeTopic && (
+                <TopicDetail 
+                    topic={activeTopic}
+                    prompts={activeTopicPrompts}
+                    onBack={() => { 
+                        if (lastView === 'detail') {
+                            setView('detail');
+                            setActiveTopic(lastActiveTopic);
+                        } else {
+                            setView('topics'); 
+                            setActiveTopic(null); 
+                        }
+                        setLastView(null);
+                        setLastActiveTopic(null);
+                        setTopicScrollPos(0); 
+                    }}
+                    onViewDetail={(p, scrollPos) => { 
+                        setTopicScrollPos(scrollPos);
+                        setActivePrompt(p); 
+                        setView('detail'); 
+                    }}
+                    isAuthenticated={isAuthenticated}
+                    initialScrollPos={topicScrollPos}
+                />
+            )}
 
-                {view === 'editor' && (
-                    <PromptEditor 
-                        initialData={activePrompt}
-                        onSave={handleSavePrompt}
-                        onDelete={handleDeletePrompt}
-                        onCancel={() => {
-                            if (activePrompt) {
-                                if (activeTopic) setView('topic-detail');
-                                else setView('detail');
-                            } else {
-                                if (activeTopic) setView('topic-detail');
-                                else setView('library');
-                            }
-                        }}
-                        existingAuthors={allAuthors}
-                        existingTags={allTags}
-                        existingTopics={allTopics.map(t => t.name)}
-                    />
-                )}
-            </Suspense>
+            {view === 'editor' && (
+                <PromptEditor 
+                    initialData={activePrompt}
+                    onSave={handleSavePrompt}
+                    onDelete={handleDeletePrompt}
+                    onCancel={() => {
+                        if (activePrompt) {
+                            if (activeTopic) setView('topic-detail');
+                            else setView('detail');
+                        } else {
+                            if (activeTopic) setView('topic-detail');
+                            else setView('library');
+                        }
+                    }}
+                    existingAuthors={allAuthors}
+                    existingTags={allTags}
+                    existingTopics={allTopics.map(t => t.name)}
+                />
+            )}
 
         </main>
     </div>

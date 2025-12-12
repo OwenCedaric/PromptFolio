@@ -30,14 +30,7 @@ export const onRequestGet = async (context: any) => {
     }));
 
     return new Response(JSON.stringify(prompts), {
-      headers: { 
-        "Content-Type": "application/json",
-        // Cache for 60s in browser, 600s in CDN/Edge. 
-        // Revalidate in background (stale-while-revalidate)
-        "Cache-Control": "public, max-age=60, s-maxage=600, stale-while-revalidate=300",
-        // Ensure cache varies based on Auth header so admins don't see cached public-only lists
-        "Vary": "Authorization"
-      },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });

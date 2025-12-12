@@ -19,16 +19,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
-  /* Performance Optimizations */
-  .contain-strict {
-    contain: strict;
-  }
-  .contain-content {
-    contain: content;
-  }
-  .content-visibility-auto {
-    content-visibility: auto;
-    contain-intrinsic-size: 1px 280px; /* Estimate card height to prevent scroll bar jumping */
-  }
 }
