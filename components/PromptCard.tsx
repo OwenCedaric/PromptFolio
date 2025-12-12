@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RiStarFill, RiDraftLine, RiLockLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
 import { PromptData, PromptStatus } from '../types';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface PromptCardProps {
   prompt: PromptData;
@@ -127,7 +128,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             {prompt.imageUrl && !isLocked && (
                 <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate">
                     <img 
-                        src={prompt.imageUrl} 
+                        src={getOptimizedImageUrl(prompt.imageUrl, 400)} 
                         alt={prompt.title} 
                         className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
                         loading={priority ? "eager" : "lazy"}
@@ -205,7 +206,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
       {showImage && (
            <div className="w-full h-40 md:absolute md:top-0 md:left-0 md:bottom-0 md:w-48 md:h-full shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 <img 
-                    src={prompt.imageUrl} 
+                    src={getOptimizedImageUrl(prompt.imageUrl, 200)} 
                     alt={prompt.title} 
                     className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
                     loading={priority ? "eager" : "lazy"}

@@ -26,6 +26,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { PromptData, PromptStatus, Category, Copyright } from '../types';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface PromptDetailProps {
   prompt: PromptData;
@@ -399,7 +400,7 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                     {prompt.imageUrl && (
                         <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm bg-zinc-100 dark:bg-zinc-900">
                             <img 
-                                src={prompt.imageUrl} 
+                                src={getOptimizedImageUrl(prompt.imageUrl, 1200)} 
                                 alt={`${prompt.title} Case Example`} 
                                 className="w-full h-auto block" 
                                 loading="lazy"
@@ -427,7 +428,14 @@ const PromptDetail: React.FC<PromptDetailProps> = ({ prompt, onBack, onEdit, onD
                                     components={{
                                         img: ({node, ...props}) => (
                                             <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4 shadow-sm">
-                                                <img {...props} className="w-full h-auto m-0" alt={props.alt || 'content'} loading="lazy" decoding="async" />
+                                                <img 
+                                                    {...props} 
+                                                    src={getOptimizedImageUrl(props.src as string, 1200)}
+                                                    className="w-full h-auto m-0" 
+                                                    alt={props.alt || 'content'} 
+                                                    loading="lazy" 
+                                                    decoding="async" 
+                                                />
                                             </div>
                                         ),
                                         a: ({node, ...props}) => (

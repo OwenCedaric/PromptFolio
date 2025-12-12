@@ -1,6 +1,7 @@
 import React, { useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { PromptData } from '../types';
 import { RiArrowLeftLine, RiArrowRightLine, RiEyeLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface TopicDetailProps {
   topic: string;
@@ -80,7 +81,7 @@ const MagazineItem: React.FC<MagazineItemProps> = ({ prompt, index, onViewDetail
                     {prompt.imageUrl ? (
                         <div className={`relative overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10 group-hover:scale-[1.01] transition-transform duration-700 shadow-[8px_8px_0px_0px_rgba(24,24,27,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.15)] ${shapeClass}`}>
                             <img 
-                                src={prompt.imageUrl} 
+                                src={getOptimizedImageUrl(prompt.imageUrl, 800)} 
                                 alt={prompt.title} 
                                 // Mobile: Width full, Height auto. Desktop: Max height constrained, Width auto (preserve aspect ratio)
                                 className="w-full h-auto md:w-auto md:max-w-full md:max-h-[85vh] object-contain block"
@@ -207,7 +208,7 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
                      {coverImage && (
                         <div className="absolute inset-0 z-0 select-none pointer-events-none">
                             <img 
-                                src={coverImage} 
+                                src={getOptimizedImageUrl(coverImage, 1200)} 
                                 alt="Collection Cover" 
                                 className="w-full h-full object-cover opacity-60 scale-105 animate-in fade-in duration-[1.5s]"
                                 loading="eager"

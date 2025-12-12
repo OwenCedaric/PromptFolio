@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { RiArrowRightLine, RiPriceTag3Line, RiMenuLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface TopicListProps {
   topics: { name: string; count: number; previewImage?: string }[];
@@ -107,7 +108,7 @@ const TopicList: React.FC<TopicListProps> = ({ topics, currentPage, onPageChange
                                     >
                                         {topic.previewImage ? (
                                             <img 
-                                                src={topic.previewImage} 
+                                                src={getOptimizedImageUrl(topic.previewImage, 600)} 
                                                 alt={topic.name} 
                                                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105"
                                                 loading="lazy"
