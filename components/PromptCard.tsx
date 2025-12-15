@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { RiStarFill, RiDraftLine, RiLockLine, RiFileCopyLine, RiCheckLine } from '@remixicon/react';
 import { PromptData, PromptStatus } from '../types';
 import { getOptimizedImageUrl } from '../utils/image';
@@ -62,9 +62,11 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
   const [copied, setCopied] = useState(false);
   const currentVersion = prompt.versions.find(v => v.id === prompt.currentVersionId) || prompt.versions[prompt.versions.length - 1];
   
-  // Calculate version number based on creation time
-  const sortedVersions = [...prompt.versions].sort((a, b) => a.createdAt - b.createdAt);
-  const versionNumber = sortedVersions.findIndex(v => v.id === currentVersion?.id) + 1;
+  // Optimization: Memoize version calculation to prevent array creation on every render
+  const versionNumber = useMemo(() => {
+    const sortedVersions = [...prompt.versions].sort((a, b) => a.createdAt - b.createdAt);
+    return sortedVersions.findIndex(v => v.id === currentVersion?.id) + 1;
+  }, [prompt.versions, currentVersion?.id]);
 
   const isDraft = prompt.status === PromptStatus.DRAFT;
   const isPrivate = prompt.status === PromptStatus.PRIVATE;
@@ -104,11 +106,14 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
         <a 
         href={`/?id=${prompt.id}`}
         onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+        // Optimization: content-visibility: auto (via custom class or inline) improves rendering of long lists
+        // Removed hover:shadow-xl for better composite performance on mobile
+        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors duration-200 cursor-pointer flex flex-col h-[280px] p-5 relative rounded-2xl overflow-hidden"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '280px' }}
         aria-label={`View prompt: ${prompt.title}`}
         >
-        {/* Watermarks */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
+        {/* Watermarks - Hidden on mobile to reduce DOM and paint complexity */}
+        <div className="hidden sm:block absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
             {isDraft ? (
                 <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-300 transform -rotate-12">
                     <RiDraftLine size={140} />
@@ -126,7 +131,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="flex justify-between items-start mb-3 shrink-0">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 backdrop-blur-md px-2 py-0.5 rounded-md bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
+                {/* Removed backdrop-blur-md for performance */}
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/50 dark:border-zinc-700/50">{prompt.category}</span>
                 <div className="flex gap-2">
                     {prompt.isFavorite && <RiStarFill size={14} className="text-zinc-900 dark:text-zinc-100" />}
                 </div>
@@ -138,11 +144,11 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
             
             {prompt.imageUrl && !isLocked && (
                 // Added aspect-ratio to container to prevent CLS
-                <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate">
+                <div className="w-full h-32 mb-3 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 relative isolate transform-gpu">
                     <img 
                         src={getOptimizedImageUrl(prompt.imageUrl, 400)} 
                         alt={prompt.title || 'Prompt Preview'} 
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                        className="w-full h-full object-cover" 
                         loading={priority ? "eager" : "lazy"}
                         fetchPriority={priority ? "high" : "auto"}
                         decoding="async"
@@ -175,10 +181,11 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 translate-y-2 group-hover:translate-y-0">
                         <button 
                             onClick={handleQuickCopy}
-                            className={`p-2 rounded-lg shadow-sm border backdrop-blur-md transition-all transform active:scale-95 ${
+                            // Removed backdrop-blur-md for performance
+                            className={`p-2 rounded-lg shadow-sm border transition-all transform active:scale-95 ${
                                 copied 
                                 ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400' 
-                                : 'bg-white/80 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                : 'bg-white/90 dark:bg-zinc-800/90 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                             title="Copy Content"
                             aria-label="Copy prompt content"
@@ -194,7 +201,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     <span 
                         key={tag} 
                         onClick={(e) => handleTagClick(e, tag)}
-                        className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/80 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors backdrop-blur-sm shrink-0"
+                        // Removed backdrop-blur-sm
+                        className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors shrink-0"
                     >
                         #{tag}
                     </span>
@@ -212,8 +220,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer flex flex-col md:flex-row relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden min-h-[160px]"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors duration-200 cursor-pointer flex flex-col md:flex-row relative rounded-2xl overflow-hidden min-h-[160px]"
       aria-label={`View prompt: ${prompt.title}`}
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '160px' }}
     >
       {/* Side Cover Image */}
       {showImage && (
@@ -225,7 +234,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                 <img 
                     src={getOptimizedImageUrl(prompt.imageUrl, 600)} 
                     alt={prompt.title || 'Prompt Preview'} 
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 absolute inset-0" 
+                    className="w-full h-full object-cover absolute inset-0 transform-gpu" 
                     loading={priority ? "eager" : "lazy"}
                     fetchPriority={priority ? "high" : "auto"}
                     decoding="async"
@@ -286,7 +295,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          </div>
          
          {!showImage && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-300 scale-75 group-hover:scale-90 origin-right">
+            <div className="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-300 scale-75 group-hover:scale-90 origin-right">
                 {isDraft ? <RiDraftLine size={120} /> : isPrivate ? <RiLockLine size={120} /> : <span className="text-8xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
             </div>
          )}

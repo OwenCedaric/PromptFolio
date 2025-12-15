@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef, Suspense, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
 import Sidebar from './components/Sidebar';
@@ -966,7 +967,7 @@ const App: React.FC = () => {
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
             <div 
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                className="fixed inset-0 bg-black/50 z-40 md:hidden"
                 onClick={() => setSidebarOpen(false)}
             />
         )}
