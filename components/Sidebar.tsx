@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiDownloadLine, RiBookOpenLine } from '@remixicon/react';
 import { Category } from '../types';
@@ -29,9 +30,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   
   return (
     <>
-        <div className={`
+        <div 
+            className={`
             fixed md:relative z-50 flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800
-            transform transition-all duration-300 ease-in-out
+            transform transition-transform duration-300 ease-in-out will-change-transform
             ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64 pb-[env(safe-area-inset-bottom)]
         `}>

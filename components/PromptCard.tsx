@@ -104,21 +104,21 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
         <a 
         href={`/?id=${prompt.id}`}
         onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-500 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
+        className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer flex flex-col h-[280px] p-5 relative hover:shadow-xl dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden"
         aria-label={`View prompt: ${prompt.title}`}
         >
         {/* Watermarks */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
             {isDraft ? (
-                <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 transform -rotate-12">
+                <div className="absolute -bottom-8 -right-6 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-300 transform -rotate-12">
                     <RiDraftLine size={140} />
                 </div>
             ) : isPrivate ? (
-                <div className="absolute -bottom-6 -right-4 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 transform -rotate-12">
+                <div className="absolute -bottom-6 -right-4 text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-300 transform -rotate-12">
                     <RiLockLine size={120} />
                 </div>
             ) : (
-                <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-500 leading-none tracking-tighter">
+                <div className="absolute -bottom-6 -right-2 text-[80px] font-bold text-zinc-100 dark:text-zinc-800 group-hover:text-zinc-200 dark:group-hover:text-zinc-700 transition-colors duration-300 leading-none tracking-tighter">
                     v{versionNumber}
                 </div>
             )}
@@ -142,7 +142,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
                     <img 
                         src={getOptimizedImageUrl(prompt.imageUrl, 400)} 
                         alt={prompt.title || 'Prompt Preview'} 
-                        className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105" 
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
                         loading={priority ? "eager" : "lazy"}
                         fetchPriority={priority ? "high" : "auto"}
                         decoding="async"
@@ -212,21 +212,20 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
     <a 
       href={`/?id=${prompt.id}`}
       onClick={(e) => { e.preventDefault(); onClick(prompt); }}
-      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-300 cursor-pointer flex flex-col md:flex-row relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden min-h-[160px]"
+      className="block group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer flex flex-col md:flex-row relative hover:shadow-lg dark:hover:shadow-zinc-900/50 rounded-2xl overflow-hidden min-h-[160px]"
       aria-label={`View prompt: ${prompt.title}`}
     >
       {/* Side Cover Image */}
       {showImage && (
            <div className="w-full h-40 md:w-48 md:h-auto shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 z-0">
                 {/* 
-                   Increased width from 200 to 600 for mobile list view.
-                   On mobile, the card is usually full width, so image spans ~350-450px.
-                   200px was causing blurriness on mobile.
+                   Fixed dimensions for container are crucial for CLS.
+                   Mobile: w-full h-40. Desktop: w-48 h-auto.
                 */}
                 <img 
                     src={getOptimizedImageUrl(prompt.imageUrl, 600)} 
                     alt={prompt.title || 'Prompt Preview'} 
-                    className="w-full h-full object-cover transition-all duration-700 ease-out filter saturate-[0.6] opacity-90 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-105 absolute inset-0" 
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 absolute inset-0" 
                     loading={priority ? "eager" : "lazy"}
                     fetchPriority={priority ? "high" : "auto"}
                     decoding="async"
@@ -287,7 +286,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt, onClick, onTagClick, is
          </div>
          
          {!showImage && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-500 scale-75 group-hover:scale-90 origin-right">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-300 scale-75 group-hover:scale-90 origin-right">
                 {isDraft ? <RiDraftLine size={120} /> : isPrivate ? <RiLockLine size={120} /> : <span className="text-8xl font-bold tracking-tighter select-none">v{versionNumber}</span>}
             </div>
          )}

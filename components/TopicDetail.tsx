@@ -229,9 +229,9 @@ const TopicDetail: React.FC<TopicDetailProps> = ({ topic, prompts, onBack, onVie
 
                      <div className="relative z-10 text-center px-4 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
                         <span className={`
-                            inline-block py-1 px-3 border rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 md:mb-8 backdrop-blur-sm transition-colors
+                            inline-block py-1 px-3 border rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-6 md:mb-8 backdrop-blur-none bg-white/10 transition-colors
                             ${coverImage 
-                                ? 'border-white/30 text-white/90 bg-white/10' 
+                                ? 'border-white/30 text-white/90' 
                                 : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}
                         `}>
                             Curated Collection

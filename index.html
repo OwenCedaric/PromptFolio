@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -50,11 +49,37 @@
       #root {
         isolation: isolate;
       }
+      /* Critical CSS for Skeleton */
+      .sk-header { height: 73px; border-bottom: 1px solid rgba(228,228,231,0.5); }
+      .dark .sk-header { border-bottom: 1px solid rgba(39,39,42,0.5); }
+      .sk-grid { display: grid; gap: 1.5rem; padding: 1.5rem; grid-template-columns: 1fr; }
+      @media (min-width: 768px) { .sk-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1280px) { .sk-grid { grid-template-columns: repeat(3, 1fr); } }
+      .sk-card { height: 280px; border-radius: 1rem; background-color: #ffffff; border: 1px solid #e4e4e7; }
+      .dark .sk-card { background-color: #09090b; border: 1px solid #27272a; }
+      .sk-pulse { animation: sk-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      @keyframes sk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
   <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full scrollbar-hide">
     <!-- App Shell: Content shown immediately before React hydrates -->
-    <div id="root" class="h-full w-full overflow-hidden flex flex-col"></div>
+    <div id="root" class="h-full w-full overflow-hidden flex flex-col">
+      <!-- Critical Skeleton UI for immediate FCP -->
+      <div class="w-full h-full flex bg-zinc-50 dark:bg-zinc-950">
+         <div class="hidden md:block w-64 border-r border-zinc-200 dark:border-zinc-800 h-full bg-white dark:bg-zinc-900 shrink-0"></div>
+         <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <div class="sk-header w-full bg-zinc-50/95 dark:bg-zinc-950/95 shrink-0"></div>
+            <div class="flex-1 p-6 overflow-hidden">
+                <div class="sk-grid">
+                    <div class="sk-card sk-pulse"></div>
+                    <div class="sk-card sk-pulse"></div>
+                    <div class="sk-card sk-pulse"></div>
+                    <div class="sk-card sk-pulse hidden md:block"></div>
+                </div>
+            </div>
+         </div>
+      </div>
+    </div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
