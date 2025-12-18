@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { RiSave3Line, RiArrowLeftLine, RiMagicLine, RiCloseLine, RiImage2Line, RiLoader4Line, RiCheckboxBlankCircleLine, RiCheckboxCircleFill, RiHistoryLine, RiDeleteBinLine, RiErrorWarningLine, RiSettings3Line, RiFileTextLine, RiCopyrightLine, RiHashtag, RiArrowDownSLine, RiCheckLine, RiToggleLine, RiShieldCheckLine, RiPriceTag3Line, RiUser3Line } from '@remixicon/react';
 import { PromptData, PromptStatus, Category, PromptVersion, Copyright } from '../types';
@@ -96,8 +97,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
   const [content, setContent] = useState('');
   const [description, setDescription] = useState(initialData?.description || '');
   const [category, setCategory] = useState<Category>(initialData?.category || Category.OTHER);
-  const [status, setStatus] = useState<PromptStatus>(initialData?.status || PromptStatus.DRAFT);
-  const [copyright, setCopyright] = useState<Copyright>(initialData?.copyright || Copyright.NONE);
+  const [status, setStatus] = useState<PromptStatus>(initialData?.status || PromptStatus.PUBLISHED);
+  const [copyright, setCopyright] = useState<Copyright>(initialData?.copyright || Copyright.CC_BY_NC);
   const [author, setAuthor] = useState(initialData?.author || '');
   const [topic, setTopic] = useState(initialData?.topic || '');
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
@@ -157,8 +158,8 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
       setTitle('');
       setDescription('');
       setCategory(Category.OTHER);
-      setStatus(PromptStatus.DRAFT);
-      setCopyright(Copyright.NONE);
+      setStatus(PromptStatus.PUBLISHED);
+      setCopyright(Copyright.CC_BY_NC);
       setAuthor('');
       setTopic('');
       setTags([]);
@@ -208,6 +209,12 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
         return;
     }
 
+    // Sanitize data: Trim whitespace to avoid duplicates like "ABC" vs " ABC"
+    const cleanTitle = title.trim();
+    const cleanAuthor = author.trim();
+    const cleanTopic = topic.trim();
+    const cleanTags = tags.map(t => t.trim()).filter(t => t !== '');
+
     let finalVersions = [...versions];
     let finalCurrentVersionId = activeVersionId;
 
@@ -231,14 +238,14 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ initialData, onSave, onDele
 
     const payload: PromptData = {
       id: initialData?.id || generateId(),
-      title,
+      title: cleanTitle,
       description,
       category,
       status,
       copyright,
-      author,
-      topic,
-      tags,
+      author: cleanAuthor,
+      topic: cleanTopic,
+      tags: cleanTags,
       imageUrl, 
       versions: finalVersions,
       currentVersionId: finalCurrentVersionId!,
