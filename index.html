@@ -1,30 +1,37 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- SSR 动态注入占位符 -->
-    <!--SEO_TITLE_START--><title>PromptFolio - 专业的 AI Prompt 管理与分享平台</title><!--SEO_TITLE_END-->
-    <!--SEO_META_START-->
-    <meta name="description" content="一个专业的 AI 提示词工程管理系统，支持版本控制、分类标签和 AI 辅助优化。" />
-    <meta name="keywords" content="Prompt Engineering, AI 提示词, Gemini, 提示词优化" />
-    <!--SEO_META_END-->
+    <!-- SEO 占位符 - 将由 Cloudflare Edge 函数动态替换 -->
+    <title>PromptFolio - 专业 AI 提示词管理</title>
+    <meta name="description" content="一个专业的 AI Prompt 管理网站，支持版本控制、分类标签和 Gemini 智能优化。" />
+    <meta property="og:title" content="PromptFolio" />
+    <meta property="og:description" content="专业 AI Prompt 管理系统" />
+    <meta property="og:image" content="/favicon.svg" />
+    <meta property="og:type" content="website" />
     
-    <!--SEO_JSON_LD_START--><!--SEO_JSON_LD_END-->
+    <!-- JSON-LD 注入点 -->
+    <script type="application/ld+json" id="seo-json-ld">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "PromptFolio",
+      "url": "https://promptfolio.pages.dev"
+    }
+    </script>
 
-    <!-- 性能优化 -->
+    <!-- Performance Optimizations -->
     <link rel="preconnect" href="https://wsrv.nl" crossorigin />
-    
-    <!-- 主题初始化脚本 (防止闪烁) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
     <script>
       (function() {
         try {
           const localTheme = localStorage.getItem('pf_theme');
           const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          const shouldBeDark = localTheme === 'dark' || (!localTheme && supportDarkMode);
-          if (shouldBeDark) {
+          if (localTheme === 'dark' || (!localTheme && supportDarkMode)) {
             document.documentElement.classList.add('dark');
             document.documentElement.style.colorScheme = 'dark';
           }
@@ -33,51 +40,12 @@
     </script>
     <style>
       #root { isolation: isolate; }
-      .sk-header { height: 73px; border-bottom: 1px solid rgba(228,228,231,0.5); }
-      .dark .sk-header { border-bottom: 1px solid rgba(39,39,42,0.5); }
-      .sk-card { height: 280px; border-radius: 1rem; background-color: #ffffff; border: 1px solid #e4e4e7; }
-      .dark .sk-card { background-color: #09090b; border: 1px solid #27272a; }
       .sk-pulse { animation: sk-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
       @keyframes sk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@fontsource/inter/": "https://esm.sh/@fontsource/inter@^5.2.8/",
-    "@fontsource/jetbrains-mono/": "https://esm.sh/@fontsource/jetbrains-mono@^5.2.8/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "@remixicon/react": "https://esm.sh/@remixicon/react@^4.7.0",
-    "react-dom": "https://esm.sh/react-dom@^19.2.3",
-    "vite": "https://esm.sh/vite@^7.3.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "fs": "https://esm.sh/fs@^0.0.1-security",
-    "path": "https://esm.sh/path@^0.12.7",
-    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
-    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1"
-  }
-}
-</script>
-</head>
-  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full">
-    <div id="root" class="h-full w-full overflow-hidden flex flex-col">
-      <!-- 极简骨架屏 -->
-      <div class="w-full h-full flex bg-zinc-50 dark:bg-zinc-950">
-         <div class="hidden md:block w-64 border-r border-zinc-200 dark:border-zinc-800 h-full bg-white dark:bg-zinc-900"></div>
-         <div class="flex-1 flex flex-col h-full overflow-hidden">
-            <div class="sk-header w-full"></div>
-            <div class="flex-1 p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="sk-card sk-pulse"></div>
-                    <div class="sk-card sk-pulse"></div>
-                    <div class="sk-card sk-pulse"></div>
-                </div>
-            </div>
-         </div>
-      </div>
-    </div>
+  </head>
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased font-sans transition-colors duration-300 overflow-hidden h-dvh w-full">
+    <div id="root" class="h-full w-full"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

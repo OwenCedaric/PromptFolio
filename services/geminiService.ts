@@ -1,78 +1,71 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const geminiService = {
   /**
-   * 使用 Gemini 3 Flash 优化 Prompt
+   * 优化提示词
    */
   optimizePrompt: async (currentPrompt: string): Promise<string> => {
     try {
-      const modelId = 'gemini-3-flash-preview';
-      const systemInstruction = `你是一位世界级的提示词工程师。你的任务是优化用户的原始提示词，使其逻辑更严密、结构更清晰、输出更精准。
-如果是对话类，请加强上下文设定；如果是任务类，请细化步骤说明。
-请直接返回优化后的内容，不要包含任何多余的解释。`;
-      
       const response = await ai.models.generateContent({
-        model: modelId,
+        model: 'gemini-3-flash-preview',
         contents: currentPrompt,
         config: {
-          systemInstruction: systemInstruction,
-          temperature: 0.8,
-          thinkingConfig: { thinkingBudget: 0 }
+          systemInstruction: `你是一名顶级的 Prompt 工程师。
+任务：将用户的草稿提示词优化为结构清晰、指令明确、包含上下文约束的高质量 Prompt。
+要求：直接返回优化后的文本，不要包含任何解释或开场白。`,
+          temperature: 0.4, // 较低的随机性以保证指令性
         }
       });
 
       return response.text || currentPrompt;
     } catch (error) {
-      console.error("优化提示词失败:", error);
+      console.error("Gemini 优化失败:", error);
       throw error;
     }
   },
 
   /**
-   * 自动生成标签
+   * 智能标签建议
    */
   suggestTags: async (title: string, description: string): Promise<string[]> => {
     try {
-        const modelId = 'gemini-3-flash-preview';
-        const prompt = `根据以下内容生成 5 个相关的短标签。
-标题: "${title}"
-描述: "${description}"
-仅返回一个 JSON 字符串数组，例如 ["AI", "写作", "效率"]。`;
-        
-        const response = await ai.models.generateContent({
-            model: modelId,
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                }
-            }
-        });
+      const prompt = `根据标题 "${title}" 和描述 "${description}"，生成 5 个相关的提示词标签（Tags）。`;
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING }
+          }
+        }
+      });
 
-        return JSON.parse(response.text || "[]");
+      const jsonText = response.text;
+      return jsonText ? JSON.parse(jsonText) : [];
     } catch (error) {
-        return ["AI", "Prompt"];
+      console.error("标签建议失败:", error);
+      return ["AI", "Prompt"];
     }
   },
 
   /**
-   * 自动生成摘要描述
+   * 智能生成摘要描述
    */
   generateDescription: async (content: string): Promise<string> => {
     try {
-        const modelId = 'gemini-3-flash-preview';
-        const response = await ai.models.generateContent({
-            model: modelId,
-            contents: `请为以下提示词写一段简短的摘要描述（100字以内），用于卡片展示：\n\n${content}`,
-        });
-        return response.text || "";
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `为以下 Prompt 写一段简短的摘要描述（100字以内），用于列表展示：\n\n${content}`,
+      });
+      return response.text?.trim() || "";
     } catch (error) {
-        return "";
+      console.error("生成描述失败:", error);
+      return "";
     }
   }
 };
