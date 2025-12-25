@@ -10,34 +10,42 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   return (
-    <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none animate-in fade-in duration-500">
+    <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
       <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
           components={{
               img: ({node, ...props}) => (
-                  <div className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-4 shadow-sm">
+                  <div className="rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 my-6 shadow-md transition-transform hover:scale-[1.01]">
                       <img 
                           {...props} 
                           src={getOptimizedImageUrl(props.src as string, 1200)}
-                          className="w-full h-auto m-0" 
-                          alt={props.alt || 'content'} 
+                          className="w-full h-auto m-0 block" 
+                          alt={props.alt || 'Content Image'} 
                           loading="lazy" 
-                          decoding="async"
-                          onError={(e) => {
-                            const img = e.currentTarget;
-                            const originalSrc = props.src as string;
-                            if (img.src.includes('wsrv.nl') && originalSrc) {
-                                img.src = originalSrc;
-                            } else {
-                                img.style.display = 'none';
-                                img.parentElement?.style.setProperty('display', 'none');
-                            }
-                          }}
                       />
+                      {props.alt && (
+                          <div className="px-4 py-2 text-xs text-zinc-500 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800">
+                              {props.alt}
+                          </div>
+                      )}
                   </div>
               ),
-              a: ({node, ...props}) => (
-                  <a {...props} className="text-zinc-900 dark:text-zinc-100 font-medium underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-2 hover:decoration-zinc-500 dark:hover:decoration-zinc-400 transition-colors" target="_blank" rel="noopener noreferrer" />
+              a: ({node, ...props}) => {
+                  const isExternal = props.href?.startsWith('http');
+                  return (
+                    <a 
+                        {...props} 
+                        className="text-blue-600 dark:text-blue-400 font-medium underline decoration-blue-200 underline-offset-4 hover:decoration-blue-500 transition-colors"
+                        target={isExternal ? "_blank" : undefined}
+                        rel={isExternal ? "noopener noreferrer" : undefined}
+                    />
+                  );
+              },
+              code: ({node, ...props}) => (
+                  <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-900 dark:text-zinc-100 font-mono text-sm" {...props} />
+              ),
+              pre: ({node, ...props}) => (
+                  <pre className="bg-zinc-900 text-zinc-100 p-4 rounded-xl overflow-x-auto my-6 border border-white/10 shadow-lg" {...props} />
               )
           }}
       >
