@@ -1,80 +1,58 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- SEO Meta Tags -->
-    <title>PromptFolio - AI Prompt Manager</title>
-    <meta name="description" content="A professional tool for prompt engineering." />
-    <meta name="keywords" content="prompt engineering, AI prompts, Gemini API, prompt manager, prompt versioning, LLM tools" />
-    <meta name="author" content="PromptFolio" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
+    <!-- SSR 动态注入占位符 -->
+    <!--SEO_TITLE_START--><title>PromptFolio - 专业的 AI Prompt 管理与分享平台</title><!--SEO_TITLE_END-->
+    <!--SEO_META_START-->
+    <meta name="description" content="一个专业的 AI 提示词工程管理系统，支持版本控制、分类标签和 AI 辅助优化。" />
+    <meta name="keywords" content="Prompt Engineering, AI 提示词, Gemini, 提示词优化" />
+    <!--SEO_META_END-->
     
-    <!-- Performance Optimizations -->
-    <link rel="preconnect" href="https://wsrv.nl" crossorigin />
-    <link rel="dns-prefetch" href="https://wsrv.nl" />
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="PromptFolio - AI Prompt Manager" />
-    <meta property="og:description" content="Professional AI Prompt Management System for developers and prompt engineers." />
-    <meta property="og:site_name" content="PromptFolio" />
+    <!--SEO_JSON_LD_START--><!--SEO_JSON_LD_END-->
 
-    <!-- Theme Initialization Script (Prevents FOUC) -->
+    <!-- 性能优化 -->
+    <link rel="preconnect" href="https://wsrv.nl" crossorigin />
+    
+    <!-- 主题初始化脚本 (防止闪烁) -->
     <script>
       (function() {
         try {
           const localTheme = localStorage.getItem('pf_theme');
           const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
           const shouldBeDark = localTheme === 'dark' || (!localTheme && supportDarkMode);
-          
           if (shouldBeDark) {
             document.documentElement.classList.add('dark');
             document.documentElement.style.colorScheme = 'dark';
-          } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.style.colorScheme = 'light';
           }
         } catch (e) {}
       })();
     </script>
     <style>
-      /* Ensure root takes full height for app-like feel */
-      #root {
-        isolation: isolate;
-      }
-      /* Critical CSS for Skeleton */
+      #root { isolation: isolate; }
       .sk-header { height: 73px; border-bottom: 1px solid rgba(228,228,231,0.5); }
       .dark .sk-header { border-bottom: 1px solid rgba(39,39,42,0.5); }
-      .sk-grid { display: grid; gap: 1.5rem; padding: 1.5rem; grid-template-columns: 1fr; }
-      @media (min-width: 768px) { .sk-grid { grid-template-columns: repeat(2, 1fr); } }
-      @media (min-width: 1280px) { .sk-grid { grid-template-columns: repeat(3, 1fr); } }
       .sk-card { height: 280px; border-radius: 1rem; background-color: #ffffff; border: 1px solid #e4e4e7; }
       .dark .sk-card { background-color: #09090b; border: 1px solid #27272a; }
       .sk-pulse { animation: sk-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
       @keyframes sk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
-  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full scrollbar-hide">
-    <!-- App Shell: Content shown immediately before React hydrates -->
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full">
     <div id="root" class="h-full w-full overflow-hidden flex flex-col">
-      <!-- Critical Skeleton UI for immediate FCP -->
+      <!-- 极简骨架屏 -->
       <div class="w-full h-full flex bg-zinc-50 dark:bg-zinc-950">
-         <div class="hidden md:block w-64 border-r border-zinc-200 dark:border-zinc-800 h-full bg-white dark:bg-zinc-900 shrink-0"></div>
+         <div class="hidden md:block w-64 border-r border-zinc-200 dark:border-zinc-800 h-full bg-white dark:bg-zinc-900"></div>
          <div class="flex-1 flex flex-col h-full overflow-hidden">
-            <div class="sk-header w-full bg-zinc-50/95 dark:bg-zinc-950/95 shrink-0"></div>
-            <div class="flex-1 p-6 overflow-hidden">
-                <div class="sk-grid">
+            <div class="sk-header w-full"></div>
+            <div class="flex-1 p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="sk-card sk-pulse"></div>
                     <div class="sk-card sk-pulse"></div>
                     <div class="sk-card sk-pulse"></div>
-                    <div class="sk-card sk-pulse hidden md:block"></div>
                 </div>
             </div>
          </div>

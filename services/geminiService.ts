@@ -1,41 +1,46 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialize the Gemini API client
-// Note: process.env.API_KEY is injected by the environment
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const geminiService = {
   /**
-   * Enhances a given prompt to be more detailed and effective.
+   * 使用 Gemini 3 Flash 优化 Prompt
    */
   optimizePrompt: async (currentPrompt: string): Promise<string> => {
     try {
-      const modelId = 'gemini-2.5-flash';
-      const systemInstruction = `You are an expert Prompt Engineer. Your goal is to take a rough prompt and refine it into a high-quality, detailed system instruction or prompt for an LLM. Ensure clarity, context, and specific constraints. Return ONLY the refined prompt text.`;
+      const modelId = 'gemini-3-flash-preview';
+      const systemInstruction = `你是一位世界级的提示词工程师。你的任务是优化用户的原始提示词，使其逻辑更严密、结构更清晰、输出更精准。
+如果是对话类，请加强上下文设定；如果是任务类，请细化步骤说明。
+请直接返回优化后的内容，不要包含任何多余的解释。`;
       
       const response = await ai.models.generateContent({
         model: modelId,
         contents: currentPrompt,
         config: {
           systemInstruction: systemInstruction,
-          temperature: 0.7,
+          temperature: 0.8,
+          thinkingConfig: { thinkingBudget: 0 }
         }
       });
 
       return response.text || currentPrompt;
     } catch (error) {
-      console.error("Error optimizing prompt:", error);
+      console.error("优化提示词失败:", error);
       throw error;
     }
   },
 
   /**
-   * Suggests tags based on the prompt title and description.
+   * 自动生成标签
    */
   suggestTags: async (title: string, description: string): Promise<string[]> => {
     try {
-        const modelId = 'gemini-2.5-flash';
-        const prompt = `Generate a list of 5 relevant tags for a prompt with the Title: "${title}" and Description: "${description}". Return the tags as a JSON array of strings.`;
+        const modelId = 'gemini-3-flash-preview';
+        const prompt = `根据以下内容生成 5 个相关的短标签。
+标题: "${title}"
+描述: "${description}"
+仅返回一个 JSON 字符串数组，例如 ["AI", "写作", "效率"]。`;
         
         const response = await ai.models.generateContent({
             model: modelId,
@@ -44,36 +49,29 @@ export const geminiService = {
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.ARRAY,
-                    items: {
-                        type: Type.STRING
-                    }
+                    items: { type: Type.STRING }
                 }
             }
         });
 
-        const jsonText = response.text;
-        if (!jsonText) return [];
-        return JSON.parse(jsonText) as string[];
-
+        return JSON.parse(response.text || "[]");
     } catch (error) {
-        console.error("Error suggesting tags:", error);
-        return ["AI", "Creative"]; // Fallback
+        return ["AI", "Prompt"];
     }
   },
 
   /**
-   * Generates a description for a prompt based on its content.
+   * 自动生成摘要描述
    */
   generateDescription: async (content: string): Promise<string> => {
     try {
-        const modelId = 'gemini-2.5-flash';
+        const modelId = 'gemini-3-flash-preview';
         const response = await ai.models.generateContent({
             model: modelId,
-            contents: `Summarize the purpose of the following prompt in one concise paragraph suitable for a gallery description: \n\n${content}`,
+            contents: `请为以下提示词写一段简短的摘要描述（100字以内），用于卡片展示：\n\n${content}`,
         });
         return response.text || "";
     } catch (error) {
-        console.error("Error generating description:", error);
         return "";
     }
   }
