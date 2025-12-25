@@ -1,51 +1,105 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- SEO 占位符 - 将由 Cloudflare Edge 函数动态替换 -->
-    <title>PromptFolio - 专业 AI 提示词管理</title>
-    <meta name="description" content="一个专业的 AI Prompt 管理网站，支持版本控制、分类标签和 Gemini 智能优化。" />
-    <meta property="og:title" content="PromptFolio" />
-    <meta property="og:description" content="专业 AI Prompt 管理系统" />
-    <meta property="og:image" content="/favicon.svg" />
-    <meta property="og:type" content="website" />
+    <!-- SEO Meta Tags -->
+    <title>PromptFolio - AI Prompt Manager</title>
+    <meta name="description" content="A professional tool for prompt engineering." />
+    <meta name="keywords" content="prompt engineering, AI prompts, Gemini API, prompt manager, prompt versioning, LLM tools" />
+    <meta name="author" content="PromptFolio" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
     
-    <!-- JSON-LD 注入点 -->
-    <script type="application/ld+json" id="seo-json-ld">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "PromptFolio",
-      "url": "https://promptfolio.pages.dev"
-    }
-    </script>
-
     <!-- Performance Optimizations -->
     <link rel="preconnect" href="https://wsrv.nl" crossorigin />
+    <link rel="dns-prefetch" href="https://wsrv.nl" />
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PromptFolio - AI Prompt Manager" />
+    <meta property="og:description" content="Professional AI Prompt Management System for developers and prompt engineers." />
+    <meta property="og:site_name" content="PromptFolio" />
 
+    <!-- Theme Initialization Script (Prevents FOUC) -->
     <script>
       (function() {
         try {
           const localTheme = localStorage.getItem('pf_theme');
           const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (localTheme === 'dark' || (!localTheme && supportDarkMode)) {
+          const shouldBeDark = localTheme === 'dark' || (!localTheme && supportDarkMode);
+          
+          if (shouldBeDark) {
             document.documentElement.classList.add('dark');
             document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
           }
         } catch (e) {}
       })();
     </script>
     <style>
-      #root { isolation: isolate; }
+      /* Ensure root takes full height for app-like feel */
+      #root {
+        isolation: isolate;
+      }
+      /* Critical CSS for Skeleton */
+      .sk-header { height: 73px; border-bottom: 1px solid rgba(228,228,231,0.5); }
+      .dark .sk-header { border-bottom: 1px solid rgba(39,39,42,0.5); }
+      .sk-grid { display: grid; gap: 1.5rem; padding: 1.5rem; grid-template-columns: 1fr; }
+      @media (min-width: 768px) { .sk-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1280px) { .sk-grid { grid-template-columns: repeat(3, 1fr); } }
+      .sk-card { height: 280px; border-radius: 1rem; background-color: #ffffff; border: 1px solid #e4e4e7; }
+      .dark .sk-card { background-color: #09090b; border: 1px solid #27272a; }
       .sk-pulse { animation: sk-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
       @keyframes sk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
-  </head>
-  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased font-sans transition-colors duration-300 overflow-hidden h-dvh w-full">
-    <div id="root" class="h-full w-full"></div>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@fontsource/inter/": "https://esm.sh/@fontsource/inter@^5.2.8/",
+    "@fontsource/jetbrains-mono/": "https://esm.sh/@fontsource/jetbrains-mono@^5.2.8/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "@remixicon/react": "https://esm.sh/@remixicon/react@^4.7.0",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "fs": "https://esm.sh/fs@^0.0.1-security",
+    "path": "https://esm.sh/path@^0.12.7",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1"
+  }
+}
+</script>
+</head>
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 font-sans transition-colors duration-300 overflow-hidden h-dvh w-full scrollbar-hide">
+    <!-- App Shell: Content shown immediately before React hydrates -->
+    <div id="root" class="h-full w-full overflow-hidden flex flex-col">
+      <!-- Critical Skeleton UI for immediate FCP -->
+      <div class="w-full h-full flex bg-zinc-50 dark:bg-zinc-950">
+         <div class="hidden md:block w-64 border-r border-zinc-200 dark:border-zinc-800 h-full bg-white dark:bg-zinc-900 shrink-0"></div>
+         <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <div class="sk-header w-full bg-zinc-50/95 dark:bg-zinc-950/95 shrink-0"></div>
+            <div class="flex-1 p-6 overflow-hidden">
+                <div class="sk-grid">
+                    <div class="sk-card sk-pulse"></div>
+                    <div class="sk-card sk-pulse"></div>
+                    <div class="sk-card sk-pulse"></div>
+                    <div class="sk-card sk-pulse hidden md:block"></div>
+                </div>
+            </div>
+         </div>
+      </div>
+    </div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
