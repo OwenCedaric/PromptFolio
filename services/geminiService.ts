@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
 // Initialize the Gemini API client
@@ -11,8 +10,7 @@ export const geminiService = {
    */
   optimizePrompt: async (currentPrompt: string): Promise<string> => {
     try {
-      // Fixed: Use gemini-3-pro-preview for complex reasoning tasks like prompt engineering
-      const modelId = 'gemini-3-pro-preview';
+      const modelId = 'gemini-2.5-flash';
       const systemInstruction = `You are an expert Prompt Engineer. Your goal is to take a rough prompt and refine it into a high-quality, detailed system instruction or prompt for an LLM. Ensure clarity, context, and specific constraints. Return ONLY the refined prompt text.`;
       
       const response = await ai.models.generateContent({
@@ -36,8 +34,7 @@ export const geminiService = {
    */
   suggestTags: async (title: string, description: string): Promise<string[]> => {
     try {
-        // Fixed: Use gemini-3-flash-preview for basic text tasks
-        const modelId = 'gemini-3-flash-preview';
+        const modelId = 'gemini-2.5-flash';
         const prompt = `Generate a list of 5 relevant tags for a prompt with the Title: "${title}" and Description: "${description}". Return the tags as a JSON array of strings.`;
         
         const response = await ai.models.generateContent({
@@ -69,8 +66,7 @@ export const geminiService = {
    */
   generateDescription: async (content: string): Promise<string> => {
     try {
-        // Fixed: Use gemini-3-flash-preview for basic text tasks like summarization
-        const modelId = 'gemini-3-flash-preview';
+        const modelId = 'gemini-2.5-flash';
         const response = await ai.models.generateContent({
             model: modelId,
             contents: `Summarize the purpose of the following prompt in one concise paragraph suitable for a gallery description: \n\n${content}`,
