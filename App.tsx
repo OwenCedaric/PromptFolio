@@ -343,12 +343,12 @@ const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [isSnowing, setIsSnowing] = useState(() => {
-    if (typeof window !== 'undefined') {
-        return localStorage.getItem('pf_is_snowing') === 'true';
-    }
-    return false;
-  });
+  
+  // Auto-snowing Season Detection: December (11) and January (0)
+  const isSnowingSeason = useMemo(() => {
+    const currentMonth = new Date().getMonth();
+    return currentMonth === 11 || currentMonth === 0;
+  }, []);
   
   // Pagination State - Initialized from URL for SEO
   // Shared by both Library and TopicList views
@@ -703,12 +703,6 @@ const App: React.FC = () => {
       }
   };
 
-  const toggleSnow = () => {
-    const newVal = !isSnowing;
-    setIsSnowing(newVal);
-    localStorage.setItem('pf_is_snowing', newVal.toString());
-  };
-
   // --- Auth Handlers ---
   const handleLogin = () => {
       // Basic client-side check for immediate feedback, but real test is API access
@@ -935,8 +929,8 @@ const App: React.FC = () => {
   return (
     <div className="flex h-full w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950">
         
-        {/* Snow Effect */}
-        {isSnowing && <SnowEffect />}
+        {/* Seasonal Snow Effect - Automatic in Dec & Jan */}
+        {isSnowingSeason && <SnowEffect />}
 
         {/* Modals */}
         <ConfirmModal 
@@ -1006,8 +1000,6 @@ const App: React.FC = () => {
             onLogoClick={handleResetHome}
             currentView={view}
             onNavigate={(v) => { setView(v); setCurrentPage(1); setSidebarOpen(false); }}
-            isSnowing={isSnowing}
-            onToggleSnow={toggleSnow}
         />
 
         {/* Main Content */}
