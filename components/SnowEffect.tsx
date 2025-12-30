@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface Snowflake {
   x: number;
@@ -12,8 +12,19 @@ interface Snowflake {
 
 const SnowEffect: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
 
   useEffect(() => {
+    // 监听主题变化，以便实时更新 Canvas 样式和绘制颜色
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -47,8 +58,9 @@ const SnowEffect: React.FC = () => {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      ctx.fillStyle = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(100, 116, 139, 0.4)';
+      const currentIsDark = document.documentElement.classList.contains('dark');
+      // 深色模式使用纯白雪花，浅色模式使用略带灰蓝色的雪花
+      ctx.fillStyle = currentIsDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(100, 116, 139, 0.5)';
 
       particles.forEach((p) => {
         ctx.beginPath();
@@ -77,6 +89,7 @@ const SnowEffect: React.FC = () => {
     return () => {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
     };
   }, []);
 
@@ -84,7 +97,10 @@ const SnowEffect: React.FC = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 z-[60] pointer-events-none transition-opacity duration-1000"
-      style={{ mixBlendMode: 'screen' }}
+      style={{ 
+        // 关键修复：screen 模式在白色背景上不可见，浅色模式切换为 multiply 或 normal
+        mixBlendMode: isDarkMode ? 'screen' : 'multiply' 
+      }}
     />
   );
 };
