@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiDownloadLine, RiBookOpenLine } from '@remixicon/react';
+import { RiAddLine, RiCloseLine, RiLogoutBoxRLine, RiLoginBoxLine, RiApps2Line, RiStarLine, RiMoonLine, RiSunLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiDownloadLine, RiBookOpenLine, RiSnowyLine } from '@remixicon/react';
 import { Category } from '../types';
 import { Logo } from './Logo';
 
@@ -22,10 +22,12 @@ interface SidebarProps {
   onLogoClick?: () => void;
   currentView: string;
   onNavigate: (view: string) => void;
+  isSnowing: boolean;
+  onToggleSnow: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport, onLogoClick, currentView, onNavigate
+    siteName, selectedCategory, onSelectCategory, onCreateNew, isOpen = false, onClose, isAuthenticated, onLogin, onLogout, isDarkMode, onToggleTheme, isCollapsed, toggleCollapse, onExport, onLogoClick, currentView, onNavigate, isSnowing, onToggleSnow
 }) => {
   
   return (
@@ -177,6 +179,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
                 {isDarkMode ? <RiSunLine size={20} /> : <RiMoonLine size={20} />}
                 {!isCollapsed && <span className="text-sm font-medium">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+            </button>
+
+            {/* Snow Toggle */}
+            <button 
+                onClick={onToggleSnow}
+                className={`flex items-center gap-3 transition-colors p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 min-h-[44px] ${isCollapsed ? 'justify-center w-12 h-12' : 'w-full'} ${isSnowing ? 'text-blue-500 dark:text-blue-400' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}`}
+                title={isSnowing ? 'Stop Snowing' : 'Let it Snow'}
+                aria-label={isSnowing ? 'Stop Snowing' : 'Let it Snow'}
+            >
+                <RiSnowyLine size={20} />
+                {!isCollapsed && <span className="text-sm font-medium">{isSnowing ? 'Snowing' : 'Let it Snow'}</span>}
             </button>
 
              {/* Export Data Button - Only Visible when Authenticated */}
