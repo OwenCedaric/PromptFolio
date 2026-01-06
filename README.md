@@ -155,13 +155,10 @@ To generate a static version of the site for maximum SEO and performance:
 
 2.  **Output:**
     The static files are generated in the `dist-static/` directory.
-
-3.  **Deploy to Cloudflare Pages:**
-    Upload the `dist-static/` folder to a new Cloudflare Pages project.
     
-    *If using Wrangler:*
+    *Using Wrangler:*
     ```bash
-    npx wrangler pages deploy dist-static --project-name promptfolio-static
+    npx wrangler deploy --assets=./dist-static
     ```
 
 ## 📝 License

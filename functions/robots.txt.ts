@@ -1,13 +1,11 @@
 export const onRequestGet = async (context: any) => {
-  const url = new URL(context.request.url);
-  const baseUrl = `${url.protocol}//${url.host}`;
+    const url = new URL(context.request.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
 
-  const robots = `User-agent: *
-Allow: /
+    const robots = `User-agent: *
+Disallow: /`;
 
-Sitemap: ${baseUrl}/sitemap-index.xml`;
-
-  return new Response(robots, {
-    headers: { "Content-Type": "text/plain" },
-  });
+    return new Response(robots, {
+        headers: { "Content-Type": "text/plain" },
+    });
 };
