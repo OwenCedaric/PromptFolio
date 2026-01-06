@@ -1,5 +1,5 @@
 {
-  "name": "PromptFolio",
-  "description": "A professional, single-user prompt management system supporting versioning, categorization, media attachments, and AI-assisted optimization powered by Gemini.",
-  "requestFramePermissions": []
+    "name": "PromptFolio",
+    "description": "A professional, single-user prompt management system supporting versioning, categorization, media attachments, and AI-assisted optimization.",
+    "requestFramePermissions": []
 }

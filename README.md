@@ -143,6 +143,27 @@ npx wrangler d1 execute promptfolio-db --command "ALTER TABLE prompts ADD COLUMN
 *   **Admin Access**: Controlled by `SITE_PASSWORD`.
 *   **Database Access**: Secured by Cloudflare Functions context.
 
+## 🌐 Static Site Deployment
+
+To generate a static version of the site for maximum SEO and performance:
+
+1.  **Build Static Site:**
+    This fetches real data from your remote Cloudflare D1 database and generates HTML files.
+    ```bash
+    npm run build:static
+    ```
+
+2.  **Output:**
+    The static files are generated in the `dist-static/` directory.
+
+3.  **Deploy to Cloudflare Pages:**
+    Upload the `dist-static/` folder to a new Cloudflare Pages project.
+    
+    *If using Wrangler:*
+    ```bash
+    npx wrangler pages deploy dist-static --project-name promptfolio-static
+    ```
+
 ## 📝 License
 
 Private / Proprietary
