@@ -729,17 +729,21 @@ const miscUrls = [
 ];
 fs.writeFileSync(path.join(SITEMAP_DIR, 'sitemap-pages.xml'), createSitemap(miscUrls));
 
-// Main Index (Renamed to sitemap-index.xml)
+// Main Index
+console.log('Generating main sitemap index...');
+
+
 const sitemaps = [
-    'sitemap-prompts.xml',
-    'sitemap-categories.xml',
-    'sitemap-topics.xml',
-    'sitemap-authors.xml',
-    'sitemap-tags.xml',
-    'sitemap-pages.xml'
+    `${SITE_URL}/sitemaps/sitemap-prompts.xml`,
+    `${SITE_URL}/sitemaps/sitemap-categories.xml`,
+    `${SITE_URL}/sitemaps/sitemap-topics.xml`,
+    `${SITE_URL}/sitemaps/sitemap-authors.xml`,
+    `${SITE_URL}/sitemaps/sitemap-tags.xml`,
+    `${SITE_URL}/sitemaps/sitemap-pages.xml`
 ];
-fs.writeFileSync(path.join(DIST_DIR, 'sitemap-index.xml'), createIndex(sitemaps));
-fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap-index.xml`);
+fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), createIndex(sitemaps));
+fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml`);
+
 
 // Search Index Generation
 console.log('Generating Search Index...');
