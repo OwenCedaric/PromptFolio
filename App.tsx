@@ -703,14 +703,26 @@ const App: React.FC = () => {
   };
 
   // --- Auth Handlers ---
-  const handleLogin = () => {
-      // We set the token and let the server verify it on the next request.
-      // This avoids exposing the password context to the client bundle.
-      localStorage.setItem('pf_auth_token', passwordInput);
-      setIsAuthenticated(true);
-      setIsLoginModalOpen(false);
-      setPasswordInput('');
-      setLoginError(false);
+  const handleLogin = async () => {
+      try {
+          const res = await fetch('/api/auth/verify', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${passwordInput}` }
+          });
+          
+          if (res.ok) {
+              localStorage.setItem('pf_auth_token', passwordInput);
+              setIsAuthenticated(true);
+              setIsLoginModalOpen(false);
+              setPasswordInput('');
+              setLoginError(false);
+          } else {
+              setLoginError(true);
+          }
+      } catch (err) {
+          console.error("Login verification failed", err);
+          setLoginError(true);
+      }
   };
 
   const handleLogout = () => {
