@@ -87,7 +87,7 @@ Go to your GitHub Repository > Settings > Secrets and variables > Actions:
 - `DB_NAME`: Your D1 database name.
 - `DB_ID`: Your D1 database ID.
 - `GEMINI_API_KEY`: Your Gemini API key.
-- `SITE_PASSWORD`: (Optional) Password for admin access.
+- `SITE_PASSWORD`: (Required) Password for administrative access (create, update, delete).
 
 **GitHub Variables**:
 - `SITE_URL`: Your public site URL (e.g., `https://prompt.example.com`).
