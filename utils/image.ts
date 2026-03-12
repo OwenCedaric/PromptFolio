@@ -8,19 +8,19 @@
  */
 export const getOptimizedImageUrl = (url: string | undefined, width: number, height?: number, quality: number = 70): string => {
     if (!url) return '';
-    
+
     // Skip optimization for:
     // 1. Data URLs (Base64)
     // 2. SVGs (Vector graphics shouldn't be rasterized)
     // 3. Localhost/Relative URLs (Proxy can't reach them)
-    if (url.startsWith('data:') || url.endsWith('.svg') || url.startsWith('/')) {
+    if (url.startsWith('data:') || url.endsWith('.svg') || url.startsWith('/') || url.endsWith('.avif') || url.endsWith('.webp')) {
         return url;
     }
 
     try {
         // Encode the URL to ensure query params in the source URL don't break the proxy
         const cleanUrl = new URL(url).toString();
-        
+
         const params = new URLSearchParams({
             url: cleanUrl,
             w: width.toString(),
