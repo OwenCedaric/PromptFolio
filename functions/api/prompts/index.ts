@@ -8,7 +8,7 @@ export const onRequestGet = async (context: any) => {
     // Check Authentication
     const authHeader = context.request.headers.get('Authorization');
     const clientToken = authHeader ? authHeader.replace('Bearer ', '') : '';
-    const isAuthenticated = context.env.SITE_PASSWORD && clientToken === context.env.SITE_PASSWORD;
+    const isAuthenticated = context.env.SITE_PASSWORD && context.env.SITE_PASSWORD.length > 0 && clientToken === context.env.SITE_PASSWORD;
 
     // Construct Query
     // If authenticated: Fetch ALL.
@@ -29,11 +29,17 @@ export const onRequestGet = async (context: any) => {
       isFavorite: row.isFavorite === 1,
     }));
 
-    // Cache for 60 seconds at edge and browser
+    // Cache logic: 
+    // - Authenticated: Private, no-store (security)
+    // - Public: Cache for 60 seconds (performance)
+    const cacheHeader = isAuthenticated 
+        ? "private, no-cache, no-store, must-revalidate" 
+        : "public, max-age=60, s-maxage=60, stale-while-revalidate=300";
+
     return new Response(JSON.stringify(prompts), {
       headers: { 
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300"
+        "Cache-Control": cacheHeader
       },
     });
   } catch (err: any) {

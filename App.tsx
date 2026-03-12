@@ -442,7 +442,10 @@ const App: React.FC = () => {
           // Send auth header if we have a token, to potentially see private items
           const headers: Record<string, string> = { ...getAuthHeaders() };
           
-          const res = await fetch('/api/prompts', { headers });
+          const res = await fetch('/api/prompts', { 
+              headers,
+              cache: Object.keys(headers).length > 0 ? 'no-store' : 'default' 
+          });
           const contentType = res.headers.get("content-type");
           if (res.ok && contentType && contentType.includes("application/json")) {
               const data = await res.json();
