@@ -14,7 +14,7 @@ export const onRequestDelete = async (context: any) => {
   const authHeader = context.request.headers.get('Authorization');
   const clientToken = authHeader ? authHeader.replace('Bearer ', '') : '';
   
-  if (context.env.SITE_PASSWORD && clientToken !== context.env.SITE_PASSWORD) {
+  if (!context.env.SITE_PASSWORD || clientToken !== context.env.SITE_PASSWORD) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 

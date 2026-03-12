@@ -47,8 +47,8 @@ export const onRequestPost = async (context: any) => {
     const authHeader = context.request.headers.get('Authorization');
     const clientToken = authHeader ? authHeader.replace('Bearer ', '') : '';
     
-    // If SITE_PASSWORD is set in env, require it.
-    if (context.env.SITE_PASSWORD && clientToken !== context.env.SITE_PASSWORD) {
+    // If SITE_PASSWORD is not set or token mismatch, deny access.
+    if (!context.env.SITE_PASSWORD || clientToken !== context.env.SITE_PASSWORD) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 

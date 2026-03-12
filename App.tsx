@@ -237,7 +237,6 @@ const getPaginationRange = (currentPage: number, totalPages: number) => {
 const App: React.FC = () => {
   // --- Config ---
   const SITE_NAME = process.env.SITE_NAME || 'PromptFolio';
-  const ENV_SITE_PASSWORD = process.env.SITE_PASSWORD; // Used for client-side fallback check
   const ITEMS_PER_PAGE = 12;
 
   // --- Auth State ---
@@ -705,12 +704,8 @@ const App: React.FC = () => {
 
   // --- Auth Handlers ---
   const handleLogin = () => {
-      // Basic client-side check for immediate feedback, but real test is API access
-      if (ENV_SITE_PASSWORD && passwordInput !== ENV_SITE_PASSWORD) {
-          setLoginError(true);
-          return;
-      }
-      
+      // We set the token and let the server verify it on the next request.
+      // This avoids exposing the password context to the client bundle.
       localStorage.setItem('pf_auth_token', passwordInput);
       setIsAuthenticated(true);
       setIsLoginModalOpen(false);
