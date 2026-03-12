@@ -27,15 +27,9 @@ jobs:
           export DB_NAME="${{ secrets.DB_NAME }}"
           export DB_ID="${{ secrets.DB_ID }}"
           export GEMINI_MODEL="${{ vars.GEMINI_MODEL }}"
+          export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          export SITE_PASSWORD="${{ secrets.SITE_PASSWORD }}"
           envsubst < wrangler.toml > wrangler.toml.tmp && mv wrangler.toml.tmp wrangler.toml
-
-      - name: Set Cloudflare Secrets
-        run: |
-          echo "${{ secrets.GEMINI_API_KEY }}" | npx wrangler pages secret put GEMINI_API_KEY --project-name=promptfolio
-          echo "${{ secrets.SITE_PASSWORD }}" | npx wrangler pages secret put SITE_PASSWORD --project-name=promptfolio
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Build
         run: npm run build

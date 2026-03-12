@@ -78,21 +78,23 @@ This project is designed to be deployed on Cloudflare Pages.
 
 This project uses GitHub Actions for automatic deployment. This is the recommended way to deploy as it handles sensitive configuration using Secrets and Variables.
 
-#### 1. Configure GitHub Secrets
-Go to your GitHub Repository > Settings > Secrets and variables > Actions > **Secrets** and add:
-- `CLOUDFLARE_API_TOKEN`: Your Cloudflare API Token (Workers & Pages permissions).
-- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID.
-- `GEMINI_API_KEY`: Your Google Gemini API Key.
-- `DB_NAME`: Your Cloudflare D1 database name.
-- `DB_ID`: Your Cloudflare D1 database ID.
+#### 2. Configure GitHub Secrets & Variables
+Go to your GitHub Repository > Settings > Secrets and variables > Actions:
 
-#### 2. Configure GitHub Variables
-Go to your GitHub Repository > Settings > Secrets and variables > Actions > **Variables** and add:
+**GitHub Secrets**:
+- `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token.
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID.
+- `DB_NAME`: Your D1 database name.
+- `DB_ID`: Your D1 database ID.
+- `GEMINI_API_KEY`: Your Gemini API key.
+- `SITE_PASSWORD`: (Optional) Password for admin access.
+
+**GitHub Variables**:
 - `SITE_URL`: Your public site URL (e.g., `https://prompt.example.com`).
 - `GEMINI_MODEL`: (Optional) The Gemini model to use (defaults to `gemini-3-flash-preview`).
 
 > [!NOTE]
-> `GEMINI_API_KEY` and `SITE_PASSWORD` are managed as true **Secrets** in Cloudflare. The GitHub Action will automatically set these encrypted values for you during deployment using `wrangler pages secret put`.
+> All sensitive keys are passed to Cloudflare as environment variables during the GitHub Action build step using `wrangler.toml` templating. This ensures they are not committed to your repository but are available to your Worker backend.
 
 #### 3. Initialize Database Schema
 Run this once from your local machine to set up the production database:
