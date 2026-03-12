@@ -74,28 +74,34 @@ This project is designed to be deployed on Cloudflare Pages.
     ```
     *Note: The standard `npm start` will only run the React frontend and won't connect to the local D1 database correctly without proxy configuration. Use `wrangler pages dev` for full stack emulation.*
 
-### 3. Production Deployment
+### 3. Production Deployment (GitHub Actions)
 
-1.  **Build the project:**
-    ```bash
-    npm run build
-    ```
+This project uses GitHub Actions for automatic deployment. This is the recommended way to deploy as it handles sensitive configuration using Secrets and Variables.
 
-2.  **Apply Schema to Production:**
-    ```bash
-    npx wrangler d1 execute promptfolio-db --remote --file=./schema.sql
-    ```
+#### 1. Configure GitHub Secrets
+Go to your GitHub Repository > Settings > Secrets and variables > Actions > **Secrets** and add:
+- `CLOUDFLARE_API_TOKEN`: Your Cloudflare API Token (Workers & Pages permissions).
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID.
+- `GEMINI_API_KEY`: Your Google Gemini API Key.
+- `DB_NAME`: Your Cloudflare D1 database name.
+- `DB_ID`: Your Cloudflare D1 database ID.
 
-3.  **Deploy:**
-    ```bash
-    npx wrangler pages deploy build
-    ```
+#### 2. Configure GitHub Variables
+Go to your GitHub Repository > Settings > Secrets and variables > Actions > **Variables** and add:
+- `SITE_URL`: Your public site URL (e.g., `https://prompt.example.com`).
+- `GEMINI_MODEL`: (Optional) The Gemini model to use (defaults to `gemini-3-flash-preview`).
 
-4.  **Set Environment Variables:**
-    Go to your Cloudflare Pages dashboard > Settings > Environment Variables and add:
-    *   `API_KEY`: Your Google Gemini API Key.
-    *   `SITE_PASSWORD`: (Optional) Password for admin access.
-    *   `SITE_URL`: (Optional) The public URL of your site (e.g., `https://your-domain.com`) for correct Sitemap and JSON-LD generation.
+> [!NOTE]
+> `GEMINI_API_KEY` and `SITE_PASSWORD` are managed as true **Secrets** in Cloudflare. The GitHub Action will automatically set these encrypted values for you during deployment using `wrangler pages secret put`.
+
+#### 3. Initialize Database Schema
+Run this once from your local machine to set up the production database:
+```bash
+npx wrangler d1 execute promptfolio-db --remote --file=./schema.sql
+```
+
+#### 4. Deploy
+Simply push your changes to the `main` branch, and the **Deploy to Cloudflare Pages** action will trigger automatically.
 
 ## 🗄️ Database Schema (`schema.sql`)
 
