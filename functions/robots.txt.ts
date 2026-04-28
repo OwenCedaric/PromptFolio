@@ -3,7 +3,7 @@ export const onRequestGet = async (context: any) => {
     const baseUrl = `${url.protocol}//${url.host}`;
 
     const robots = `User-agent: *
-Disallow: /`;
+Disallow:`;
 
     return new Response(robots, {
         headers: { "Content-Type": "text/plain" },
