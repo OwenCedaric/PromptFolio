@@ -5,12 +5,13 @@ export const onRequestGet = async (context: any) => {
     const robots = `User-agent: *
 Allow: /
 Sitemap: ${baseUrl}/sitemap.xml
-Sitemap: ${baseUrl}/sitemaps/sitemap-prompts.xml
-Sitemap: ${baseUrl}/sitemaps/sitemap-categories.xml
-Sitemap: ${baseUrl}/sitemaps/sitemap-topics.xml
-Sitemap: ${baseUrl}/sitemaps/sitemap-authors.xml
-Sitemap: ${baseUrl}/sitemaps/sitemap-tags.xml
-Sitemap: ${baseUrl}/sitemaps/sitemap-pages.xml`;
+Sitemap: ${baseUrl}/sitemap-prompts.xml
+Sitemap: ${baseUrl}/sitemap-categories.xml
+Sitemap: ${baseUrl}/sitemap-topics.xml
+Sitemap: ${baseUrl}/sitemap-authors.xml
+Sitemap: ${baseUrl}/sitemap-tags.xml
+Sitemap: ${baseUrl}/sitemap-library.xml
+Sitemap: ${baseUrl}/sitemap-topic-directory.xml`;
 
     return new Response(robots, {
         headers: { "Content-Type": "text/plain" },
