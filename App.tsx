@@ -490,11 +490,40 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-      fetchPrompts();
+      const init = async () => {
+          // 1. Silent Auth Check (useful for proxy injections like Surge)
+          try {
+              const token = localStorage.getItem('pf_auth_token');
+              const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+              const res = await fetch('/api/auth/verify', {
+                  method: 'POST',
+                  headers: headers
+              });
+              if (res.ok) {
+                  setIsAuthenticated(true);
+              } else {
+                  setIsAuthenticated(false);
+                  if (localStorage.getItem('pf_auth_token')) {
+                      localStorage.removeItem('pf_auth_token');
+                  }
+              }
+          } catch (e) {
+              console.warn("Silent auth check failed", e);
+          }
+          
+          // 2. Fetch Prompts
+          fetchPrompts();
+      };
+      init();
   }, []);
 
-  // Refetch when auth state changes to see private items
+  // Refetch when auth state changes to see private items (skip initial mount to avoid double fetch)
+  const isInitialAuthMount = useRef(true);
   useEffect(() => {
+      if (isInitialAuthMount.current) {
+          isInitialAuthMount.current = false;
+          return;
+      }
       if (!isLoading) {
           fetchPrompts();
       }
